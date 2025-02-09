@@ -1,18 +1,13 @@
 import { Image } from 'expo-image';
-import { StyleSheet } from 'react-native';
 
 type Props = {
   selectedImage?: string;
+  width?: number;
+  height?: number;
 };
 
-export default function MoviePoster({ selectedImage }: Props) {
-  return <Image source={selectedImage} style={styles.image} />;
+export default function MoviePoster({ selectedImage, width, height }: Props) {
+  return (
+    <Image source={selectedImage} style={{ width, height, borderRadius: 5 }} />
+  );
 }
-
-const styles = StyleSheet.create({
-  image: {
-    width: 115,
-    height: 173,
-    borderRadius: 5,
-  },
-});
