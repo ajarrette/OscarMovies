@@ -1,74 +1,94 @@
-import { Image, StyleSheet, Platform } from 'react-native';
+import { ScrollView, StyleSheet, Text, View } from 'react-native';
+import MoviePoster from '../components/moviePoster';
 
-import { HelloWave } from '@/components/HelloWave';
-import ParallaxScrollView from '@/components/ParallaxScrollView';
-import { ThemedText } from '@/components/ThemedText';
-import { ThemedView } from '@/components/ThemedView';
-
-export default function HomeScreen() {
+export default function Index() {
   return (
-    <ParallaxScrollView
-      headerBackgroundColor={{ light: '#A1CEDC', dark: '#1D3D47' }}
-      headerImage={
-        <Image
-          source={require('@/assets/images/partial-react-logo.png')}
-          style={styles.reactLogo}
-        />
-      }>
-      <ThemedView style={styles.titleContainer}>
-        <ThemedText type="title">Welcome!</ThemedText>
-        <HelloWave />
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 1: Try it</ThemedText>
-        <ThemedText>
-          Edit <ThemedText type="defaultSemiBold">app/(tabs)/index.tsx</ThemedText> to see changes.
-          Press{' '}
-          <ThemedText type="defaultSemiBold">
-            {Platform.select({
-              ios: 'cmd + d',
-              android: 'cmd + m',
-              web: 'F12'
-            })}
-          </ThemedText>{' '}
-          to open developer tools.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 2: Explore</ThemedText>
-        <ThemedText>
-          Tap the Explore tab to learn more about what's included in this starter app.
-        </ThemedText>
-      </ThemedView>
-      <ThemedView style={styles.stepContainer}>
-        <ThemedText type="subtitle">Step 3: Get a fresh start</ThemedText>
-        <ThemedText>
-          When you're ready, run{' '}
-          <ThemedText type="defaultSemiBold">npm run reset-project</ThemedText> to get a fresh{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> directory. This will move the current{' '}
-          <ThemedText type="defaultSemiBold">app</ThemedText> to{' '}
-          <ThemedText type="defaultSemiBold">app-example</ThemedText>.
-        </ThemedText>
-      </ThemedView>
-    </ParallaxScrollView>
+    <View style={styles.container}>
+      <Text style={styles.text}>BEST PICTURE</Text>
+      <ScrollView style={styles.scrollView}>
+        <View style={styles.movieList}>
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/7MrgIUeq0DD2iF7GR6wqJfYZNeC.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/lKkWcdqDEPEMVmLxRJGwJxJp5XB.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/5tQYnwYrvr7XhYY7JZYLo7MYIVN.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/vYEyxF1UT779RiEalpMjUT6kfdf.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/6izwz7rsy95ARzTR3poZ8H6c5pp.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/7seqaCaaXDNUHOx4DqwpoOH8pPa.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/qNLMPY3KLrYgTX2QZ5iEwwOqyRz.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/lu2vmmtStmTNMmSZl2LgrrQpLZo.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/lqoMzCcZYEFK729d6qzt349fB4o.jpg'
+            }
+          />
+          <MoviePoster
+            selectedImage={
+              'https://image.tmdb.org/t/p/w300/xDGbZ0JJ3mYaGKy4Nzd9Kph6M9L.jpg'
+            }
+          />
+        </View>
+      </ScrollView>
+    </View>
   );
 }
 
 const styles = StyleSheet.create({
-  titleContainer: {
+  container: {
+    backgroundColor: '#25292e',
+    flex: 1,
+    justifyContent: 'flex-start',
+    alignItems: 'flex-start',
+    paddingTop: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
+    gap: 10,
+  },
+  movieList: {
+    width: '100%',
+    flex: 1,
+    flexWrap: 'wrap',
     flexDirection: 'row',
-    alignItems: 'center',
-    gap: 8,
+    justifyContent: 'flex-start',
+    gap: 20,
   },
-  stepContainer: {
-    gap: 8,
-    marginBottom: 8,
+  scrollView: {
+    width: '100%',
   },
-  reactLogo: {
-    height: 178,
-    width: 290,
-    bottom: 0,
-    left: 0,
-    position: 'absolute',
+  text: {
+    color: '#fff',
+    borderBottomWidth: 1,
+    borderBottomColor: '#fff',
+    width: '100%',
   },
 });
