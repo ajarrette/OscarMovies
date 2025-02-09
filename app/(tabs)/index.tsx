@@ -80,7 +80,7 @@ const styles = StyleSheet.create({
     flexWrap: 'wrap',
     flexDirection: 'row',
     justifyContent: 'flex-start',
-    gap: 20,
+    gap: 8,
   },
   scrollView: {
     width: '100%',

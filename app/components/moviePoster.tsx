@@ -11,8 +11,8 @@ export default function MoviePoster({ selectedImage }: Props) {
 
 const styles = StyleSheet.create({
   image: {
-    width: 170,
-    height: 254,
+    width: 115,
+    height: 173,
     borderRadius: 5,
   },
 });
