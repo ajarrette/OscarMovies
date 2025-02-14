@@ -1,3 +1,4 @@
+import { useEffect, useState } from 'react';
 import {
   ScrollView,
   StyleSheet,
@@ -5,8 +6,6 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import { Dimensions } from 'react-native';
-import { useEffect, useState } from 'react';
 
 import MoviePoster from '../components/moviePoster';
 import { ImageSizing } from '../services/imageSizing';
@@ -17,17 +16,23 @@ type imageSize = {
 };
 
 export default function Index() {
+  const { width } = useWindowDimensions();
   const [imageSize, setImageSize] = useState<imageSize>({
     width: 115,
     height: 173,
   });
-  const { width } = useWindowDimensions();
+  const [isDetailsVisible, setIsDetailsVisible] = useState(false);
 
   useEffect(() => {
     const calculatedImageWidth = ImageSizing.getImageSize(110, width - 40, 10);
     const scale = 115 / calculatedImageWidth;
     setImageSize({ width: calculatedImageWidth, height: 173 / scale });
   }, [width]);
+
+  const onToggleDetails = () => {
+    console.log('toggle details view');
+    setIsDetailsVisible(!isDetailsVisible);
+  };
 
   return (
     <View style={styles.container}>
@@ -40,6 +45,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
@@ -47,6 +53,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
@@ -54,6 +61,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
@@ -61,6 +69,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
@@ -68,6 +77,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
@@ -75,6 +85,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
@@ -82,6 +93,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
@@ -89,6 +101,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
@@ -96,6 +109,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={onToggleDetails}
           />
           <MoviePoster
             selectedImage={
