@@ -1,5 +1,7 @@
+import MovieDetail from '@/app/components/movieDetail';
 import { Stack, useLocalSearchParams } from 'expo-router';
-import { StyleSheet, Text, View } from 'react-native';
+import { SQLiteProvider } from 'expo-sqlite';
+import { StyleSheet, View } from 'react-native';
 
 export default function Movie() {
   const { id } = useLocalSearchParams();
@@ -10,7 +12,12 @@ export default function Movie() {
         options={{ headerTitle: '', headerBackButtonDisplayMode: 'minimal' }}
       />
 
-      <Text style={styles.text}>Movie Id: {id}</Text>
+      <SQLiteProvider
+        databaseName='oscarmovies.db'
+        assetSource={{ assetId: require('@/assets/data/oscarmovies.db') }}
+      >
+        <MovieDetail id={+id} />
+      </SQLiteProvider>
     </View>
   );
 }
@@ -25,8 +32,5 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
     gap: 10,
-  },
-  text: {
-    color: '#fff',
   },
 });

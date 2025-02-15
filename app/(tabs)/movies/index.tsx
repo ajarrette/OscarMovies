@@ -9,7 +9,7 @@ import {
 import { useRouter } from 'expo-router';
 
 import MoviePoster from '../../components/moviePoster';
-import { ImageSizing } from '../../services/imageSizing';
+import ImageSizing from '../../services/imageSizing';
 
 type imageSize = {
   width: number;

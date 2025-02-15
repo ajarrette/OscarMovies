@@ -1,4 +1,4 @@
-export class ImageSizing {
+export default class ImageSizing {
   static getImageSize(
     minWidth: number,
     viewWidth: number,

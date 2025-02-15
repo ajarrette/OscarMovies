@@ -13,8 +13,7 @@ export default function StackLayout() {
         name='index'
         options={{ headerTitle: 'Movies', headerShown: true }}
       />
-      <Stack.Screen name='id' options={{ headerTitle: '' }} />
-      <Stack.Screen name='details' options={{ headerTitle: '' }} />
+      <Stack.Screen name='[id]' options={{ headerTitle: '' }} />
     </Stack>
   );
 }
