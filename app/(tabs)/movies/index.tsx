@@ -30,8 +30,8 @@ export default function Index() {
     setImageSize({ width: calculatedImageWidth, height: 173 / scale });
   }, [width]);
 
-  const onShowDetails = () => {
-    router.push('/movies/details');
+  const onShowDetails = (id: number) => {
+    router.push(`/movies/${id}`);
   };
 
   return (
@@ -45,7 +45,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(1064213)}
           />
           <MoviePoster
             selectedImage={
@@ -53,7 +53,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(549509)}
           />
           <MoviePoster
             selectedImage={
@@ -61,7 +61,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(661539)}
           />
           <MoviePoster
             selectedImage={
@@ -69,7 +69,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(974576)}
           />
           <MoviePoster
             selectedImage={
@@ -77,7 +77,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(693134)}
           />
           <MoviePoster
             selectedImage={
@@ -85,7 +85,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(974950)}
           />
           <MoviePoster
             selectedImage={
@@ -93,7 +93,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(1000837)}
           />
           <MoviePoster
             selectedImage={
@@ -101,7 +101,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(1028196)}
           />
           <MoviePoster
             selectedImage={
@@ -109,7 +109,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
-            onPress={onShowDetails}
+            onPress={() => onShowDetails(933260)}
           />
           <MoviePoster
             selectedImage={
@@ -117,6 +117,7 @@ export default function Index() {
             }
             width={imageSize.width}
             height={imageSize.height}
+            onPress={() => onShowDetails(402431)}
           />
         </View>
       </ScrollView>

@@ -1,9 +1,16 @@
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
 
-export default function Details() {
+export default function Movie() {
+  const { id } = useLocalSearchParams();
+
   return (
     <View style={styles.container}>
-      <Text style={styles.text}>Details</Text>
+      <Stack.Screen
+        options={{ headerTitle: '', headerBackButtonDisplayMode: 'minimal' }}
+      />
+
+      <Text style={styles.text}>Movie Id: {id}</Text>
     </View>
   );
 }
