@@ -1,4 +1,6 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
+import { useRouter } from 'expo-router';
 import {
   Image,
   Pressable,
@@ -10,7 +12,6 @@ import {
 import { Movie } from '../types/movie';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
-import { useRouter } from 'expo-router';
 
 type Props = {
   movie: Movie;
@@ -32,12 +33,25 @@ export default function MovieDetail({ movie }: Props) {
 
   return (
     <ScrollView style={styles.container}>
-      <Image
-        source={{
-          uri: `https://image.tmdb.org/t/p/w500${movie.backdrop_path}`,
-        }}
-        style={styles.poster}
-      />
+      <View style={styles.container}>
+        <View>
+          <Image
+            source={{
+              uri: `https://image.tmdb.org/t/p/w500${movie.backdrop_path}`,
+            }}
+            style={styles.poster}
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(37, 41, 46, 1)']}
+            locations={[0.6, 1]}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+          />
+        </View>
+      </View>
       <View style={styles.detailsContainer}>
         <View style={styles.topRow}>
           <View style={{ flex: 1 }}>
@@ -107,7 +121,8 @@ const styles = StyleSheet.create({
     resizeMode: 'cover',
   },
   detailsContainer: {
-    padding: 20,
+    paddingLeft: 20,
+    paddingRight: 20,
   },
   row: {
     marginTop: 8,
@@ -128,7 +143,7 @@ const styles = StyleSheet.create({
   tagline: {
     fontSize: 18,
     marginBottom: 5,
-    marginTop: 10,
+    marginTop: 20,
     color: '#fff',
   },
   title: {
