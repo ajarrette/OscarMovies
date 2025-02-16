@@ -1,3 +1,4 @@
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { Stack, useRouter } from 'expo-router';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -71,12 +72,23 @@ export default function MovieDetail({ movie }: Props) {
         }}
       />
       <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-        <Animated.Image
-          source={{
-            uri: `https://image.tmdb.org/t/p/w500${movie.backdrop_path}`,
-          }}
-          style={[styles.image, imageAnimatedStyle]}
-        />
+        <View>
+          <Animated.Image
+            source={{
+              uri: `https://image.tmdb.org/t/p/w500${movie.backdrop_path}`,
+            }}
+            style={[styles.image, imageAnimatedStyle]}
+          />
+          <LinearGradient
+            colors={['transparent', 'rgba(37, 41, 46, 1)']}
+            locations={[0.6, 1]}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+            }}
+          />
+        </View>
         <View style={{ backgroundColor: '#25292e' }}>
           <View style={styles.detailsContainer}>
             <View style={styles.topRow}>
