@@ -3,6 +3,7 @@ export type Movie = {
   director: string;
   id: number;
   imdb_id: string;
+  nominations: number;
   original_title: string;
   overview: string;
   popularity: number;
@@ -11,4 +12,5 @@ export type Movie = {
   runtime: number;
   tagline: string;
   title: string;
+  wins: number;
 };

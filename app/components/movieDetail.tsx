@@ -9,18 +9,25 @@ import {
 } from 'react-native';
 import { Movie } from '../types/movie';
 import MoviePoster from './moviePoster';
+import NomineeStrip from './nomineeStrip';
+import { useRouter } from 'expo-router';
 
 type Props = {
   movie: Movie;
 };
 
 export default function MovieDetail({ movie }: Props) {
+  const router = useRouter();
   const onImdbPress = () => {
     const url = `https://www.imdb.com/title/${movie.imdb_id}/`;
     const handlePress = async () => {
       await Linking.openURL(url);
     };
     handlePress();
+  };
+
+  const onShowNominations = () => {
+    router.push(`/movies/${movie.id}/nominations`);
   };
 
   return (
@@ -33,7 +40,7 @@ export default function MovieDetail({ movie }: Props) {
       />
       <View style={styles.detailsContainer}>
         <View style={styles.topRow}>
-          <View>
+          <View style={{ flex: 1 }}>
             <Text style={styles.title}>{movie.title}</Text>
             {movie.title !== movie.original_title && (
               <Text style={styles.title}>{movie.original_title}</Text>
@@ -48,6 +55,11 @@ export default function MovieDetail({ movie }: Props) {
               </Pressable>
               <Text style={styles.defaultText}>{movie.runtime} mins</Text>
             </View>
+            <NomineeStrip
+              nominations={movie.nominations}
+              wins={movie.wins}
+              onPress={onShowNominations}
+            />
           </View>
           <View>
             <MoviePoster
