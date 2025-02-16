@@ -36,14 +36,7 @@ export default function LoadMovieDetail({ id }: Props) {
   };
 
   return (
-    <View
-      style={{
-        flex: 1,
-        width: '100%',
-        justifyContent: 'flex-start',
-        alignItems: 'center',
-      }}
-    >
+    <>
       {loading ? (
         <ActivityIndicator size='large' color='#fff' />
       ) : movie ? (
@@ -56,7 +49,7 @@ export default function LoadMovieDetail({ id }: Props) {
           <Button onPress={loadMovie} title='Load movie' />
         </View>
       )}
-    </View>
+    </>
   );
 }
 

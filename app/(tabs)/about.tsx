@@ -52,6 +52,7 @@ export default function AboutScreen() {
       <Stack.Screen
         options={{
           headerTransparent: true,
+          headerShown: true,
           headerLeft: () => (
             <Ionicons
               name='chevron-back-outline'

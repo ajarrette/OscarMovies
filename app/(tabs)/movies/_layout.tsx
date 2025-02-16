@@ -11,13 +11,19 @@ export default function StackLayout() {
     >
       <Stack.Screen
         name='index'
-        options={{ headerTitle: '2025', headerShown: true }}
+        options={{
+          headerTitle: '2025',
+          headerShown: true,
+        }}
       />
       <Stack.Screen
         name='[id]'
         options={{
+          headerStyle: { backgroundColor: 'transparent' },
+          headerTransparent: true,
           headerTitle: '',
-          headerShown: false,
+          headerBackButtonDisplayMode: 'minimal',
+          headerShown: true,
         }}
       />
       <Stack.Screen
