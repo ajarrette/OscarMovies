@@ -52,7 +52,16 @@ export default function AboutScreen() {
       <Stack.Screen
         options={{
           headerTransparent: true,
-          headerLeft: () => <Text>Back</Text>,
+          headerLeft: () => (
+            <Ionicons
+              name='chevron-back-outline'
+              onPress={onGoBack}
+              size={35}
+              color='#ccc'
+              backgroundColor='#11111155'
+              borderRadius={20}
+            />
+          ),
           headerBackground: () => (
             <Animated.View style={[styles.header, headerAnimatedStyle]} />
           ),
@@ -65,29 +74,20 @@ export default function AboutScreen() {
           }}
           style={[styles.image, imageAnimatedStyle]}
         />
-        <View style={{ height: 2000, backgroundColor: '#fff' }}>
+        <View style={{ height: 2000, backgroundColor: '#25292e' }}>
           <Text
             style={{
               fontSize: 20,
               fontWeight: 'bold',
               textAlign: 'center',
               marginTop: 20,
+              color: 'white',
             }}
           >
             Oscar Movies
           </Text>
         </View>
       </Animated.ScrollView>
-      <View style={styles.backButton}>
-        <Ionicons
-          name='chevron-back-outline'
-          onPress={onGoBack}
-          size={35}
-          color='#ccc'
-          backgroundColor='#11111155'
-          borderRadius={20}
-        />
-      </View>
     </View>
   );
 }
@@ -107,8 +107,8 @@ const styles = StyleSheet.create({
     height: IMG_HEIGHT,
   },
   header: {
-    backgroundColor: '#fff',
+    backgroundColor: '#25292e',
     height: 100,
-    borderWidth: StyleSheet.hairlineWidth,
+    // borderWidth: StyleSheet.hairlineWidth,
   },
 });
