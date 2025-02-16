@@ -41,7 +41,7 @@ export default function Index() {
         <View style={styles.movieList}>
           <MoviePoster
             selectedImage={
-              'https://image.tmdb.org/t/p/w300/7MrgIUeq0DD2iF7GR6wqJfYZNeC.jpg'
+              'https://image.tmdb.org/t/p/w300/3bXdP1k2pzpmVD8GWXkC8VhmUKP.jpg'
             }
             width={imageSize.width}
             height={imageSize.height}

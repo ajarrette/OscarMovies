@@ -9,7 +9,6 @@ export default function Movie() {
   const router = useRouter();
 
   const onGoBack = () => {
-    console.log('i want to go back');
     router.dismiss();
   };
 
@@ -50,6 +49,6 @@ const styles = StyleSheet.create({
   backButton: {
     position: 'absolute',
     top: 60,
-    left: 20,
+    left: 10,
   },
 });

@@ -49,10 +49,12 @@ export default function LoadMovieDetail({ id }: Props) {
       ) : movie ? (
         <MovieDetail movie={movie} />
       ) : (
-        <>
+        <View
+          style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
+        >
           <Text style={styles.text}>Not found</Text>
           <Button onPress={loadMovie} title='Load movie' />
-        </>
+        </View>
       )}
     </View>
   );
