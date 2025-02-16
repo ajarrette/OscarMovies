@@ -1,6 +1,4 @@
 import { Stack } from 'expo-router';
-import { Image, StyleSheet, Text } from 'react-native';
-import { BlurView } from 'expo-blur';
 
 export default function StackLayout() {
   return (
@@ -13,7 +11,7 @@ export default function StackLayout() {
     >
       <Stack.Screen
         name='index'
-        options={{ headerTitle: 'Movies', headerShown: true }}
+        options={{ headerTitle: '2025', headerShown: true }}
       />
       <Stack.Screen
         name='[id]'
