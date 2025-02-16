@@ -9,9 +9,9 @@ export default function Movie() {
   return (
     <View style={styles.container}>
       <SQLiteProvider
-        databaseName='oscarmovies.db'
+        databaseName='movies.db'
         assetSource={{
-          assetId: require('@/assets/data/oscarmovies.db'),
+          assetId: require('@/assets/data/movies.db'),
           forceOverwrite: true,
         }}
         options={{ useNewConnection: true }}

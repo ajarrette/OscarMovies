@@ -47,6 +47,7 @@ export default function TabLayout() {
           title: 'About',
           headerTitle: '',
           headerShown: true,
+          headerBackButtonDisplayMode: 'minimal',
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={

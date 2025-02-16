@@ -66,6 +66,8 @@ export default function MovieDetail({ movie }: Props) {
     <View style={styles.container}>
       <Stack.Screen
         options={{
+          headerTransparent: true,
+          headerShown: true,
           headerBackground: () => (
             <Animated.View style={[styles.header, headerAnimatedStyle]} />
           ),
@@ -95,7 +97,7 @@ export default function MovieDetail({ movie }: Props) {
               <View style={{ flex: 1 }}>
                 <Text style={styles.title}>{movie.title}</Text>
                 {movie.title !== movie.original_title && (
-                  <Text style={styles.title}>{movie.original_title}</Text>
+                  <Text style={styles.subtitle}>{movie.original_title}</Text>
                 )}
                 <Text style={styles.releaseDate}>
                   {new Date(movie.release_date).getFullYear()} • DIRECTED BY
@@ -122,10 +124,6 @@ export default function MovieDetail({ movie }: Props) {
               </View>
             </View>
             <Text style={styles.tagline}>{movie.tagline.toUpperCase()}</Text>
-            <Text style={styles.overview}>{movie.overview}</Text>
-            <Text style={styles.overview}>{movie.overview}</Text>
-            <Text style={styles.overview}>{movie.overview}</Text>
-            <Text style={styles.overview}>{movie.overview}</Text>
             <Text style={styles.overview}>{movie.overview}</Text>
             {/* <Text style={styles.rating}>Rating: {movie.vote_average}/10</Text> */}
           </View>
@@ -158,6 +156,7 @@ const styles = StyleSheet.create({
     fontSize: 18,
     color: '#ccc',
     fontWeight: '700',
+    marginBottom: 10,
   },
   detailsContainer: {
     paddingLeft: 20,
@@ -185,16 +184,23 @@ const styles = StyleSheet.create({
     marginTop: 20,
     color: '#fff',
   },
+  subtitle: {
+    fontSize: 18,
+    fontStyle: 'italic',
+    marginBottom: 12,
+    marginTop: -10,
+    color: '#ccc',
+  },
   title: {
     fontSize: 22,
     fontWeight: 'bold',
-    marginBottom: 10,
+    marginBottom: 12,
     color: '#fff',
   },
   releaseDate: {
-    fontSize: 16,
+    fontSize: 14,
     color: '#ccc',
-    marginBottom: 10,
+    marginBottom: 5,
   },
   overview: {
     fontSize: 16,
