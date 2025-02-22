@@ -3219,7 +3219,7 @@
     "movies": [
       {
         "title": "The Sea",
-        "tmdb_id": 561320,
+        "tmdb_id": 233646,
         "imdb_id": "tt0023443"
       }
     ],
@@ -30909,7 +30909,7 @@
     "movies": [
       {
         "title": "The Stairs",
-        "tmdb_id": 1110185,
+        "tmdb_id": 242971,
         "imdb_id": "tt0042996"
       }
     ],
@@ -44604,7 +44604,7 @@
     "movies": [
       {
         "title": "The Bridge",
-        "tmdb_id": 683451,
+        "tmdb_id": 1566,
         "imdb_id": "tt0052654"
       }
     ],
@@ -54337,7 +54337,7 @@
     "movies": [
       {
         "title": "Snow",
-        "tmdb_id": 995290,
+        "tmdb_id": 243278,
         "imdb_id": "tt0059731"
       }
     ],
@@ -54350,7 +54350,7 @@
     "movies": [
       {
         "title": "Timepiece",
-        "tmdb_id": 655925,
+        "tmdb_id": 48441,
         "imdb_id": "tt0059807"
       }
     ],
@@ -58913,7 +58913,7 @@
     "movies": [
       {
         "title": "Duo",
-        "tmdb_id": 981902,
+        "tmdb_id": 129303,
         "imdb_id": "tt0063417"
       }
     ],
@@ -66886,7 +66886,7 @@
     "movies": [
       {
         "title": "Hunger",
-        "tmdb_id": 1110862,
+        "tmdb_id": 129067,
         "imdb_id": "tt0071636"
       }
     ],
@@ -83201,7 +83201,7 @@
     "movies": [
       {
         "title": "That's Life",
-        "tmdb_id": 1161288,
+        "tmdb_id": 52961,
         "imdb_id": "tt0092079"
       }
     ],
@@ -93092,12 +93092,12 @@
   {
     "category": "Best Animated Short",
     "year": "1993",
-    "nominees": ["George Wallace: One Night Stand"],
+    "nominees": ["The Wrong Trousers"],
     "movies": [
       {
-        "title": "George Wallace: One Night Stand",
-        "tmdb_id": 847456,
-        "imdb_id": null
+        "title": "The Wrong Trousers",
+        "tmdb_id": 531,
+        "imdb_id": "tt0108598"
       }
     ],
     "won": true
@@ -99125,7 +99125,7 @@
     "movies": [
       {
         "title": "Rusalka (1909)",
-        "tmdb_id": 1262731,
+        "tmdb_id": 168478,
         "imdb_id": "tt0130860"
       }
     ],
@@ -100436,7 +100436,7 @@
     "movies": [
       {
         "title": "Tango",
-        "tmdb_id": 919317,
+        "tmdb_id": 65749,
         "imdb_id": "tt0120274"
       }
     ],
@@ -106072,7 +106072,7 @@
     "movies": [
       {
         "title": "HERO",
-        "tmdb_id": 782713,
+        "tmdb_id": 79,
         "imdb_id": "tt0299977"
       }
     ],
@@ -107530,7 +107530,7 @@
     "movies": [
       {
         "title": "Evil",
-        "tmdb_id": 574492,
+        "tmdb_id": 11197,
         "imdb_id": "tt0338309"
       }
     ],
@@ -134410,7 +134410,7 @@
     "movies": [
       {
         "title": "The Present",
-        "tmdb_id": 708049,
+        "tmdb_id": 678801,
         "imdb_id": "tt11474480"
       }
     ],
