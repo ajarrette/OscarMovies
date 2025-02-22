@@ -19,12 +19,13 @@ export default function MovieList({ movies }: Props) {
     <View>
       <ScrollView style={{ paddingTop: headerHeight }}>
         {movies?.map((movie) => (
-          <Pressable onPress={() => onShowDetails(movie.id)}>
+          <Pressable key={movie.id} onPress={() => onShowDetails(movie.id)}>
             <View key={movie.id} style={styles.movie}>
               <MoviePoster
                 selectedImage={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
                 width={60}
                 height={90}
+                onPress={() => onShowDetails(movie.id)}
               />
               <View style={styles.details}>
                 <Text style={styles.title}>{movie.title} </Text>

@@ -22,7 +22,7 @@ export default function LoadMovies() {
   return (
     <>
       {loading ? (
-        <ActivityIndicator size='large' color='#fff' />
+        <></>
       ) : movies ? (
         <MovieList movies={movies} />
       ) : (

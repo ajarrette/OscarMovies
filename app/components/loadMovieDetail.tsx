@@ -38,7 +38,7 @@ export default function LoadMovieDetail({ id }: Props) {
   return (
     <>
       {loading ? (
-        <ActivityIndicator size='large' color='#fff' />
+        <></>
       ) : movie ? (
         <MovieDetail movie={movie} />
       ) : (
