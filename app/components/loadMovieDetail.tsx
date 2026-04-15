@@ -7,7 +7,7 @@ import {
   Text,
   View,
 } from 'react-native';
-import { Movie } from '../types/movie';
+import Movie from '../types/movie';
 import MovieDetail from './movieDetail';
 
 type Props = {
@@ -23,7 +23,7 @@ export default function LoadMovieDetail({ id }: Props) {
     const loadMovie = async () => {
       const foundMovie = await db.getFirstAsync<Movie | null>(
         'SELECT * FROM movies WHERE id = ?',
-        [id]
+        [id],
       );
       setMovie(foundMovie);
       setLoading(false);
