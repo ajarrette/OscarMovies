@@ -2,6 +2,7 @@ import { Tabs } from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
 import { StyleSheet, View } from 'react-native';
 import LoadMovies from '../components/loadMovies';
+import { Colors } from '@/constants/Colors';
 
 export default function Search() {
   return (
@@ -23,6 +24,6 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
   },
 });

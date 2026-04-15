@@ -6,6 +6,7 @@ import {
   Text,
   View,
 } from 'react-native';
+import { Colors } from '@/constants/Colors';
 
 type Movie = {
   id: number;
@@ -67,7 +68,7 @@ export default function Search() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',

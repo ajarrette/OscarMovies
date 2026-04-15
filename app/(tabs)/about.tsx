@@ -1,6 +1,7 @@
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { Stack, useRouter } from 'expo-router';
 import { Dimensions, StyleSheet, Text, View } from 'react-native';
+import { Colors } from '@/constants/Colors';
 import Animated, {
   interpolate,
   useAnimatedRef,
@@ -75,7 +76,7 @@ export default function AboutScreen() {
           }}
           style={[styles.image, imageAnimatedStyle]}
         />
-        <View style={{ height: 2000, backgroundColor: '#25292e' }}>
+        <View style={{ height: 2000, backgroundColor: Colors.background }}>
           <Text
             style={{
               fontSize: 20,
@@ -101,14 +102,14 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
   },
   image: {
     width: width,
     height: IMG_HEIGHT,
   },
   header: {
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
     height: 100,
     // borderWidth: StyleSheet.hairlineWidth,
   },

@@ -10,6 +10,7 @@ import { useRouter } from 'expo-router';
 
 import MoviePoster from '../../components/moviePoster';
 import ImageSizing from '../../services/imageSizing';
+import { Colors } from '@/constants/Colors';
 
 type imageSize = {
   width: number;
@@ -127,7 +128,7 @@ export default function Index() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',

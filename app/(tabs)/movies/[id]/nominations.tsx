@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { StyleSheet, Text, View } from 'react-native';
+import { Colors } from '@/constants/Colors';
 
 export default function Nominations() {
   return (
@@ -15,7 +16,7 @@ export default function Nominations() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
     flex: 1,
     justifyContent: 'center',
     alignItems: 'center',

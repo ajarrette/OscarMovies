@@ -2,6 +2,7 @@ import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { Stack, useRouter } from 'expo-router';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Colors } from '@/constants/Colors';
 import Animated, {
   interpolate,
   useAnimatedRef,
@@ -91,7 +92,7 @@ export default function MovieDetail({ movie }: Props) {
             }}
           />
         </View>
-        <View style={{ backgroundColor: '#25292e' }}>
+        <View style={{ backgroundColor: Colors.background }}>
           <View style={styles.detailsContainer}>
             <View style={styles.topRow}>
               <View style={{ flex: 1 }}>
@@ -146,7 +147,7 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
     color: '#ccc',
   },
   defaultText: {
@@ -217,7 +218,7 @@ const styles = StyleSheet.create({
     height: IMG_HEIGHT,
   },
   header: {
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
     height: 100,
     // borderWidth: StyleSheet.hairlineWidth,
   },

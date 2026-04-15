@@ -2,6 +2,7 @@ import LoadMovieDetail from '@/app/components/loadMovieDetail';
 import { useLocalSearchParams } from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
 import { StyleSheet, View } from 'react-native';
+import { Colors } from '@/constants/Colors';
 
 export default function Movie() {
   const { id } = useLocalSearchParams();
@@ -24,7 +25,7 @@ export default function Movie() {
 
 const styles = StyleSheet.create({
   container: {
-    backgroundColor: '#25292e',
+    backgroundColor: Colors.background,
     flex: 1,
     justifyContent: 'flex-start',
     alignItems: 'flex-start',
