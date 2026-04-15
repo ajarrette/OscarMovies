@@ -8,7 +8,7 @@ import Animated, {
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
-import { Movie } from '../types/movie';
+import Movie from '../types/movie';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
 
@@ -42,14 +42,14 @@ export default function MovieDetail({ movie }: Props) {
           translateY: interpolate(
             scrollOffset.value,
             [-IMG_HEIGHT, 0, IMG_HEIGHT],
-            [-IMG_HEIGHT / 2, 0, IMG_HEIGHT * 0.75]
+            [-IMG_HEIGHT / 2, 0, IMG_HEIGHT * 0.75],
           ),
         },
         {
           scale: interpolate(
             scrollOffset.value,
             [-IMG_HEIGHT, 0, IMG_HEIGHT],
-            [2, 1, 1]
+            [2, 1, 1],
           ),
         },
       ],

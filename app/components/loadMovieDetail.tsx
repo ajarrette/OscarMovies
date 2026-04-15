@@ -1,12 +1,6 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import {
-  ActivityIndicator,
-  Button,
-  StyleSheet,
-  Text,
-  View,
-} from 'react-native';
+import { Button, StyleSheet, Text, View } from 'react-native';
 import Movie from '../types/movie';
 import MovieDetail from './movieDetail';
 
