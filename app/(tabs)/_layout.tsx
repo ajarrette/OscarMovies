@@ -31,6 +31,19 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
+        name='films'
+        options={{
+          title: 'Films',
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'film' : 'film-outline'}
+              color={color}
+              size={24}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
         name='test'
         options={{
           title: 'Test',
