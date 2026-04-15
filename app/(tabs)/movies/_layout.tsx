@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import { View } from 'react-native';
 
 export default function StackLayout() {
   return (
@@ -12,10 +13,14 @@ export default function StackLayout() {
       <Stack.Screen
         name='index'
         options={{
+          headerBackground: () => (
+            <View style={{ flex: 1, backgroundColor: '#25292e' }} />
+          ),
           headerTitle: '2025',
           headerShown: true,
         }}
       />
+
       <Stack.Screen
         name='[id]'
         options={{
