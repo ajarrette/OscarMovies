@@ -1,8 +1,13 @@
-import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
-import MoviePoster from './moviePoster';
 import { router } from 'expo-router';
-import { useWindowDimensions } from 'react-native';
+import {
+  FlatList,
+  StyleSheet,
+  Text,
+  useWindowDimensions,
+  View,
+} from 'react-native';
 import ImageSizing from '../services/imageSizing';
+import MoviePoster from './moviePoster';
 
 type CategoryMovie = {
   id: number;
@@ -43,39 +48,39 @@ export default function FilmsList({ categories }: Props) {
       renderItem={({ item }) => (
         <View style={styles.section}>
           <Text style={styles.categoryTitle}>{item.categoryName}</Text>
-          {item.movies.map((movie, index) => (
-            <View
-              key={`${item.categoryId}-${movie.id}-${index}`}
-              style={styles.movieRow}
-            >
-              {movie.isWinner && (
-                <Image
-                  source={require('../../assets/images/winner.png')}
-                  style={styles.winnerIcon}
-                />
-              )}
-              {movie.posterPath ? (
-                <MoviePoster
-                  selectedImage={`https://image.tmdb.org/t/p/w300${movie.posterPath}`}
-                  width={posterWidth}
-                  height={posterHeight}
-                  onPress={() => onShowDetails(movie.id)}
-                />
-              ) : (
-                <Text style={styles.movieTitle}>
-                  {item.isSongFirstCategory && movie.songTitle
-                    ? movie.peopleNames
-                      ? `${movie.songTitle} - ${movie.title} - ${movie.peopleNames}`
-                      : `${movie.songTitle} - ${movie.title}`
-                    : item.isPersonFirstCategory && movie.peopleNames
-                      ? `${movie.peopleNames} - ${movie.title}`
-                      : movie.peopleNames
-                        ? `${movie.title} - ${movie.peopleNames}`
-                        : movie.title}
-                </Text>
-              )}
-            </View>
-          ))}
+          <View style={styles.movieList}>
+            {item.movies.map((movie, index) => (
+              <View key={`${item.categoryId}-${movie.id}-${index}`}>
+                {movie.posterPath ? (
+                  <View
+                    style={[
+                      styles.posterContainer,
+                      movie.isWinner && styles.winnerPoster,
+                    ]}
+                  >
+                    <MoviePoster
+                      selectedImage={`https://image.tmdb.org/t/p/w300${movie.posterPath}`}
+                      width={movie.isWinner ? posterWidth - 8 : posterWidth}
+                      height={movie.isWinner ? posterHeight - 8 : posterHeight}
+                      onPress={() => onShowDetails(movie.id)}
+                    />
+                  </View>
+                ) : (
+                  <Text style={styles.movieTitle}>
+                    {item.isSongFirstCategory && movie.songTitle
+                      ? movie.peopleNames
+                        ? `${movie.songTitle} - ${movie.title} - ${movie.peopleNames}`
+                        : `${movie.songTitle} - ${movie.title}`
+                      : item.isPersonFirstCategory && movie.peopleNames
+                        ? `${movie.peopleNames} - ${movie.title}`
+                        : movie.peopleNames
+                          ? `${movie.title} - ${movie.peopleNames}`
+                          : movie.title}
+                  </Text>
+                )}
+              </View>
+            ))}
+          </View>
         </View>
       )}
     />
@@ -95,9 +100,32 @@ const styles = StyleSheet.create({
     marginBottom: 12,
   },
   categoryTitle: {
-    color: '#ffd33d',
+    color: '#fff',
     fontSize: 16,
     fontWeight: '700',
+    marginBottom: 8,
+  },
+  movieList: {
+    width: '100%',
+    flexWrap: 'wrap',
+    flexDirection: 'row',
+    justifyContent: 'flex-start',
+    gap: 8,
+  },
+  posterContainer: {
+    position: 'relative',
+    marginBottom: 8,
+    borderRadius: 5,
+  },
+  winnerPoster: {
+    borderWidth: 4,
+    borderColor: '#ffd33d',
+  },
+  movieTitle: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '500',
+    maxWidth: 180,
     marginBottom: 8,
   },
   movieRow: {
@@ -105,14 +133,5 @@ const styles = StyleSheet.create({
     alignItems: 'center',
     gap: 8,
     paddingVertical: 12,
-  },
-  winnerIcon: {
-    width: 16,
-    height: 16,
-  },
-  movieTitle: {
-    color: '#fff',
-    fontSize: 15,
-    fontWeight: '500',
   },
 });
