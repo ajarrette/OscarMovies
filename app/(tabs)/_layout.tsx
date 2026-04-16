@@ -17,20 +17,6 @@ export default function TabLayout() {
       }}
     >
       <Tabs.Screen
-        name='movies'
-        options={{
-          title: 'Movies',
-          headerShown: false,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? 'home-sharp' : 'home-outline'}
-              color={color}
-              size={24}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name='films'
         options={{
           title: 'Films',

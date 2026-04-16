@@ -1,22 +1,11 @@
 import { Tabs } from 'expo-router';
-import { SQLiteProvider } from 'expo-sqlite';
-import { StyleSheet, View } from 'react-native';
-import LoadMovies from '../components/loadMovies';
+import { StyleSheet, Text, View } from 'react-native';
 
 export default function Search() {
   return (
     <View style={styles.container}>
       <Tabs.Screen options={{}} />
-      <SQLiteProvider
-        databaseName='movies.db'
-        assetSource={{
-          assetId: require('@/assets/data/movies.db'),
-          forceOverwrite: true,
-        }}
-        options={{ useNewConnection: true }}
-      >
-        <LoadMovies />
-      </SQLiteProvider>
+      <Text style={styles.placeholder}>Search coming soon.</Text>
     </View>
   );
 }
@@ -24,5 +13,11 @@ export default function Search() {
 const styles = StyleSheet.create({
   container: {
     backgroundColor: '#25292e',
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
+  },
+  placeholder: {
+    color: '#fff',
   },
 });
