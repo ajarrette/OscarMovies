@@ -13,6 +13,7 @@
     "seed": "node ./assets/data/db-seed.js",
     "enrich": "node ./assets/data/enrich-data.js",
     "enrich-people": "node ./assets/data/enrich-people.js",
+    "enrich-cast-people": "node ./assets/data/enrich-cast-people.js",
     "import-popular-movies": "node ./assets/data/import-popular-movies.js",
     "import-popular-people": "node ./assets/data/import-popular-people.js",
     "import-movie-cast": "node ./assets/data/import-movie-cast.js"
