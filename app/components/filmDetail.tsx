@@ -9,18 +9,31 @@ import Animated, {
   useScrollViewOffset,
 } from 'react-native-reanimated';
 import Film from '@/types/film';
+import type { FilmCastPerson } from './loadFilmDetail';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
 
 type Props = {
   film: Film;
   directorPersonId?: number | null;
+  castPeople?: FilmCastPerson[];
 };
 
 const { width } = Dimensions.get('window');
 const IMG_HEIGHT = 300;
+const CAST_ITEM_GAP = 12;
+const CAST_VISIBLE_COUNT = 3;
+const CAST_LIST_WIDTH = width - 40;
+const CAST_ITEM_WIDTH =
+  (CAST_LIST_WIDTH - CAST_ITEM_GAP * (CAST_VISIBLE_COUNT - 1)) /
+  CAST_VISIBLE_COUNT;
+const CAST_AVATAR_SIZE = 82;
 
-export default function FilmDetail({ film, directorPersonId = null }: Props) {
+export default function FilmDetail({
+  film,
+  directorPersonId = null,
+  castPeople = [],
+}: Props) {
   const router = useRouter();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
@@ -70,6 +83,10 @@ export default function FilmDetail({ film, directorPersonId = null }: Props) {
     }
 
     router.push(`/people/${directorPersonId}`);
+  };
+
+  const onShowCastPerson = (personId: number) => {
+    router.push(`/people/${personId}`);
   };
 
   const imageAnimatedStyle = useAnimatedStyle(() => {
@@ -166,6 +183,47 @@ export default function FilmDetail({ film, directorPersonId = null }: Props) {
                 />
               </View>
             </View>
+            {castPeople.length > 0 && (
+              <View style={styles.castSection}>
+                <Animated.ScrollView
+                  horizontal
+                  showsHorizontalScrollIndicator={false}
+                  contentContainerStyle={styles.castListContent}
+                >
+                  {castPeople.map((person) => {
+                    const castProfileUri = person.profile_path
+                      ? `https://image.tmdb.org/t/p/w185${person.profile_path}`
+                      : undefined;
+
+                    return (
+                      <View key={person.id} style={styles.castItem}>
+                        {castProfileUri ? (
+                          <MoviePoster
+                            selectedImage={castProfileUri}
+                            width={CAST_AVATAR_SIZE}
+                            height={CAST_AVATAR_SIZE}
+                            isCircle={true}
+                            onPress={() => onShowCastPerson(person.id)}
+                          />
+                        ) : (
+                          <Pressable
+                            style={styles.castFallbackAvatar}
+                            onPress={() => onShowCastPerson(person.id)}
+                          >
+                            <Text style={styles.castFallbackText}>?</Text>
+                          </Pressable>
+                        )}
+                        <Pressable onPress={() => onShowCastPerson(person.id)}>
+                          <Text style={styles.castName} numberOfLines={1}>
+                            {person.name}
+                          </Text>
+                        </Pressable>
+                      </View>
+                    );
+                  })}
+                </Animated.ScrollView>
+              </View>
+            )}
             {upperTagline && <Text style={styles.tagline}>{upperTagline}</Text>}
             <Text style={styles.overview}>{overview}</Text>
           </View>
@@ -190,6 +248,36 @@ const styles = StyleSheet.create({
     flex: 1,
     backgroundColor: '#25292e',
     color: '#ccc',
+  },
+  castFallbackAvatar: {
+    width: CAST_AVATAR_SIZE,
+    height: CAST_AVATAR_SIZE,
+    borderRadius: CAST_AVATAR_SIZE / 2,
+    backgroundColor: '#1f2226',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  castFallbackText: {
+    color: '#9ea4ac',
+    fontSize: 22,
+    fontWeight: '700',
+  },
+  castItem: {
+    width: CAST_ITEM_WIDTH,
+    alignItems: 'center',
+  },
+  castListContent: {
+    gap: CAST_ITEM_GAP,
+  },
+  castName: {
+    marginTop: 8,
+    color: '#ccc',
+    fontSize: 13,
+    textAlign: 'center',
+    width: '100%',
+  },
+  castSection: {
+    marginTop: 18,
   },
   defaultText: {
     color: '#ccc',
