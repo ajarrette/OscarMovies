@@ -55,6 +55,35 @@ function isSongCategory(categoryName: string) {
   return /song/i.test(categoryName);
 }
 
+const CATEGORY_PRIORITY: Record<string, number> = {
+  'best picture': 0,
+  'best director': 1,
+  'best actor': 2,
+  'best actress': 3,
+  'best original screenplay': 4,
+  'best adapted screenplay': 5,
+  'best international feature film': 6,
+  'best supporting actor': 7,
+  'best supporting actress': 8,
+};
+
+function getCategoryPriority(categoryName: string): number | null {
+  const normalized = categoryName.trim().toLowerCase();
+  return CATEGORY_PRIORITY[normalized] ?? null;
+}
+
+function isShortRelatedCategory(categoryName: string): boolean {
+  return /short/i.test(categoryName);
+}
+
+function getPrimaryMovieTitle(group: CategoryGroup): string {
+  if (group.movies.length === 0) {
+    return '';
+  }
+
+  return group.movies[0].title;
+}
+
 function FilmsContent() {
   const db = useSQLiteContext();
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
@@ -255,6 +284,44 @@ function FilmsContent() {
         });
 
         const groups = Array.from(groupedByCategory.values());
+
+        groups.forEach((group) => {
+          group.movies.sort((a, b) => a.title.localeCompare(b.title));
+        });
+
+        groups.sort((a, b) => {
+          const aPriority = getCategoryPriority(a.categoryName);
+          const bPriority = getCategoryPriority(b.categoryName);
+
+          if (aPriority !== null && bPriority !== null) {
+            return aPriority - bPriority;
+          }
+
+          if (aPriority !== null) {
+            return -1;
+          }
+
+          if (bPriority !== null) {
+            return 1;
+          }
+
+          const aIsShort = isShortRelatedCategory(a.categoryName);
+          const bIsShort = isShortRelatedCategory(b.categoryName);
+
+          if (aIsShort !== bIsShort) {
+            return aIsShort ? 1 : -1;
+          }
+
+          const titleCompare = getPrimaryMovieTitle(a).localeCompare(
+            getPrimaryMovieTitle(b),
+          );
+          if (titleCompare !== 0) {
+            return titleCompare;
+          }
+
+          return a.categoryName.localeCompare(b.categoryName);
+        });
+
         setCategoryGroups(groups);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load films');
