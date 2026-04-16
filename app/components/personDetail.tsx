@@ -3,7 +3,7 @@ import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
 import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect } from 'react';
-import { Pressable, StyleSheet, Text, View } from 'react-native';
+import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   Extrapolation,
   interpolate,
@@ -11,12 +11,23 @@ import Animated, {
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
+import type { PersonMovie } from './loadPersonDetail';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
 
 type Props = {
   person: Person;
+  movies?: PersonMovie[];
 };
+
+const { width } = Dimensions.get('window');
+const MOVIE_ITEM_GAP = 12;
+const MOVIE_VISIBLE_COUNT = 3;
+const MOVIE_LIST_WIDTH = width - 40;
+const MOVIE_ITEM_WIDTH =
+  (MOVIE_LIST_WIDTH - MOVIE_ITEM_GAP * (MOVIE_VISIBLE_COUNT - 1)) /
+  MOVIE_VISIBLE_COUNT;
+const MOVIE_POSTER_HEIGHT = Math.round((MOVIE_ITEM_WIDTH * 3) / 2);
 
 function getYear(value: string | null) {
   if (!value) {
@@ -56,7 +67,7 @@ function getAge(birthday: string | null, deathday: string | null) {
   return age >= 0 ? age : null;
 }
 
-export default function PersonDetail({ person }: Props) {
+export default function PersonDetail({ person, movies = [] }: Props) {
   const navigation = useNavigation();
   const router = useRouter();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -95,6 +106,10 @@ export default function PersonDetail({ person }: Props) {
 
   const onShowNominations = () => {
     router.push(`/people/${person.id}/nominations`);
+  };
+
+  const onShowMovie = (movieId: number) => {
+    router.push(`/films/${movieId}`);
   };
 
   const headerBackgroundAnimatedStyle = useAnimatedStyle(() => {
@@ -236,6 +251,44 @@ export default function PersonDetail({ person }: Props) {
             onPress={onShowNominations}
           />
 
+          {movies.length > 0 && (
+            <View style={styles.moviesSection}>
+              <Animated.ScrollView
+                horizontal
+                showsHorizontalScrollIndicator={false}
+                contentContainerStyle={styles.movieListContent}
+              >
+                {movies.map((movie) => {
+                  const posterUri = movie.poster_path
+                    ? `https://image.tmdb.org/t/p/w300${movie.poster_path}`
+                    : undefined;
+
+                  return (
+                    <View key={movie.id} style={styles.movieItem}>
+                      {posterUri ? (
+                        <MoviePoster
+                          selectedImage={posterUri}
+                          width={MOVIE_ITEM_WIDTH}
+                          height={MOVIE_POSTER_HEIGHT}
+                          onPress={() => onShowMovie(movie.id)}
+                        />
+                      ) : (
+                        <Pressable
+                          style={styles.movieFallbackPoster}
+                          onPress={() => onShowMovie(movie.id)}
+                        >
+                          <Text style={styles.movieFallbackText}>
+                            NO POSTER
+                          </Text>
+                        </Pressable>
+                      )}
+                    </View>
+                  );
+                })}
+              </Animated.ScrollView>
+            </View>
+          )}
+
           {biography && (
             <View style={styles.section}>
               <Text style={styles.sectionTitle}>Biography</Text>
@@ -329,6 +382,35 @@ const styles = StyleSheet.create({
     fontSize: 12,
     color: '#888',
     marginTop: 8,
+  },
+  movieFallbackPoster: {
+    width: MOVIE_ITEM_WIDTH,
+    height: MOVIE_POSTER_HEIGHT,
+    borderRadius: 5,
+    backgroundColor: '#1f2226',
+    alignItems: 'center',
+    justifyContent: 'center',
+    paddingHorizontal: 8,
+  },
+  movieFallbackText: {
+    color: '#9ea4ac',
+    fontSize: 11,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+  },
+  movieItem: {
+    width: MOVIE_ITEM_WIDTH,
+  },
+  movieListContent: {
+    gap: MOVIE_ITEM_GAP,
+  },
+  movieTitle: {
+    marginTop: 8,
+    color: '#ccc',
+    fontSize: 13,
+  },
+  moviesSection: {
+    marginTop: 18,
   },
   profileImageFallback: {
     width: 130,

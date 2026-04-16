@@ -8,10 +8,18 @@ type Props = {
   id: number;
 };
 
+export type PersonMovie = {
+  id: number;
+  title: string;
+  poster_path: string | null;
+  popularity: number | null;
+};
+
 export default function LoadPersonDetail({ id }: Props) {
   const db = useSQLiteContext();
   const [loading, setLoading] = useState(true);
   const [person, setPerson] = useState<Person | null>(null);
+  const [movies, setMovies] = useState<PersonMovie[]>([]);
 
   useEffect(() => {
     const loadPerson = async () => {
@@ -45,7 +53,27 @@ export default function LoadPersonDetail({ id }: Props) {
         [id],
       );
 
+      let foundMovies: PersonMovie[] = [];
+
+      try {
+        foundMovies = await db.getAllAsync<PersonMovie>(
+          `SELECT DISTINCT m.id,
+                  m.title,
+                  m.poster_path,
+                  m.popularity
+           FROM movie_cast mc
+           INNER JOIN movies m ON m.id = mc.movie_id
+           WHERE mc.person_id = ?
+           ORDER BY COALESCE(m.popularity, 0) DESC,
+                    m.title ASC`,
+          [id],
+        );
+      } catch (error) {
+        console.error('Error loading movies from movie_cast:', error);
+      }
+
       setPerson(foundPerson);
+      setMovies(foundMovies);
       setLoading(false);
     };
 
@@ -61,7 +89,7 @@ export default function LoadPersonDetail({ id }: Props) {
       {loading ? (
         <></>
       ) : person ? (
-        <PersonDetail person={person} />
+        <PersonDetail person={person} movies={movies} />
       ) : (
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}
