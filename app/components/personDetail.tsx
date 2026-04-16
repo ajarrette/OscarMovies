@@ -1,24 +1,22 @@
-import { LinearGradient } from 'expo-linear-gradient';
-import * as Linking from 'expo-linking';
+import Person from '@/types/person';
 import Ionicons from '@expo/vector-icons/Ionicons';
-import { Stack, useRouter } from 'expo-router';
-import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import * as Linking from 'expo-linking';
+import { useNavigation, useRouter } from 'expo-router';
+import { useLayoutEffect } from 'react';
+import { Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
+  Extrapolation,
   interpolate,
   useAnimatedRef,
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
-import Person from '@/types/person';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
 
 type Props = {
   person: Person;
 };
-
-const { width } = Dimensions.get('window');
-const IMG_HEIGHT = 300;
 
 function getYear(value: string | null) {
   if (!value) {
@@ -59,6 +57,7 @@ function getAge(birthday: string | null, deathday: string | null) {
 }
 
 export default function PersonDetail({ person }: Props) {
+  const navigation = useNavigation();
   const router = useRouter();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
@@ -70,7 +69,6 @@ export default function PersonDetail({ person }: Props) {
   const ageText = age === null ? 'AGE UNKNOWN' : `AGE ${age}`;
   const birthYear = getYear(person.birthday);
   const deathYear = getYear(person.deathday);
-  const subtitle = null;
   const metaParts = [
     birthYear === null ? null : `Born ${birthYear}`,
     deathYear === null ? null : `Died ${deathYear}`,
@@ -99,108 +97,162 @@ export default function PersonDetail({ person }: Props) {
     router.push(`/people/${person.id}/nominations`);
   };
 
-  const imageAnimatedStyle = useAnimatedStyle(() => {
+  const headerBackgroundAnimatedStyle = useAnimatedStyle(() => {
     return {
+      opacity: interpolate(
+        scrollOffset.value,
+        [0, 90],
+        [0, 1],
+        Extrapolation.CLAMP,
+      ),
+    };
+  });
+
+  const headerTitleAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        scrollOffset.value,
+        [30, 110],
+        [0, 1],
+        Extrapolation.CLAMP,
+      ),
       transform: [
         {
           translateY: interpolate(
             scrollOffset.value,
-            [-IMG_HEIGHT, 0, IMG_HEIGHT],
-            [-IMG_HEIGHT / 2, 0, IMG_HEIGHT * 0.75],
-          ),
-        },
-        {
-          scale: interpolate(
-            scrollOffset.value,
-            [-IMG_HEIGHT, 0, IMG_HEIGHT],
-            [2, 1, 1],
+            [30, 110],
+            [8, 0],
+            Extrapolation.CLAMP,
           ),
         },
       ],
     };
   });
 
-  const headerAnimatedStyle = useAnimatedStyle(() => {
+  const contentTitleAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: interpolate(scrollOffset.value, [0, IMG_HEIGHT / 1.5], [0, 1]),
+      opacity: interpolate(
+        scrollOffset.value,
+        [0, 70],
+        [1, 0],
+        Extrapolation.CLAMP,
+      ),
+      transform: [
+        {
+          translateY: interpolate(
+            scrollOffset.value,
+            [0, 70],
+            [0, -6],
+            Extrapolation.CLAMP,
+          ),
+        },
+      ],
     };
   });
 
+  useLayoutEffect(() => {
+    navigation.setOptions({
+      headerShown: true,
+      headerTransparent: true,
+      headerShadowVisible: false,
+      headerTintColor: '#fff',
+      headerTitle: () => (
+        <Animated.Text style={[styles.headerTitle, headerTitleAnimatedStyle]}>
+          {name}
+        </Animated.Text>
+      ),
+      headerBackground: () => (
+        <Animated.View
+          style={[styles.headerBackground, headerBackgroundAnimatedStyle]}
+        />
+      ),
+      headerLeft: () => (
+        <Pressable onPress={() => router.back()} hitSlop={8}>
+          <Ionicons name='chevron-back' size={28} color='#fff' />
+        </Pressable>
+      ),
+    });
+  }, [
+    navigation,
+    name,
+    headerTitleAnimatedStyle,
+    headerBackgroundAnimatedStyle,
+    router,
+  ]);
+
   return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          headerTransparent: true,
-          headerShown: true,
-          headerLeft: () => (
-            <Pressable onPress={() => router.back()} style={styles.backButton}>
-              <Ionicons name='chevron-back' size={28} color='#fff' />
-            </Pressable>
-          ),
-          headerBackground: () => (
-            <Animated.View style={[styles.header, headerAnimatedStyle]} />
-          ),
-        }}
-      />
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-        <View>
-          {profileUri ? (
-            <Animated.Image
-              source={{ uri: profileUri }}
-              style={[styles.image, imageAnimatedStyle]}
-            />
-          ) : (
-            <View style={styles.imageFallback} />
-          )}
-          <LinearGradient
-            colors={['transparent', 'rgba(37, 41, 46, 1)']}
-            locations={[0.6, 1]}
-            style={styles.imageOverlay}
-          />
-        </View>
-        <View style={styles.surface}>
-          <View style={styles.detailsContainer}>
-            <View style={styles.topRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{name}</Text>
-                {subtitle && <Text style={styles.subtitle}>{subtitle}</Text>}
-                <Text style={styles.releaseDate}>{ageText} • KNOWN FOR</Text>
-                <Text style={styles.director}>{knownForDepartment}</Text>
-                {person.imdb_id && (
-                  <View style={styles.row}>
-                    <Pressable onPress={onImdbPress}>
-                      <Text style={styles.button}>IMDB</Text>
-                    </Pressable>
-                  </View>
-                )}
-                <NomineeStrip
-                  nominations={person.nominations}
-                  wins={person.wins}
-                  onPress={onShowNominations}
-                />
-              </View>
-              <View>
-                <MoviePoster
-                  selectedImage={profileUri}
-                  width={120}
-                  height={120}
-                  isCircle={true}
-                />
-              </View>
-            </View>
-            {metaText && <Text style={styles.tagline}>{metaText}</Text>}
-            <Text style={styles.overview}>{biography}</Text>
+    <Animated.ScrollView
+      ref={scrollRef}
+      style={styles.scrollView}
+      contentInsetAdjustmentBehavior='automatic'
+      automaticallyAdjustsScrollIndicatorInsets={true}
+      scrollEventThrottle={16}
+    >
+      <View style={styles.content}>
+        <Animated.Text
+          style={[styles.name, styles.nameTop, contentTitleAnimatedStyle]}
+        >
+          {name}
+        </Animated.Text>
+        <View style={styles.profileSection}>
+          <View>
+            {profileUri ? (
+              <MoviePoster
+                selectedImage={profileUri}
+                width={100}
+                height={100}
+                isCircle={true}
+              />
+            ) : (
+              <View style={styles.profileImageFallback} />
+            )}
+          </View>
+          <View style={styles.headerInfo}>
+            <Text style={styles.subtitle}>{ageText}</Text>
+            <Text style={styles.department}>{knownForDepartment}</Text>
+            {metaText && <Text style={styles.meta}>{metaText}</Text>}
           </View>
         </View>
-      </Animated.ScrollView>
-    </View>
+
+        <View style={styles.detailsContainer}>
+          {person.imdb_id && (
+            <View style={styles.buttonRow}>
+              <Pressable
+                onPress={onImdbPress}
+                style={({ pressed }) => [
+                  styles.imdbButton,
+                  pressed && styles.imdbButtonPressed,
+                ]}
+              >
+                <Ionicons name='open' size={16} color='#fff' />
+                <Text style={styles.imdbButtonText}>VIEW ON IMDB</Text>
+              </Pressable>
+            </View>
+          )}
+
+          <NomineeStrip
+            nominations={person.nominations}
+            wins={person.wins}
+            onPress={onShowNominations}
+          />
+
+          {biography && (
+            <View style={styles.section}>
+              <Text style={styles.sectionTitle}>Biography</Text>
+              <Text style={styles.biography}>{biography}</Text>
+            </View>
+          )}
+        </View>
+      </View>
+    </Animated.ScrollView>
   );
 }
 
 const styles = StyleSheet.create({
-  backButton: {
-    paddingHorizontal: 4,
-    paddingVertical: 4,
+  biography: {
+    fontSize: 16,
+    lineHeight: 24,
+    color: '#ccc',
   },
   button: {
     borderRadius: 5,
@@ -212,86 +264,103 @@ const styles = StyleSheet.create({
     paddingRight: 5,
     color: '#ccc',
   },
-  container: {
-    flex: 1,
-    backgroundColor: '#25292e',
+  buttonRow: {
+    marginBottom: 24,
+  },
+  content: {
+    paddingBottom: 40,
+  },
+  department: {
+    fontSize: 16,
+    fontWeight: '600',
     color: '#ccc',
+    marginTop: 4,
   },
   detailsContainer: {
     paddingLeft: 20,
     paddingRight: 20,
+    marginTop: 20,
   },
-  director: {
-    fontSize: 18,
-    color: '#ccc',
+  headerInfo: {
+    flex: 1,
+    marginLeft: 16,
+  },
+  headerBackground: {
+    flex: 1,
+    backgroundColor: 'rgba(37, 41, 46, 0.92)',
+  },
+  headerTitle: {
+    color: '#fff',
+    fontSize: 17,
+    fontWeight: '600',
+  },
+  imdbButton: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: 8,
+    paddingVertical: 10,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    borderWidth: 1,
+    borderColor: '#666',
+    backgroundColor: 'rgba(255, 255, 255, 0.1)',
+  },
+  imdbButtonPressed: {
+    backgroundColor: 'rgba(255, 255, 255, 0.2)',
+  },
+  imdbButtonText: {
+    fontSize: 14,
+    fontWeight: '600',
+    color: '#fff',
+    letterSpacing: 0.5,
+  },
+  name: {
+    fontSize: 24,
     fontWeight: '700',
-    marginBottom: 10,
+    color: '#fff',
+    marginBottom: 6,
   },
-  header: {
-    backgroundColor: '#25292e',
+  nameTop: {
+    paddingHorizontal: 20,
+    paddingTop: 12,
+  },
+  meta: {
+    fontSize: 12,
+    color: '#888',
+    marginTop: 8,
+  },
+  profileImageFallback: {
+    width: 100,
     height: 100,
-  },
-  image: {
-    width: width,
-    height: IMG_HEIGHT,
-  },
-  imageFallback: {
-    width: width,
-    height: IMG_HEIGHT,
+    borderRadius: 50,
     backgroundColor: '#1f2226',
   },
-  imageOverlay: {
-    position: 'absolute',
-    width: '100%',
-    height: '100%',
-  },
-  overview: {
-    fontSize: 16,
-    lineHeight: 24,
-    marginBottom: 10,
-    color: '#ccc',
-  },
-  releaseDate: {
-    fontSize: 14,
-    color: '#ccc',
-    marginBottom: 5,
-  },
-  row: {
-    marginTop: 8,
-    display: 'flex',
+  profileSection: {
     flexDirection: 'row',
-    justifyContent: 'flex-start',
-    alignItems: 'center',
-    gap: 10,
+    alignItems: 'flex-start',
+    paddingHorizontal: 20,
+    paddingTop: 16,
+    paddingBottom: 16,
+    borderBottomWidth: 1,
+    borderBottomColor: '#333',
   },
-  subtitle: {
-    fontSize: 18,
-    fontStyle: 'italic',
-    marginBottom: 12,
-    marginTop: -10,
-    color: '#ccc',
-  },
-  surface: {
+  scrollView: {
+    flex: 1,
     backgroundColor: '#25292e',
   },
-  tagline: {
+  section: {
+    marginTop: 24,
+  },
+  sectionTitle: {
     fontSize: 18,
-    marginBottom: 5,
-    marginTop: 20,
+    fontWeight: '700',
     color: '#fff',
-  },
-  title: {
-    fontSize: 22,
-    fontWeight: 'bold',
     marginBottom: 12,
-    color: '#fff',
   },
-  topRow: {
-    marginTop: 8,
-    display: 'flex',
-    flexDirection: 'row',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    gap: 10,
+  subtitle: {
+    fontSize: 14,
+    color: '#888',
+    fontWeight: '500',
   },
 });

@@ -1,26 +1,13 @@
 import LoadPersonDetail from '../components/loadPersonDetail';
 import { useLocalSearchParams } from 'expo-router';
 import FilmsDbProvider from '../components/filmsDbProvider';
-import { StyleSheet, View } from 'react-native';
 
 export default function Person() {
   const { id } = useLocalSearchParams();
 
   return (
-    <View style={styles.container}>
-      <FilmsDbProvider>
-        <LoadPersonDetail id={+id} />
-      </FilmsDbProvider>
-    </View>
+    <FilmsDbProvider>
+      <LoadPersonDetail id={+id} />
+    </FilmsDbProvider>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    backgroundColor: '#25292e',
-    flex: 1,
-    justifyContent: 'flex-start',
-    alignItems: 'flex-start',
-    gap: 10,
-  },
-});

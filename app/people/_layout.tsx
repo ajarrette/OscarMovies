@@ -1,5 +1,4 @@
 import { Stack } from 'expo-router';
-import { View } from 'react-native';
 
 export default function PeopleLayout() {
   return (
@@ -18,9 +17,6 @@ export default function PeopleLayout() {
           headerTitle: '',
           headerBackButtonDisplayMode: 'minimal',
           headerShown: true,
-          headerBackground: () => (
-            <View style={{ flex: 1, backgroundColor: 'transparent' }} />
-          ),
         }}
       />
       <Stack.Screen
