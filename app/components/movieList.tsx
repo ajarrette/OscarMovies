@@ -1,6 +1,6 @@
 import { useHeaderHeight } from '@react-navigation/elements';
 import { Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
-import Movie from '../types/movie';
+import Movie from '@/types/movie';
 import MoviePoster from './moviePoster';
 import { router } from 'expo-router';
 

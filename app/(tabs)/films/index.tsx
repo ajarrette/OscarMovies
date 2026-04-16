@@ -1,9 +1,9 @@
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import type { CategoryGroup } from '../components/filmsList';
-import FilmsList from '../components/filmsList';
-import FilmsYearPicker from '../components/filmsYearPicker';
+import type { CategoryGroup } from '../../components/filmsList';
+import FilmsList from '../../components/filmsList';
+import FilmsYearPicker from '../../components/filmsYearPicker';
 
 const FILMS_DB_NAME = 'oscar-movies.db';
 

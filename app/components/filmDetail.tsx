@@ -8,23 +8,24 @@ import Animated, {
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
-import Movie from '@/types/movie';
+import Film from '@/types/film';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
 
 type Props = {
-  movie: Movie;
+  film: Film;
 };
+
 const { width } = Dimensions.get('window');
 const IMG_HEIGHT = 300;
 
-export default function MovieDetail({ movie }: Props) {
+export default function FilmDetail({ film }: Props) {
   const router = useRouter();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
 
   const onImdbPress = () => {
-    const url = `https://www.imdb.com/title/${movie.imdb_id}/`;
+    const url = `https://www.imdb.com/title/${film.imdb_id}/`;
     const handlePress = async () => {
       await Linking.openURL(url);
     };
@@ -32,7 +33,7 @@ export default function MovieDetail({ movie }: Props) {
   };
 
   const onShowNominations = () => {
-    router.push(`/movies/${movie.id}/nominations`);
+    router.push(`/films/${film.id}/nominations`);
   };
 
   const imageAnimatedStyle = useAnimatedStyle(() => {
@@ -77,7 +78,7 @@ export default function MovieDetail({ movie }: Props) {
         <View>
           <Animated.Image
             source={{
-              uri: `https://image.tmdb.org/t/p/w500${movie.backdrop_path}`,
+              uri: `https://image.tmdb.org/t/p/w500${film.backdrop_path}`,
             }}
             style={[styles.image, imageAnimatedStyle]}
           />
@@ -95,37 +96,36 @@ export default function MovieDetail({ movie }: Props) {
           <View style={styles.detailsContainer}>
             <View style={styles.topRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{movie.title}</Text>
-                {movie.title !== movie.original_title && (
-                  <Text style={styles.subtitle}>{movie.original_title}</Text>
+                <Text style={styles.title}>{film.title}</Text>
+                {film.title !== film.original_title && (
+                  <Text style={styles.subtitle}>{film.original_title}</Text>
                 )}
                 <Text style={styles.releaseDate}>
-                  {new Date(movie.release_date).getFullYear()} • DIRECTED BY
+                  {new Date(film.release_date).getFullYear()} • DIRECTED BY
                 </Text>
-                <Text style={styles.director}>{movie.director}</Text>
+                <Text style={styles.director}>{film.director}</Text>
                 <View style={styles.row}>
                   <Pressable onPress={onImdbPress}>
                     <Text style={styles.button}>IMDB</Text>
                   </Pressable>
-                  <Text style={styles.defaultText}>{movie.runtime} mins</Text>
+                  <Text style={styles.defaultText}>{film.runtime} mins</Text>
                 </View>
                 <NomineeStrip
-                  nominations={movie.nominations}
-                  wins={movie.wins}
+                  nominations={film.nominations}
+                  wins={film.wins}
                   onPress={onShowNominations}
                 />
               </View>
               <View>
                 <MoviePoster
-                  selectedImage={`https://image.tmdb.org/t/p/w300${movie.poster_path}`}
+                  selectedImage={`https://image.tmdb.org/t/p/w300${film.poster_path}`}
                   width={120}
                   height={180}
                 />
               </View>
             </View>
-            <Text style={styles.tagline}>{movie.tagline.toUpperCase()}</Text>
-            <Text style={styles.overview}>{movie.overview}</Text>
-            {/* <Text style={styles.rating}>Rating: {movie.vote_average}/10</Text> */}
+            <Text style={styles.tagline}>{film.tagline.toUpperCase()}</Text>
+            <Text style={styles.overview}>{film.overview}</Text>
           </View>
         </View>
       </Animated.ScrollView>
@@ -208,10 +208,6 @@ const styles = StyleSheet.create({
     marginBottom: 10,
     color: '#ccc',
   },
-  rating: {
-    fontSize: 16,
-    fontWeight: 'bold',
-  },
   image: {
     width: width,
     height: IMG_HEIGHT,
@@ -219,6 +215,5 @@ const styles = StyleSheet.create({
   header: {
     backgroundColor: '#25292e',
     height: 100,
-    // borderWidth: StyleSheet.hairlineWidth,
   },
 });

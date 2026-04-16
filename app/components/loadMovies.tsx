@@ -1,7 +1,7 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import Movie from '../types/movie';
+import Movie from '@/types/movie';
 import MovieList from './movieList';
 
 export default function LoadMovies() {

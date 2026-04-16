@@ -1,4 +1,4 @@
-type Movies = {
+type Movie = {
   backdrop_path: string;
   director: string;
   id: number;
@@ -15,4 +15,4 @@ type Movies = {
   wins: number;
 };
 
-export default Movies;
+export default Movie;

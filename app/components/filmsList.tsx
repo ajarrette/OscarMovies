@@ -26,7 +26,7 @@ type Props = {
 };
 
 const onShowDetails = (id: number) => {
-  router.push(`/movies/${id}`);
+  router.push(`/films/${id}`);
 };
 
 export default function FilmsList({ categories }: Props) {
