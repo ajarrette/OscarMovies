@@ -19,6 +19,8 @@ type NomineeRow = {
   nomination_id: number;
   category_name: string;
   is_winner: number;
+  movie_poster_path: string | null;
+  song_title: string | null;
   person_id: number | null;
   person_name: string | null;
   person_profile_path: string | null;
@@ -34,9 +36,23 @@ type Nominee = {
 type NominationGroup = {
   nominationId: number;
   categoryName: string;
+  categoryKey: string;
   isWinner: boolean;
+  filmPosterPath: string | null;
+  songTitle: string | null;
   nominees: Nominee[];
 };
+
+function isFilmOnlyCategory(categoryKey: string) {
+  return (
+    categoryKey === 'best international feature film' ||
+    categoryKey === 'best picture'
+  );
+}
+
+function isBestOriginalSongCategory(categoryKey: string) {
+  return categoryKey === 'best original song';
+}
 
 function NominationsContent({ filmId }: { filmId: number }) {
   const db = useSQLiteContext();
@@ -60,11 +76,21 @@ function NominationsContent({ filmId }: { filmId: number }) {
           `SELECT n.id AS nomination_id,
                   c.name AS category_name,
                   n.won AS is_winner,
+                  m.poster_path AS movie_poster_path,
+                  (
+                    SELECT nn.nominee_text
+                    FROM nomination_nominees nn
+                    WHERE nn.nomination_id = n.id
+                      AND nn.nominee_kind = 'song'
+                    ORDER BY nn.ordinal ASC
+                    LIMIT 1
+                  ) AS song_title,
                   p.id AS person_id,
                   p.name AS person_name,
                   p.profile_path AS person_profile_path,
                   np.ordinal AS person_ordinal
            FROM nomination_movies nm
+           INNER JOIN movies m ON m.id = nm.movie_id
            INNER JOIN nominations n ON n.id = nm.nomination_id
            INNER JOIN categories c ON c.id = n.category_id
            LEFT JOIN nomination_people np ON np.nomination_id = n.id
@@ -82,7 +108,10 @@ function NominationsContent({ filmId }: { filmId: number }) {
             grouped.set(row.nomination_id, {
               nominationId: row.nomination_id,
               categoryName: row.category_name.toUpperCase(),
+              categoryKey: row.category_name.toLowerCase(),
               isWinner: row.is_winner === 1,
+              filmPosterPath: row.movie_poster_path,
+              songTitle: row.song_title,
               nominees:
                 row.person_id !== null && row.person_name
                   ? [
@@ -166,7 +195,33 @@ function NominationsContent({ filmId }: { filmId: number }) {
             )}
           </View>
 
-          {nomination.nominees.length > 0 ? (
+          {isBestOriginalSongCategory(nomination.categoryKey) ? (
+            <View style={styles.nomineeGrid}>
+              <View style={styles.songTitleContainer}>
+                <Text style={styles.nomineeName}>
+                  {nomination.songTitle ?? 'UNKNOWN SONG'}
+                </Text>
+              </View>
+            </View>
+          ) : isFilmOnlyCategory(nomination.categoryKey) ? (
+            <View style={styles.nomineeGrid}>
+              <View style={[styles.nomineeCard, { width: posterWidth }]}>
+                {nomination.filmPosterPath ? (
+                  <MoviePoster
+                    selectedImage={`https://image.tmdb.org/t/p/w300${nomination.filmPosterPath}`}
+                    width={posterWidth}
+                    height={posterHeight}
+                  />
+                ) : (
+                  <View
+                    style={[styles.posterFallback, { height: posterHeight }]}
+                  >
+                    <Text style={styles.posterFallbackText}>NO IMAGE</Text>
+                  </View>
+                )}
+              </View>
+            </View>
+          ) : nomination.nominees.length > 0 ? (
             <View style={styles.nomineeGrid}>
               {nomination.nominees.map((nominee) => (
                 <View
@@ -280,6 +335,9 @@ const styles = StyleSheet.create({
   nomineeName: {
     color: '#fff',
     fontSize: 14,
+  },
+  songTitleContainer: {
+    maxWidth: '100%',
   },
   noNomineeText: {
     color: '#ccc',
