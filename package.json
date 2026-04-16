@@ -14,7 +14,8 @@
     "enrich": "node ./assets/data/enrich-data.js",
     "enrich-people": "node ./assets/data/enrich-people.js",
     "import-popular-movies": "node ./assets/data/import-popular-movies.js",
-    "import-popular-people": "node ./assets/data/import-popular-people.js"
+    "import-popular-people": "node ./assets/data/import-popular-people.js",
+    "import-movie-cast": "node ./assets/data/import-movie-cast.js"
   },
   "jest": {
     "preset": "jest-expo"

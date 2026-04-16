@@ -34,24 +34,28 @@ export default function LoadFilmDetail({ id }: Props) {
         [id],
       );
 
-      const foundCast = await db.getAllAsync<FilmCastPerson>(
-        `SELECT p.id,
-                p.name,
-                p.profile_path,
-                p.popularity,
-                p.known_for_department
-         FROM nomination_movies nm
-         INNER JOIN nominations n ON n.id = nm.nomination_id
-         INNER JOIN categories c ON c.id = n.category_id
-         INNER JOIN nomination_people np ON np.nomination_id = n.id
-         INNER JOIN people p ON p.id = np.person_id
-         WHERE nm.movie_id = ?
-         GROUP BY p.id, p.name, p.profile_path, p.popularity, p.known_for_department
-         ORDER BY COALESCE(p.popularity, 0) DESC,
-                  p.name ASC
-         LIMIT 10`,
-        [id],
-      );
+      let foundCast: FilmCastPerson[] = [];
+
+      try {
+        foundCast = await db.getAllAsync<FilmCastPerson>(
+          `SELECT DISTINCT p.id,
+                  p.name,
+                  p.profile_path,
+                  p.popularity,
+                  p.known_for_department
+           FROM movie_cast mc
+           INNER JOIN people p ON p.id = mc.person_id
+           WHERE mc.movie_id = ?
+           ORDER BY mc.cast_order ASC,
+                    COALESCE(p.popularity, 0) DESC,
+                    p.name ASC
+           LIMIT 10`,
+          [id],
+        );
+      } catch (error) {
+        console.error('Error loading cast from movie_cast:', error);
+      }
+
       setCastPeople(foundCast);
 
       if (foundFilm?.director) {
