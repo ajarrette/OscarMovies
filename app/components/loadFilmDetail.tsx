@@ -8,10 +8,15 @@ type Props = {
   id: number;
 };
 
+type PersonMatch = {
+  id: number;
+};
+
 export default function LoadFilmDetail({ id }: Props) {
   const db = useSQLiteContext();
   const [loading, setLoading] = useState(true);
   const [film, setFilm] = useState<Film | null>(null);
+  const [directorPersonId, setDirectorPersonId] = useState<number | null>(null);
 
   useEffect(() => {
     const loadFilm = async () => {
@@ -19,6 +24,17 @@ export default function LoadFilmDetail({ id }: Props) {
         'SELECT * FROM movies WHERE id = ?',
         [id],
       );
+
+      if (foundFilm?.director) {
+        const foundPerson = await db.getFirstAsync<PersonMatch | null>(
+          'SELECT id FROM people WHERE name = ?',
+          [foundFilm.director],
+        );
+        setDirectorPersonId(foundPerson?.id ?? null);
+      } else {
+        setDirectorPersonId(null);
+      }
+
       setFilm(foundFilm);
       setLoading(false);
     };
@@ -34,7 +50,7 @@ export default function LoadFilmDetail({ id }: Props) {
       {loading ? (
         <></>
       ) : film ? (
-        <FilmDetail film={film} />
+        <FilmDetail film={film} directorPersonId={directorPersonId} />
       ) : (
         <View
           style={{ flex: 1, justifyContent: 'center', alignItems: 'center' }}

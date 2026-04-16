@@ -14,12 +14,13 @@ import NomineeStrip from './nomineeStrip';
 
 type Props = {
   film: Film;
+  directorPersonId?: number | null;
 };
 
 const { width } = Dimensions.get('window');
 const IMG_HEIGHT = 300;
 
-export default function FilmDetail({ film }: Props) {
+export default function FilmDetail({ film, directorPersonId = null }: Props) {
   const router = useRouter();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
@@ -61,6 +62,14 @@ export default function FilmDetail({ film }: Props) {
 
   const onShowNominations = () => {
     router.push(`/films/${film.id}/nominations`);
+  };
+
+  const onShowDirector = () => {
+    if (directorPersonId === null) {
+      return;
+    }
+
+    router.push(`/people/${directorPersonId}`);
   };
 
   const imageAnimatedStyle = useAnimatedStyle(() => {
@@ -130,7 +139,13 @@ export default function FilmDetail({ film }: Props) {
                 <Text style={styles.releaseDate}>
                   {releaseYear} • DIRECTED BY
                 </Text>
-                <Text style={styles.director}>{director}</Text>
+                {directorPersonId === null ? (
+                  <Text style={styles.director}>{director}</Text>
+                ) : (
+                  <Pressable onPress={onShowDirector}>
+                    <Text style={styles.director}>{director}</Text>
+                  </Pressable>
+                )}
                 <View style={styles.row}>
                   <Pressable onPress={onImdbPress}>
                     <Text style={styles.button}>IMDB</Text>
