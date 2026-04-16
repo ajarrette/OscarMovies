@@ -16,23 +16,18 @@ type Nominee = {
 };
 
 export default function Test() {
-  const [data, setData] = useState<Nominee[]>([]);
-  const [categories, setCategories] = useState<string[]>([]);
   const [movies, setMovies] = useState<string[]>([]);
   const [isLoading, setLoading] = useState(true);
 
-  let totalCategoryNominees: any = {};
   useEffect(() => {
     const movieDb =
       require('../../assets/data/oscar-nominations.json') as Nominee[];
-    setData(movieDb);
 
-    const categorieSet = new Set<string>();
     const movieSet = new Set<string>();
     const movieList = new Set<number>();
+    const totalCategoryNominees: Record<string, number> = {};
     console.log('Total nominees', movieDb.length);
     movieDb.forEach((nominee: Nominee) => {
-      categorieSet.add(nominee.category);
       nominee.movies.forEach((movie: Movie) => {
         if (+nominee.year === 2019) {
           movieList.add(movie.tmdb_id);
@@ -41,7 +36,7 @@ export default function Test() {
           movieSet.add(`${movie.title} (${movie.imdb_id})`);
         } else {
           console.log(
-            `${movie.title} (${nominee.year}) - (${movie.tmdb_id})  not found`
+            `${movie.title} (${nominee.year}) - (${movie.tmdb_id})  not found`,
           );
         }
       });
@@ -49,7 +44,6 @@ export default function Test() {
       count = count + 1;
       totalCategoryNominees[nominee.category] = count;
     });
-    setCategories(Array.from(categorieSet));
     setMovies(Array.from(movieSet));
 
     console.log(movieList);
