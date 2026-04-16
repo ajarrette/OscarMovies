@@ -1,10 +1,11 @@
-import { Tabs, router } from 'expo-router';
+import { Stack, router } from 'expo-router';
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
   Keyboard,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -65,6 +66,7 @@ function getReleaseYear(releaseDate: string | null) {
 function SearchContent() {
   const db = useSQLiteContext();
   const { width } = useWindowDimensions();
+  const usesNativeHeaderSearch = Platform.OS === 'ios';
   const [mode, setMode] = useState<SearchMode>('films');
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -251,73 +253,100 @@ function SearchContent() {
     return 'No matching results.';
   }, [debouncedQuery.length, loading, mode]);
 
+  const listData = loading ? [] : results;
+
   return (
-    <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-      <View style={styles.container}>
-        <View style={styles.controls}>
-          <View style={styles.toggleRow}>
-            <Pressable
-              onPress={() => setMode('films')}
-              style={[
-                styles.toggleButton,
-                mode === 'films' && styles.toggleActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.toggleText,
-                  mode === 'films' && styles.toggleTextActive,
-                ]}
-              >
-                Films
-              </Text>
-            </Pressable>
-            <Pressable
-              onPress={() => setMode('people')}
-              style={[
-                styles.toggleButton,
-                mode === 'people' && styles.toggleActive,
-              ]}
-            >
-              <Text
-                style={[
-                  styles.toggleText,
-                  mode === 'people' && styles.toggleTextActive,
-                ]}
-              >
-                People
-              </Text>
-            </Pressable>
-          </View>
-
-          <TextInput
-            value={query}
-            onChangeText={setQuery}
-            onSubmitEditing={Keyboard.dismiss}
-            autoCapitalize='none'
-            autoCorrect={false}
-            blurOnSubmit
-            clearButtonMode='while-editing'
-            placeholder={mode === 'films' ? 'Search films' : 'Search people'}
-            placeholderTextColor='#8d9399'
-            returnKeyType='done'
-            style={styles.input}
-          />
-        </View>
-
-        {loading ? (
-          <View style={styles.centeredState}>
-            <ActivityIndicator size='large' color='#fff' />
-          </View>
-        ) : results.length === 0 ? (
-          <View style={styles.centeredState}>
-            <Text style={styles.emptyText}>{emptyText}</Text>
-          </View>
-        ) : (
+    <>
+      <Stack.Screen
+        options={{
+          headerTitle: 'Search',
+          headerLargeTitle: usesNativeHeaderSearch,
+          headerSearchBarOptions: usesNativeHeaderSearch
+            ? {
+                placeholder:
+                  mode === 'films' ? 'Search films' : 'Search people',
+                onChangeText: (event) => setQuery(event.nativeEvent.text),
+              }
+            : undefined,
+        }}
+      />
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
+        <View style={styles.container}>
           <FlatList
-            data={results}
+            data={listData}
             keyExtractor={(item) => `${item.kind}-${item.id}`}
-            contentContainerStyle={styles.listContent}
+            ListHeaderComponent={
+              <View style={styles.controls}>
+                {!usesNativeHeaderSearch ? (
+                  <TextInput
+                    value={query}
+                    onChangeText={setQuery}
+                    onSubmitEditing={Keyboard.dismiss}
+                    autoCapitalize='none'
+                    autoCorrect={false}
+                    blurOnSubmit
+                    clearButtonMode='while-editing'
+                    placeholder={
+                      mode === 'films' ? 'Search films' : 'Search people'
+                    }
+                    placeholderTextColor='#8d9399'
+                    returnKeyType='search'
+                    style={styles.input}
+                  />
+                ) : null}
+                <Text style={styles.toggleLabel}>Search Type</Text>
+                <View style={styles.toggleRow}>
+                  <Pressable
+                    onPress={() => setMode('films')}
+                    style={[
+                      styles.toggleButton,
+                      mode === 'films' && styles.toggleActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        mode === 'films' && styles.toggleTextActive,
+                      ]}
+                    >
+                      Films
+                    </Text>
+                  </Pressable>
+                  <Pressable
+                    onPress={() => setMode('people')}
+                    style={[
+                      styles.toggleButton,
+                      mode === 'people' && styles.toggleActive,
+                    ]}
+                  >
+                    <Text
+                      style={[
+                        styles.toggleText,
+                        mode === 'people' && styles.toggleTextActive,
+                      ]}
+                    >
+                      People
+                    </Text>
+                  </Pressable>
+                </View>
+              </View>
+            }
+            ListEmptyComponent={
+              loading ? (
+                <View style={styles.centeredState}>
+                  <ActivityIndicator size='large' color='#fff' />
+                </View>
+              ) : (
+                <View style={styles.centeredState}>
+                  <Text style={styles.emptyText}>{emptyText}</Text>
+                </View>
+              )
+            }
+            contentContainerStyle={[
+              styles.listContent,
+              listData.length === 0 && styles.listContentEmpty,
+            ]}
+            contentInsetAdjustmentBehavior='automatic'
             initialNumToRender={12}
             keyboardDismissMode='on-drag'
             keyboardShouldPersistTaps='handled'
@@ -369,22 +398,15 @@ function SearchContent() {
               );
             }}
           />
-        )}
-      </View>
-    </TouchableWithoutFeedback>
+        </View>
+      </TouchableWithoutFeedback>
+    </>
   );
 }
 
-export default function Search() {
+export default function SearchScreen() {
   return (
     <View style={styles.screen}>
-      <Tabs.Screen
-        options={{
-          headerTitle: 'Search',
-          headerTransparent: false,
-          headerStyle: { backgroundColor: '#25292e' },
-        }}
-      />
       <SQLiteProvider
         databaseName={FILMS_DB_NAME}
         assetSource={{
@@ -410,32 +432,9 @@ const styles = StyleSheet.create({
   },
   controls: {
     paddingHorizontal: 16,
-    paddingTop: 16,
+    paddingTop: 12,
     paddingBottom: 8,
     gap: 12,
-  },
-  toggleRow: {
-    flexDirection: 'row',
-    gap: 8,
-  },
-  toggleButton: {
-    borderWidth: 1,
-    borderColor: '#5a6168',
-    borderRadius: 999,
-    paddingVertical: 8,
-    paddingHorizontal: 14,
-  },
-  toggleActive: {
-    backgroundColor: '#ffd33d',
-    borderColor: '#ffd33d',
-  },
-  toggleText: {
-    color: '#ccc',
-    fontSize: 14,
-    fontWeight: '600',
-  },
-  toggleTextActive: {
-    color: '#25292e',
   },
   input: {
     backgroundColor: '#1f2226',
@@ -445,11 +444,46 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     paddingHorizontal: 14,
-    paddingVertical: 12,
+    paddingVertical: 10,
+  },
+  toggleRow: {
+    backgroundColor: '#1f2226',
+    borderColor: '#5a6168',
+    borderRadius: 12,
+    borderWidth: 1,
+    flexDirection: 'row',
+    padding: 4,
+  },
+  toggleLabel: {
+    color: '#9ea4aa',
+    fontSize: 12,
+    fontWeight: '700',
+    letterSpacing: 0.4,
+    textTransform: 'uppercase',
+  },
+  toggleButton: {
+    alignItems: 'center',
+    borderRadius: 8,
+    flex: 1,
+    paddingVertical: 10,
+  },
+  toggleActive: {
+    backgroundColor: '#ffd33d',
+  },
+  toggleText: {
+    color: '#ccc',
+    fontSize: 15,
+    fontWeight: '600',
+  },
+  toggleTextActive: {
+    color: '#25292e',
   },
   listContent: {
     paddingHorizontal: 16,
     paddingBottom: 24,
+  },
+  listContentEmpty: {
+    flexGrow: 1,
   },
   resultRow: {
     borderBottomColor: '#555',
