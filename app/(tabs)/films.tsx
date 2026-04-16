@@ -12,6 +12,7 @@ type NominationMovieRow = {
   movie_title: string;
   is_winner: number;
   person_name: string | null;
+  song_title: string | null;
 };
 
 type YearLabelRow = {
@@ -20,6 +21,10 @@ type YearLabelRow = {
 
 function isActorActressCategory(categoryName: string) {
   return /actor|actress/i.test(categoryName);
+}
+
+function isSongCategory(categoryName: string) {
+  return /song/i.test(categoryName);
 }
 
 function FilmsContent() {
@@ -109,7 +114,15 @@ function FilmsContent() {
                   m.id AS movie_id,
                   m.title AS movie_title,
                   n.won AS is_winner,
-                  p.name AS person_name
+                  p.name AS person_name,
+                  (
+                    SELECT nn.nominee_text
+                    FROM nomination_nominees nn
+                    WHERE nn.nomination_id = n.id
+                      AND nn.nominee_kind = 'song'
+                    ORDER BY nn.ordinal ASC
+                    LIMIT 1
+                  ) AS song_title
            FROM ceremonies cer
            INNER JOIN nominations n ON n.ceremony_id = cer.id
            INNER JOIN categories c ON c.id = n.category_id
@@ -131,6 +144,7 @@ function FilmsContent() {
         rows.forEach((row) => {
           const existingGroup = groupedByCategory.get(row.category_id);
           const personFirst = isActorActressCategory(row.category_name);
+          const songFirst = isSongCategory(row.category_name);
 
           if (personFirst) {
             if (row.person_name) {
@@ -146,6 +160,7 @@ function FilmsContent() {
               title: row.movie_title,
               isWinner: row.is_winner === 1,
               personName: row.person_name,
+              songTitle: row.song_title,
             });
             return;
           }
@@ -154,12 +169,14 @@ function FilmsContent() {
             categoryId: row.category_id,
             categoryName: row.category_name,
             isPersonFirstCategory: personFirst,
+            isSongFirstCategory: songFirst,
             movies: [
               {
                 id: row.movie_id,
                 title: row.movie_title,
                 isWinner: row.is_winner === 1,
                 personName: row.person_name,
+                songTitle: row.song_title,
               },
             ],
           });

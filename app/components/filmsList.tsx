@@ -5,12 +5,14 @@ type CategoryMovie = {
   title: string;
   isWinner: boolean;
   personName: string | null;
+  songTitle: string | null;
 };
 
 export type CategoryGroup = {
   categoryId: number;
   categoryName: string;
   isPersonFirstCategory: boolean;
+  isSongFirstCategory: boolean;
   movies: CategoryMovie[];
 };
 
@@ -39,9 +41,11 @@ export default function FilmsList({ categories }: Props) {
                 />
               )}
               <Text style={styles.movieTitle}>
-                {item.isPersonFirstCategory && movie.personName
-                  ? `${movie.personName} - ${movie.title}`
-                  : movie.title}
+                {item.isSongFirstCategory && movie.songTitle
+                  ? `${movie.songTitle} - ${movie.title}`
+                  : item.isPersonFirstCategory && movie.personName
+                    ? `${movie.personName} - ${movie.title}`
+                    : movie.title}
               </Text>
             </View>
           ))}
