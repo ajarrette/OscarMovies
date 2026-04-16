@@ -12,7 +12,9 @@
     "lint": "expo lint",
     "seed": "node ./assets/data/db-seed.js",
     "enrich": "node ./assets/data/enrich-data.js",
-    "enrich-people": "node ./assets/data/enrich-people.js"
+    "enrich-people": "node ./assets/data/enrich-people.js",
+    "import-popular-movies": "node ./assets/data/import-popular-movies.js",
+    "import-popular-people": "node ./assets/data/import-popular-people.js"
   },
   "jest": {
     "preset": "jest-expo"
