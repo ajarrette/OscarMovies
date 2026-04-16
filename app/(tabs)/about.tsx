@@ -24,20 +24,20 @@ export default function AboutScreen() {
           title: 'About',
           headerShown: true,
           headerTransparent: false,
-          headerStyle: { backgroundColor: '#0f172a' },
-          headerTintColor: '#f8fafc',
+          headerStyle: { backgroundColor: '#25292e' },
+          headerTintColor: '#fff',
         }}
       />
 
       <ScrollView contentContainerStyle={styles.content}>
         <LinearGradient
-          colors={['#0f172a', '#1e293b', '#334155']}
+          colors={['#25292e', '#3a3f47', '#4a5160']}
           start={{ x: 0, y: 0 }}
           end={{ x: 1, y: 1 }}
           style={styles.hero}
         >
           <View style={styles.badgeRow}>
-            <Ionicons name='sparkles-outline' size={16} color='#facc15' />
+            <Ionicons name='sparkles-outline' size={16} color='#ffd33d' />
             <Text style={styles.badgeText}>Award season companion</Text>
           </View>
           <Text style={styles.heroTitle}>{APP_NAME}</Text>
@@ -64,7 +64,7 @@ export default function AboutScreen() {
               <Ionicons
                 name='checkmark-circle-outline'
                 size={18}
-                color='#60a5fa'
+                color='#ffd33d'
               />
               <Text style={styles.rowText}>{item}</Text>
             </View>
@@ -98,7 +98,7 @@ export default function AboutScreen() {
 const styles = StyleSheet.create({
   screen: {
     flex: 1,
-    backgroundColor: '#020617',
+    backgroundColor: '#25292e',
   },
   content: {
     gap: 16,
@@ -111,51 +111,51 @@ const styles = StyleSheet.create({
     padding: 18,
     gap: 10,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#4a5160',
   },
   badgeRow: {
     alignSelf: 'flex-start',
     flexDirection: 'row',
     alignItems: 'center',
     gap: 6,
-    backgroundColor: '#0b1220',
+    backgroundColor: '#1c2025',
     borderRadius: 999,
     paddingVertical: 4,
     paddingHorizontal: 10,
     borderWidth: 1,
-    borderColor: '#334155',
+    borderColor: '#4a5160',
   },
   badgeText: {
-    color: '#cbd5e1',
+    color: '#cdd1d8',
     fontSize: 12,
     fontWeight: '600',
   },
   heroTitle: {
-    color: '#f8fafc',
+    color: '#fff',
     fontSize: 30,
     fontWeight: '800',
     letterSpacing: 0.3,
   },
   heroSubtitle: {
-    color: '#dbeafe',
+    color: '#c8cdd6',
     fontSize: 14,
     lineHeight: 22,
   },
   card: {
-    backgroundColor: '#0f172a',
+    backgroundColor: '#3a3f47',
     borderWidth: 1,
-    borderColor: '#1e293b',
+    borderColor: '#4a5160',
     borderRadius: 16,
     padding: 16,
     gap: 12,
   },
   cardTitle: {
-    color: '#f8fafc',
+    color: '#fff',
     fontSize: 17,
     fontWeight: '700',
   },
   cardBody: {
-    color: '#cbd5e1',
+    color: '#c8cdd6',
     fontSize: 14,
     lineHeight: 22,
   },
@@ -165,7 +165,7 @@ const styles = StyleSheet.create({
     gap: 10,
   },
   rowText: {
-    color: '#e2e8f0',
+    color: '#fff',
     flex: 1,
     fontSize: 14,
     lineHeight: 20,
@@ -175,16 +175,16 @@ const styles = StyleSheet.create({
     justifyContent: 'space-between',
     alignItems: 'center',
     borderBottomWidth: StyleSheet.hairlineWidth,
-    borderBottomColor: '#334155',
+    borderBottomColor: '#4a5160',
     paddingBottom: 10,
   },
   metaLabel: {
-    color: '#94a3b8',
+    color: '#9ca3af',
     fontSize: 13,
     fontWeight: '600',
   },
   metaValue: {
-    color: '#f8fafc',
+    color: '#fff',
     fontSize: 14,
     fontWeight: '700',
   },
