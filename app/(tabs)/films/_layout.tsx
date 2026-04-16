@@ -16,7 +16,7 @@ export default function StackLayout() {
           headerBackground: () => (
             <View style={{ flex: 1, backgroundColor: '#25292e' }} />
           ),
-          headerTitle: 'Films',
+          headerTitle: 'The Oscars',
           headerShown: true,
         }}
       />

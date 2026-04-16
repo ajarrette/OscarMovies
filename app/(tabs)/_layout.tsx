@@ -17,7 +17,7 @@ export default function TabLayout() {
       <Tabs.Screen
         name='films'
         options={{
-          title: 'Films',
+          title: 'Oscars',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
