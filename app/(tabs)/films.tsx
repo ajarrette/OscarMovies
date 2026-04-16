@@ -1,15 +1,18 @@
 import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
-import FilmsList from '../components/filmsList';
 import type { CategoryGroup } from '../components/filmsList';
+import FilmsList from '../components/filmsList';
 import FilmsYearPicker from '../components/filmsYearPicker';
+
+const FILMS_DB_NAME = 'oscar-movies.db';
 
 type NominationMovieRow = {
   category_id: number;
   category_name: string;
   movie_id: number;
   movie_title: string;
+  poster_path: string | null;
   is_winner: number;
   people_names: string | null;
   song_title: string | null;
@@ -99,8 +102,6 @@ function FilmsContent() {
 
         const minYear = Math.min(...validYears);
         const maxYear = Math.max(...validYears);
-        console.log(`films-year-range-min: ${minYear}`);
-        console.log(`films-year-range-max: ${maxYear}`);
 
         const yearRange = Array.from(
           { length: maxYear - minYear + 1 },
@@ -151,7 +152,6 @@ function FilmsContent() {
       try {
         setError(null);
         setIsLoadingFilms(true);
-        console.log(`films-selected-year: ${selectedYear}`);
 
         const sourceYearLabels = yearLabelsByDisplayYear[selectedYear] ?? [];
         if (sourceYearLabels.length === 0) {
@@ -166,6 +166,7 @@ function FilmsContent() {
                   c.name AS category_name,
                   m.id AS movie_id,
                   m.title AS movie_title,
+                  m.poster_path AS poster_path,
                   n.won AS is_winner,
                   (
                     SELECT group_concat(all_people.name, ', ')
@@ -196,26 +197,17 @@ function FilmsContent() {
         );
 
         const groupedByCategory = new Map<number, CategoryGroup>();
-        let actorRowsWithPerson = 0;
-        let actorRowsMissingPerson = 0;
 
         rows.forEach((row) => {
           const existingGroup = groupedByCategory.get(row.category_id);
           const personFirst = isActorActressCategory(row.category_name);
           const songFirst = isSongCategory(row.category_name);
 
-          if (personFirst) {
-            if (row.people_names) {
-              actorRowsWithPerson += 1;
-            } else {
-              actorRowsMissingPerson += 1;
-            }
-          }
-
           if (existingGroup) {
             existingGroup.movies.push({
               id: row.movie_id,
               title: row.movie_title,
+              posterPath: row.poster_path,
               isWinner: row.is_winner === 1,
               peopleNames: row.people_names,
               songTitle: row.song_title,
@@ -232,6 +224,7 @@ function FilmsContent() {
               {
                 id: row.movie_id,
                 title: row.movie_title,
+                posterPath: row.poster_path,
                 isWinner: row.is_winner === 1,
                 peopleNames: row.people_names,
                 songTitle: row.song_title,
@@ -241,16 +234,6 @@ function FilmsContent() {
         });
 
         const groups = Array.from(groupedByCategory.values());
-        console.log(`films-year-${selectedYear}-movie-rows: ${rows.length}`);
-        console.log(
-          `films-year-${selectedYear}-category-count: ${groups.length}`,
-        );
-        console.log(
-          `films-year-${selectedYear}-actor-rows-with-person: ${actorRowsWithPerson}`,
-        );
-        console.log(
-          `films-year-${selectedYear}-actor-rows-missing-person: ${actorRowsMissingPerson}`,
-        );
         setCategoryGroups(groups);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load films');
@@ -357,7 +340,7 @@ export default function Films() {
   return (
     <View style={styles.container}>
       <SQLiteProvider
-        databaseName='oscar-movies.db'
+        databaseName={FILMS_DB_NAME}
         assetSource={{
           assetId: require('@/assets/data/oscar-movies.db'),
           forceOverwrite: true,

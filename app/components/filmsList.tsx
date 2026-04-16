@@ -1,8 +1,13 @@
 import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
+import MoviePoster from './moviePoster';
+import { router } from 'expo-router';
+import { useWindowDimensions } from 'react-native';
+import ImageSizing from '../services/imageSizing';
 
 type CategoryMovie = {
   id: number;
   title: string;
+  posterPath: string | null;
   isWinner: boolean;
   peopleNames: string | null;
   songTitle: string | null;
@@ -20,7 +25,16 @@ type Props = {
   categories: CategoryGroup[];
 };
 
+const onShowDetails = (id: number) => {
+  router.push(`/movies/${id}`);
+};
+
 export default function FilmsList({ categories }: Props) {
+  const { width } = useWindowDimensions();
+  const posterWidth = ImageSizing.getImageSize(110, width - 40, 10);
+  const posterScale = 115 / posterWidth;
+  const posterHeight = 173 / posterScale;
+
   return (
     <FlatList
       data={categories}
@@ -40,17 +54,26 @@ export default function FilmsList({ categories }: Props) {
                   style={styles.winnerIcon}
                 />
               )}
-              <Text style={styles.movieTitle}>
-                {item.isSongFirstCategory && movie.songTitle
-                  ? movie.peopleNames
-                    ? `${movie.songTitle} - ${movie.title} - ${movie.peopleNames}`
-                    : `${movie.songTitle} - ${movie.title}`
-                  : item.isPersonFirstCategory && movie.peopleNames
-                    ? `${movie.peopleNames} - ${movie.title}`
-                    : movie.peopleNames
-                      ? `${movie.title} - ${movie.peopleNames}`
-                      : movie.title}
-              </Text>
+              {movie.posterPath ? (
+                <MoviePoster
+                  selectedImage={`https://image.tmdb.org/t/p/w300${movie.posterPath}`}
+                  width={posterWidth}
+                  height={posterHeight}
+                  onPress={() => onShowDetails(movie.id)}
+                />
+              ) : (
+                <Text style={styles.movieTitle}>
+                  {item.isSongFirstCategory && movie.songTitle
+                    ? movie.peopleNames
+                      ? `${movie.songTitle} - ${movie.title} - ${movie.peopleNames}`
+                      : `${movie.songTitle} - ${movie.title}`
+                    : item.isPersonFirstCategory && movie.peopleNames
+                      ? `${movie.peopleNames} - ${movie.title}`
+                      : movie.peopleNames
+                        ? `${movie.title} - ${movie.peopleNames}`
+                        : movie.title}
+                </Text>
+              )}
             </View>
           ))}
         </View>
