@@ -12,6 +12,8 @@ import MoviePoster from './moviePoster';
 
 type CategoryMovie = {
   id: number;
+  personId: number | null;
+  personProfilePath: string | null;
   title: string;
   posterPath: string | null;
   isWinner: boolean;
@@ -35,6 +37,10 @@ const onShowDetails = (id: number) => {
   router.push(`/films/${id}`);
 };
 
+const onShowPersonDetails = (id: number) => {
+  router.push(`/people/${id}`);
+};
+
 export default function FilmsList({ categories }: Props) {
   const { width } = useWindowDimensions();
   const posterWidth = ImageSizing.getImageSize(110, width - 40, 10);
@@ -55,24 +61,62 @@ export default function FilmsList({ categories }: Props) {
                 key={`${item.categoryId}-${movie.id}-${index}`}
                 style={[styles.movieItem, { width: posterWidth }]}
               >
-                {movie.posterPath ? (
-                  <View
-                    style={[
-                      styles.posterContainer,
-                      movie.isWinner && styles.winnerPoster,
-                    ]}
-                  >
-                    <MoviePoster
-                      selectedImage={`https://image.tmdb.org/t/p/w300${movie.posterPath}`}
-                      width={movie.isWinner ? posterWidth - 8 : posterWidth}
-                      height={movie.isWinner ? posterHeight - 8 : posterHeight}
-                      onPress={() => onShowDetails(movie.id)}
-                    />
-                  </View>
+                {(
+                  item.isPersonFirstCategory
+                    ? movie.personProfilePath
+                    : movie.posterPath
+                ) ? (
+                  <>
+                    <View
+                      style={[
+                        styles.posterContainer,
+                        movie.isWinner && styles.winnerPoster,
+                      ]}
+                    >
+                      <MoviePoster
+                        selectedImage={`https://image.tmdb.org/t/p/w300${
+                          item.isPersonFirstCategory
+                            ? movie.personProfilePath
+                            : movie.posterPath
+                        }`}
+                        width={movie.isWinner ? posterWidth - 8 : posterWidth}
+                        height={
+                          movie.isWinner ? posterHeight - 8 : posterHeight
+                        }
+                        onPress={() =>
+                          item.isPersonFirstCategory && movie.personId !== null
+                            ? onShowPersonDetails(movie.personId)
+                            : onShowDetails(movie.id)
+                        }
+                      />
+                    </View>
+                    {item.isPersonFirstCategory && movie.peopleNames && (
+                      <View style={styles.personCaption}>
+                        <Pressable
+                          onPress={() =>
+                            movie.personId !== null
+                              ? onShowPersonDetails(movie.personId)
+                              : onShowDetails(movie.id)
+                          }
+                        >
+                          <Text style={styles.personName}>
+                            {movie.peopleNames}
+                          </Text>
+                        </Pressable>
+                        <Pressable onPress={() => onShowDetails(movie.id)}>
+                          <Text style={styles.personMovie}>{movie.title}</Text>
+                        </Pressable>
+                      </View>
+                    )}
+                  </>
                 ) : (
                   <Pressable
                     style={[styles.textTile, { height: posterHeight }]}
-                    onPress={() => onShowDetails(movie.id)}
+                    onPress={() =>
+                      item.isPersonFirstCategory && movie.personId !== null
+                        ? onShowPersonDetails(movie.personId)
+                        : onShowDetails(movie.id)
+                    }
                   >
                     <Text style={styles.movieTitle}>
                       {item.isSongFirstCategory && movie.songTitle
@@ -127,6 +171,20 @@ const styles = StyleSheet.create({
   },
   movieItem: {
     marginBottom: 8,
+  },
+  personCaption: {
+    gap: 2,
+  },
+  personMovie: {
+    color: '#ccc',
+    fontSize: 13,
+    width: '100%',
+  },
+  personName: {
+    color: '#fff',
+    fontSize: 15,
+    fontWeight: '500',
+    width: '100%',
   },
   winnerPoster: {
     borderWidth: 4,

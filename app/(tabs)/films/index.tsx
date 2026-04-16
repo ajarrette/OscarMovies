@@ -12,6 +12,8 @@ type NominationMovieRow = {
   category_name: string;
   movie_id: number;
   movie_title: string;
+  person_id: number | null;
+  person_profile_path: string | null;
   poster_path: string | null;
   is_winner: number;
   people_names: string | null;
@@ -166,6 +168,22 @@ function FilmsContent() {
                   c.name AS category_name,
                   m.id AS movie_id,
                   m.title AS movie_title,
+                  (
+                    SELECT p_primary.id
+                    FROM nomination_people np_primary
+                    INNER JOIN people p_primary ON p_primary.id = np_primary.person_id
+                    WHERE np_primary.nomination_id = n.id
+                    ORDER BY np_primary.ordinal ASC
+                    LIMIT 1
+                  ) AS person_id,
+                  (
+                    SELECT p_primary.profile_path
+                    FROM nomination_people np_primary
+                    INNER JOIN people p_primary ON p_primary.id = np_primary.person_id
+                    WHERE np_primary.nomination_id = n.id
+                    ORDER BY np_primary.ordinal ASC
+                    LIMIT 1
+                  ) AS person_profile_path,
                   m.poster_path AS poster_path,
                   n.won AS is_winner,
                   (
@@ -206,6 +224,8 @@ function FilmsContent() {
           if (existingGroup) {
             existingGroup.movies.push({
               id: row.movie_id,
+              personId: row.person_id,
+              personProfilePath: row.person_profile_path,
               title: row.movie_title,
               posterPath: row.poster_path,
               isWinner: row.is_winner === 1,
@@ -223,6 +243,8 @@ function FilmsContent() {
             movies: [
               {
                 id: row.movie_id,
+                personId: row.person_id,
+                personProfilePath: row.person_profile_path,
                 title: row.movie_title,
                 posterPath: row.poster_path,
                 isWinner: row.is_winner === 1,
