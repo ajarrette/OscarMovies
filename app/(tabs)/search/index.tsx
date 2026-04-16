@@ -1,6 +1,6 @@
 import { Stack, router } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useMemo, useState } from 'react';
+import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
   FlatList,
@@ -52,6 +52,58 @@ type SearchItem = {
   wins: number;
   nominations: number;
 };
+
+type SearchResultRowProps = {
+  item: SearchItem;
+  posterWidth: number;
+  posterHeight: number;
+  onOpenItem: (item: SearchItem) => void;
+};
+
+const EMPTY_RESULTS: SearchItem[] = [];
+
+const SearchResultRow = memo(function SearchResultRow({
+  item,
+  posterWidth,
+  posterHeight,
+  onOpenItem,
+}: SearchResultRowProps) {
+  const imageUri = item.imagePath
+    ? `https://image.tmdb.org/t/p/w300${item.imagePath}`
+    : undefined;
+  const handlePress = useCallback(() => onOpenItem(item), [item, onOpenItem]);
+
+  return (
+    <Pressable onPress={handlePress} style={styles.resultRow}>
+      {imageUri ? (
+        <MoviePoster
+          selectedImage={imageUri}
+          width={posterWidth}
+          height={posterHeight}
+          onPress={handlePress}
+        />
+      ) : (
+        <View
+          style={[
+            styles.posterFallback,
+            { width: posterWidth, height: posterHeight },
+          ]}
+        >
+          <Text style={styles.posterFallbackText}>NO IMAGE</Text>
+        </View>
+      )}
+
+      <View style={styles.copyColumn}>
+        <Text style={styles.title}>{item.title}</Text>
+        {item.subtitle && <Text style={styles.subtitle}>{item.subtitle}</Text>}
+        {item.meta ? <Text style={styles.meta}>{item.meta}</Text> : null}
+        <Text style={styles.stats}>
+          {item.wins} wins • {item.nominations} nominations
+        </Text>
+      </View>
+    </Pressable>
+  );
+});
 
 function getReleaseYear(releaseDate: string | null) {
   if (!releaseDate) {
@@ -253,7 +305,97 @@ function SearchContent() {
     return 'No matching results.';
   }, [debouncedQuery.length, loading, mode]);
 
-  const listData = loading ? [] : results;
+  const listData = useMemo(
+    () => (loading ? EMPTY_RESULTS : results),
+    [loading, results],
+  );
+  const onOpenItem = useCallback((item: SearchItem) => {
+    if (item.kind === 'films') {
+      router.push(`/search/films/${item.id}`);
+      return;
+    }
+
+    router.push(`/search/people/${item.id}`);
+  }, []);
+  const keyExtractor = useCallback(
+    (item: SearchItem) => `${item.kind}-${item.id}`,
+    [],
+  );
+  const renderItem = useCallback(
+    ({ item }: { item: SearchItem }) => (
+      <SearchResultRow
+        item={item}
+        posterWidth={posterWidth}
+        posterHeight={posterHeight}
+        onOpenItem={onOpenItem}
+      />
+    ),
+    [onOpenItem, posterHeight, posterWidth],
+  );
+  const listHeaderComponent = useMemo(
+    () => (
+      <View style={styles.controls}>
+        {!usesNativeHeaderSearch ? (
+          <TextInput
+            value={query}
+            onChangeText={setQuery}
+            onSubmitEditing={Keyboard.dismiss}
+            autoCapitalize='none'
+            autoCorrect={false}
+            blurOnSubmit
+            clearButtonMode='while-editing'
+            placeholder={mode === 'films' ? 'Search films' : 'Search people'}
+            placeholderTextColor='#8d9399'
+            returnKeyType='search'
+            style={styles.input}
+          />
+        ) : null}
+        <Text style={styles.toggleLabel}>Search Type</Text>
+        <View style={styles.toggleRow}>
+          <Pressable
+            onPress={() => setMode('films')}
+            style={[styles.toggleButton, mode === 'films' && styles.toggleActive]}
+          >
+            <Text
+              style={[
+                styles.toggleText,
+                mode === 'films' && styles.toggleTextActive,
+              ]}
+            >
+              Films
+            </Text>
+          </Pressable>
+          <Pressable
+            onPress={() => setMode('people')}
+            style={[styles.toggleButton, mode === 'people' && styles.toggleActive]}
+          >
+            <Text
+              style={[
+                styles.toggleText,
+                mode === 'people' && styles.toggleTextActive,
+              ]}
+            >
+              People
+            </Text>
+          </Pressable>
+        </View>
+      </View>
+    ),
+    [mode, query, usesNativeHeaderSearch],
+  );
+  const listEmptyComponent = useMemo(
+    () =>
+      loading ? (
+        <View style={styles.centeredState}>
+          <ActivityIndicator size='large' color='#fff' />
+        </View>
+      ) : (
+        <View style={styles.centeredState}>
+          <Text style={styles.emptyText}>{emptyText}</Text>
+        </View>
+      ),
+    [emptyText, loading],
+  );
 
   return (
     <>
@@ -274,127 +416,22 @@ function SearchContent() {
         <View style={styles.container}>
           <FlatList
             data={listData}
-            keyExtractor={(item) => `${item.kind}-${item.id}`}
-            ListHeaderComponent={
-              <View style={styles.controls}>
-                {!usesNativeHeaderSearch ? (
-                  <TextInput
-                    value={query}
-                    onChangeText={setQuery}
-                    onSubmitEditing={Keyboard.dismiss}
-                    autoCapitalize='none'
-                    autoCorrect={false}
-                    blurOnSubmit
-                    clearButtonMode='while-editing'
-                    placeholder={
-                      mode === 'films' ? 'Search films' : 'Search people'
-                    }
-                    placeholderTextColor='#8d9399'
-                    returnKeyType='search'
-                    style={styles.input}
-                  />
-                ) : null}
-                <Text style={styles.toggleLabel}>Search Type</Text>
-                <View style={styles.toggleRow}>
-                  <Pressable
-                    onPress={() => setMode('films')}
-                    style={[
-                      styles.toggleButton,
-                      mode === 'films' && styles.toggleActive,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        mode === 'films' && styles.toggleTextActive,
-                      ]}
-                    >
-                      Films
-                    </Text>
-                  </Pressable>
-                  <Pressable
-                    onPress={() => setMode('people')}
-                    style={[
-                      styles.toggleButton,
-                      mode === 'people' && styles.toggleActive,
-                    ]}
-                  >
-                    <Text
-                      style={[
-                        styles.toggleText,
-                        mode === 'people' && styles.toggleTextActive,
-                      ]}
-                    >
-                      People
-                    </Text>
-                  </Pressable>
-                </View>
-              </View>
-            }
-            ListEmptyComponent={
-              loading ? (
-                <View style={styles.centeredState}>
-                  <ActivityIndicator size='large' color='#fff' />
-                </View>
-              ) : (
-                <View style={styles.centeredState}>
-                  <Text style={styles.emptyText}>{emptyText}</Text>
-                </View>
-              )
-            }
+            keyExtractor={keyExtractor}
+            ListHeaderComponent={listHeaderComponent}
+            ListEmptyComponent={listEmptyComponent}
             contentContainerStyle={[
               styles.listContent,
               listData.length === 0 && styles.listContentEmpty,
             ]}
             contentInsetAdjustmentBehavior='automatic'
             initialNumToRender={12}
+            maxToRenderPerBatch={10}
+            removeClippedSubviews
             keyboardDismissMode='on-drag'
             keyboardShouldPersistTaps='handled'
+            updateCellsBatchingPeriod={50}
             windowSize={8}
-            renderItem={({ item }) => {
-              const imageUri = item.imagePath
-                ? `https://image.tmdb.org/t/p/w300${item.imagePath}`
-                : undefined;
-              const handlePress = () =>
-                item.kind === 'films'
-                  ? router.push(`/search/films/${item.id}`)
-                  : router.push(`/search/people/${item.id}`);
-
-              return (
-                <Pressable onPress={handlePress} style={styles.resultRow}>
-                  {imageUri ? (
-                    <MoviePoster
-                      selectedImage={imageUri}
-                      width={posterWidth}
-                      height={posterHeight}
-                      onPress={handlePress}
-                    />
-                  ) : (
-                    <View
-                      style={[
-                        styles.posterFallback,
-                        { width: posterWidth, height: posterHeight },
-                      ]}
-                    >
-                      <Text style={styles.posterFallbackText}>NO IMAGE</Text>
-                    </View>
-                  )}
-
-                  <View style={styles.copyColumn}>
-                    <Text style={styles.title}>{item.title}</Text>
-                    {item.subtitle && (
-                      <Text style={styles.subtitle}>{item.subtitle}</Text>
-                    )}
-                    {item.meta ? (
-                      <Text style={styles.meta}>{item.meta}</Text>
-                    ) : null}
-                    <Text style={styles.stats}>
-                      {item.wins} wins • {item.nominations} nominations
-                    </Text>
-                  </View>
-                </Pressable>
-              );
-            }}
+            renderItem={renderItem}
           />
         </View>
       </TouchableWithoutFeedback>
