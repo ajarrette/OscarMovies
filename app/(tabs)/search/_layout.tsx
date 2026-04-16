@@ -10,6 +10,26 @@ export default function SearchStackLayout() {
       }}
     >
       <Stack.Screen name='index' />
+      <Stack.Screen
+        name='films/[id]'
+        options={{
+          headerStyle: { backgroundColor: 'transparent' },
+          headerTransparent: true,
+          headerTitle: '',
+          headerBackButtonDisplayMode: 'minimal',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name='people/[id]'
+        options={{
+          headerStyle: { backgroundColor: 'transparent' },
+          headerTransparent: true,
+          headerTitle: '',
+          headerBackButtonDisplayMode: 'minimal',
+          headerShown: true,
+        }}
+      />
     </Stack>
   );
 }

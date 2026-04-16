@@ -360,8 +360,8 @@ function SearchContent() {
                 <Pressable
                   onPress={() =>
                     item.kind === 'films'
-                      ? router.push(`/films/${item.id}`)
-                      : router.push(`/people/${item.id}`)
+                      ? router.push(`/search/films/${item.id}`)
+                      : router.push(`/search/people/${item.id}`)
                   }
                   style={styles.resultRow}
                 >
