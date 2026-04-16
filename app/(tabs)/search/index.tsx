@@ -1,5 +1,5 @@
 import { Stack, router } from 'expo-router';
-import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -15,9 +15,8 @@ import {
   View,
 } from 'react-native';
 import ImageSizing from '@/app/services/imageSizing';
+import FilmsDbProvider from '@/app/components/filmsDbProvider';
 import MoviePoster from '@/app/components/moviePoster';
-
-const FILMS_DB_NAME = 'oscar-movies.db';
 const SEARCH_DEBOUNCE_MS = 120;
 const DEFAULT_RESULTS_LIMIT = 50;
 
@@ -407,16 +406,9 @@ function SearchContent() {
 export default function SearchScreen() {
   return (
     <View style={styles.screen}>
-      <SQLiteProvider
-        databaseName={FILMS_DB_NAME}
-        assetSource={{
-          assetId: require('@/assets/data/oscar-movies.db'),
-          forceOverwrite: true,
-        }}
-        options={{ useNewConnection: true }}
-      >
+      <FilmsDbProvider>
         <SearchContent />
-      </SQLiteProvider>
+      </FilmsDbProvider>
     </View>
   );
 }

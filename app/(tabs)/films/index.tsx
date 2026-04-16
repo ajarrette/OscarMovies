@@ -1,11 +1,10 @@
-import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { CategoryGroup } from '../../components/filmsList';
 import FilmsList from '../../components/filmsList';
+import FilmsDbProvider from '../../components/filmsDbProvider';
 import FilmsYearPicker from '../../components/filmsYearPicker';
-
-const FILMS_DB_NAME = 'oscar-movies.db';
 
 type NominationMovieRow = {
   category_id: number;
@@ -361,16 +360,9 @@ function FilmsContent() {
 export default function Films() {
   return (
     <View style={styles.container}>
-      <SQLiteProvider
-        databaseName={FILMS_DB_NAME}
-        assetSource={{
-          assetId: require('@/assets/data/oscar-movies.db'),
-          forceOverwrite: true,
-        }}
-        options={{ useNewConnection: true }}
-      >
+      <FilmsDbProvider>
         <FilmsContent />
-      </SQLiteProvider>
+      </FilmsDbProvider>
     </View>
   );
 }

@@ -1,5 +1,5 @@
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
-import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -11,9 +11,8 @@ import {
   View,
 } from 'react-native';
 import ImageSizing from '@/app/services/imageSizing';
+import FilmsDbProvider from '@/app/components/filmsDbProvider';
 import MoviePoster from '@/app/components/moviePoster';
-
-const FILMS_DB_NAME = 'oscar-movies.db';
 
 type NomineeRow = {
   nomination_id: number;
@@ -269,16 +268,9 @@ export default function Nominations() {
         }}
       />
       {Number.isFinite(filmId) ? (
-        <SQLiteProvider
-          databaseName={FILMS_DB_NAME}
-          assetSource={{
-            assetId: require('@/assets/data/oscar-movies.db'),
-            forceOverwrite: true,
-          }}
-          options={{ useNewConnection: true }}
-        >
+        <FilmsDbProvider>
           <NominationsContent filmId={filmId} />
-        </SQLiteProvider>
+        </FilmsDbProvider>
       ) : (
         <View style={styles.centeredState}>
           <Text style={styles.stateText}>Invalid film ID.</Text>
