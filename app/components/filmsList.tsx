@@ -4,11 +4,13 @@ type CategoryMovie = {
   id: number;
   title: string;
   isWinner: boolean;
+  personName: string | null;
 };
 
 export type CategoryGroup = {
   categoryId: number;
   categoryName: string;
+  isPersonFirstCategory: boolean;
   movies: CategoryMovie[];
 };
 
@@ -36,7 +38,11 @@ export default function FilmsList({ categories }: Props) {
                   style={styles.winnerIcon}
                 />
               )}
-              <Text style={styles.movieTitle}>{movie.title}</Text>
+              <Text style={styles.movieTitle}>
+                {item.isPersonFirstCategory && movie.personName
+                  ? `${movie.personName} - ${movie.title}`
+                  : movie.title}
+              </Text>
             </View>
           ))}
         </View>

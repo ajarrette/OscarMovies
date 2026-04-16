@@ -11,11 +11,16 @@ type NominationMovieRow = {
   movie_id: number;
   movie_title: string;
   is_winner: number;
+  person_name: string | null;
 };
 
 type YearLabelRow = {
   year_label: string;
 };
+
+function isActorActressCategory(categoryName: string) {
+  return /actor|actress/i.test(categoryName);
+}
 
 function FilmsContent() {
   const db = useSQLiteContext();
@@ -103,26 +108,44 @@ function FilmsContent() {
                   c.name AS category_name,
                   m.id AS movie_id,
                   m.title AS movie_title,
-                  n.won AS is_winner
+                  n.won AS is_winner,
+                  p.name AS person_name
            FROM ceremonies cer
            INNER JOIN nominations n ON n.ceremony_id = cer.id
            INNER JOIN categories c ON c.id = n.category_id
            INNER JOIN nomination_movies nm ON nm.nomination_id = n.id
            INNER JOIN movies m ON m.id = nm.movie_id
+           LEFT JOIN nomination_people np
+             ON np.nomination_id = n.id
+            AND np.ordinal = nm.ordinal
+           LEFT JOIN people p ON p.id = np.person_id
            WHERE CAST(cer.year_label AS INTEGER) = ?
-           ORDER BY c.name ASC, m.title ASC`,
+           ORDER BY c.name ASC, m.title ASC, p.name ASC`,
           [selectedYear],
         );
 
         const groupedByCategory = new Map<number, CategoryGroup>();
+        let actorRowsWithPerson = 0;
+        let actorRowsMissingPerson = 0;
+
         rows.forEach((row) => {
           const existingGroup = groupedByCategory.get(row.category_id);
+          const personFirst = isActorActressCategory(row.category_name);
+
+          if (personFirst) {
+            if (row.person_name) {
+              actorRowsWithPerson += 1;
+            } else {
+              actorRowsMissingPerson += 1;
+            }
+          }
 
           if (existingGroup) {
             existingGroup.movies.push({
               id: row.movie_id,
               title: row.movie_title,
               isWinner: row.is_winner === 1,
+              personName: row.person_name,
             });
             return;
           }
@@ -130,11 +153,13 @@ function FilmsContent() {
           groupedByCategory.set(row.category_id, {
             categoryId: row.category_id,
             categoryName: row.category_name,
+            isPersonFirstCategory: personFirst,
             movies: [
               {
                 id: row.movie_id,
                 title: row.movie_title,
                 isWinner: row.is_winner === 1,
+                personName: row.person_name,
               },
             ],
           });
@@ -142,7 +167,15 @@ function FilmsContent() {
 
         const groups = Array.from(groupedByCategory.values());
         console.log(`films-year-${selectedYear}-movie-rows: ${rows.length}`);
-        console.log(`films-year-${selectedYear}-category-count: ${groups.length}`);
+        console.log(
+          `films-year-${selectedYear}-category-count: ${groups.length}`,
+        );
+        console.log(
+          `films-year-${selectedYear}-actor-rows-with-person: ${actorRowsWithPerson}`,
+        );
+        console.log(
+          `films-year-${selectedYear}-actor-rows-missing-person: ${actorRowsMissingPerson}`,
+        );
         setCategoryGroups(groups);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load films');
