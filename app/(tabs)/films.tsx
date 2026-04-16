@@ -11,7 +11,7 @@ type NominationMovieRow = {
   movie_id: number;
   movie_title: string;
   is_winner: number;
-  person_name: string | null;
+  people_names: string | null;
   song_title: string | null;
 };
 
@@ -114,7 +114,16 @@ function FilmsContent() {
                   m.id AS movie_id,
                   m.title AS movie_title,
                   n.won AS is_winner,
-                  p.name AS person_name,
+                  (
+                    SELECT group_concat(all_people.name, ', ')
+                    FROM (
+                      SELECT p2.name AS name
+                      FROM nomination_people np2
+                      INNER JOIN people p2 ON p2.id = np2.person_id
+                      WHERE np2.nomination_id = n.id
+                      ORDER BY np2.ordinal ASC
+                    ) AS all_people
+                  ) AS people_names,
                   (
                     SELECT nn.nominee_text
                     FROM nomination_nominees nn
@@ -128,12 +137,8 @@ function FilmsContent() {
            INNER JOIN categories c ON c.id = n.category_id
            INNER JOIN nomination_movies nm ON nm.nomination_id = n.id
            INNER JOIN movies m ON m.id = nm.movie_id
-           LEFT JOIN nomination_people np
-             ON np.nomination_id = n.id
-            AND np.ordinal = nm.ordinal
-           LEFT JOIN people p ON p.id = np.person_id
            WHERE CAST(cer.year_label AS INTEGER) = ?
-           ORDER BY c.name ASC, m.title ASC, p.name ASC`,
+           ORDER BY c.name ASC, m.title ASC`,
           [selectedYear],
         );
 
@@ -147,7 +152,7 @@ function FilmsContent() {
           const songFirst = isSongCategory(row.category_name);
 
           if (personFirst) {
-            if (row.person_name) {
+            if (row.people_names) {
               actorRowsWithPerson += 1;
             } else {
               actorRowsMissingPerson += 1;
@@ -159,7 +164,7 @@ function FilmsContent() {
               id: row.movie_id,
               title: row.movie_title,
               isWinner: row.is_winner === 1,
-              personName: row.person_name,
+              peopleNames: row.people_names,
               songTitle: row.song_title,
             });
             return;
@@ -175,7 +180,7 @@ function FilmsContent() {
                 id: row.movie_id,
                 title: row.movie_title,
                 isWinner: row.is_winner === 1,
-                personName: row.person_name,
+                peopleNames: row.people_names,
                 songTitle: row.song_title,
               },
             ],
