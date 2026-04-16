@@ -29,12 +29,21 @@ db.exec(`
   );
 
   CREATE TABLE movies (
-    id           INTEGER PRIMARY KEY,
-    title        TEXT    NOT NULL,
-    tmdb_id      INTEGER UNIQUE,
-    imdb_id      TEXT    UNIQUE,
-    wins         INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0),
-    nominations  INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)
+    id            INTEGER PRIMARY KEY,
+    title         TEXT    NOT NULL,
+    tmdb_id       INTEGER UNIQUE,
+    imdb_id       TEXT    UNIQUE,
+    backdrop_path TEXT,
+    original_title TEXT,
+    overview      TEXT,
+    popularity    REAL,
+    poster_path   TEXT,
+    release_date  TEXT,
+    runtime       INTEGER,
+    tagline       TEXT,
+    director      TEXT,
+    wins          INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0),
+    nominations   INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)
   );
 
   CREATE TABLE people (
@@ -99,7 +108,20 @@ const stmts = {
   getCategory: db.prepare('SELECT id FROM categories WHERE name = ?'),
 
   insertMovie: db.prepare(`
-    INSERT OR IGNORE INTO movies (title, tmdb_id, imdb_id) VALUES (?, ?, ?)
+    INSERT OR IGNORE INTO movies (
+      title,
+      tmdb_id,
+      imdb_id,
+      backdrop_path,
+      original_title,
+      overview,
+      popularity,
+      poster_path,
+      release_date,
+      runtime,
+      tagline,
+      director
+    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `),
   getMovieByTmdb: db.prepare('SELECT id FROM movies WHERE tmdb_id = ?'),
   getMovieByImdb: db.prepare('SELECT id FROM movies WHERE imdb_id = ?'),
@@ -177,7 +199,20 @@ const seed = db.transaction(() => {
 
     // movies (upsert to deduplicate across nominations)
     for (const m of rec.movies) {
-      stmts.insertMovie.run(m.title, m.tmdb_id ?? null, m.imdb_id ?? null);
+      stmts.insertMovie.run(
+        m.title,
+        m.tmdb_id ?? null,
+        m.imdb_id ?? null,
+        m.backdrop_path ?? null,
+        m.original_title ?? null,
+        m.overview ?? null,
+        m.popularity ?? null,
+        m.poster_path ?? null,
+        m.release_date ?? null,
+        m.runtime ?? null,
+        m.tagline ?? null,
+        m.director ?? null,
+      );
     }
 
     // core nomination row

@@ -47,9 +47,9 @@ export default function FilmsList({ categories }: Props) {
                     : `${movie.songTitle} - ${movie.title}`
                   : item.isPersonFirstCategory && movie.peopleNames
                     ? `${movie.peopleNames} - ${movie.title}`
-                  : movie.peopleNames
-                    ? `${movie.title} - ${movie.peopleNames}`
-                    : movie.title}
+                    : movie.peopleNames
+                      ? `${movie.title} - ${movie.peopleNames}`
+                      : movie.title}
               </Text>
             </View>
           ))}
