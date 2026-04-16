@@ -199,8 +199,8 @@ export default function PersonDetail({ person }: Props) {
             {profileUri ? (
               <MoviePoster
                 selectedImage={profileUri}
-                width={100}
-                height={100}
+                width={130}
+                height={130}
                 isCircle={true}
               />
             ) : (
@@ -331,9 +331,9 @@ const styles = StyleSheet.create({
     marginTop: 8,
   },
   profileImageFallback: {
-    width: 100,
-    height: 100,
-    borderRadius: 50,
+    width: 130,
+    height: 130,
+    borderRadius: 65,
     backgroundColor: '#1f2226',
   },
   profileSection: {
