@@ -107,7 +107,11 @@ export default function PersonDetail({ person, movies = [] }: Props) {
   };
 
   const onShowNominations = () => {
-    router.push(`/people/${person.id}/nominations`);
+    router.push(
+      isSearchRoute
+        ? `/search/people/${person.id}/nominations`
+        : `/people/${person.id}/nominations`,
+    );
   };
 
   const onShowMovie = (movieId: number) => {

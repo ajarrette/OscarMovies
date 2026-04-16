@@ -76,7 +76,11 @@ export default function FilmDetail({
   };
 
   const onShowNominations = () => {
-    router.push(`/films/${film.id}/nominations`);
+    router.push(
+      isSearchRoute
+        ? `/search/films/${film.id}/nominations`
+        : `/films/${film.id}/nominations`,
+    );
   };
 
   const onShowDirector = () => {

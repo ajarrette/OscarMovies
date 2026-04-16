@@ -30,6 +30,22 @@ export default function SearchStackLayout() {
           headerShown: true,
         }}
       />
+      <Stack.Screen
+        name='films/[id]/nominations'
+        options={{
+          headerTitle: 'Nominations',
+          headerBackButtonDisplayMode: 'minimal',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name='people/[id]/nominations'
+        options={{
+          headerTitle: 'Nominations',
+          headerBackButtonDisplayMode: 'minimal',
+          headerShown: true,
+        }}
+      />
     </Stack>
   );
 }

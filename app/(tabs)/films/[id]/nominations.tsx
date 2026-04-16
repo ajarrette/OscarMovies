@@ -1,4 +1,9 @@
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import {
+  useLocalSearchParams,
+  usePathname,
+  useRouter,
+  Stack,
+} from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -56,7 +61,9 @@ function isBestOriginalSongCategory(categoryKey: string) {
 function NominationsContent({ filmId }: { filmId: number }) {
   const db = useSQLiteContext();
   const router = useRouter();
+  const pathname = usePathname();
   const { width } = useWindowDimensions();
+  const isSearchRoute = pathname.startsWith('/search');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nominations, setNominations] = useState<NominationGroup[]>([]);
@@ -232,12 +239,24 @@ function NominationsContent({ filmId }: { filmId: number }) {
                       selectedImage={`https://image.tmdb.org/t/p/w300${nominee.profilePath}`}
                       width={posterWidth}
                       height={posterHeight}
-                      onPress={() => router.push(`/people/${nominee.id}`)}
+                      onPress={() =>
+                        router.push(
+                          isSearchRoute
+                            ? `/search/people/${nominee.id}`
+                            : `/people/${nominee.id}`,
+                        )
+                      }
                     />
                   ) : (
                     <Pressable
                       style={[styles.posterFallback, { height: posterHeight }]}
-                      onPress={() => router.push(`/people/${nominee.id}`)}
+                      onPress={() =>
+                        router.push(
+                          isSearchRoute
+                            ? `/search/people/${nominee.id}`
+                            : `/people/${nominee.id}`,
+                        )
+                      }
                     >
                       <Text style={styles.posterFallbackText}>NO IMAGE</Text>
                     </Pressable>
