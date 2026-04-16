@@ -19,6 +19,30 @@ type YearLabelRow = {
   year_label: string;
 };
 
+function getDisplayYearFromLabel(yearLabel: string): number | null {
+  const normalized = yearLabel.trim();
+
+  const splitYearMatch = normalized.match(/^(\d{4})\/(\d{2}|\d{4})$/);
+  if (splitYearMatch) {
+    const firstYear = Number(splitYearMatch[1]);
+    const secondPart = splitYearMatch[2];
+
+    if (secondPart.length === 4) {
+      return Number(secondPart);
+    }
+
+    const centuryPrefix = Math.floor(firstYear / 100) * 100;
+    return centuryPrefix + Number(secondPart);
+  }
+
+  const singleYearMatch = normalized.match(/^\d{4}$/);
+  if (singleYearMatch) {
+    return Number(normalized) + 1;
+  }
+
+  return null;
+}
+
 function isActorActressCategory(categoryName: string) {
   return /actor|actress/i.test(categoryName);
 }
@@ -31,6 +55,9 @@ function FilmsContent() {
   const db = useSQLiteContext();
   const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
   const [years, setYears] = useState<number[]>([]);
+  const [yearLabelsByDisplayYear, setYearLabelsByDisplayYear] = useState<
+    Record<number, string[]>
+  >({});
   const [selectedDecade, setSelectedDecade] = useState<number | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
   const [isLoadingYears, setIsLoadingYears] = useState(true);
@@ -44,12 +71,28 @@ function FilmsContent() {
         const yearRows = await db.getAllAsync<YearLabelRow>(
           'SELECT year_label FROM ceremonies',
         );
-        const validYears = yearRows
-          .map((row) => Number(row.year_label))
+
+        const labelsByDisplayYear: Record<number, string[]> = {};
+        yearRows.forEach((row) => {
+          const displayYear = getDisplayYearFromLabel(row.year_label);
+          if (displayYear === null) {
+            return;
+          }
+
+          if (!labelsByDisplayYear[displayYear]) {
+            labelsByDisplayYear[displayYear] = [];
+          }
+
+          labelsByDisplayYear[displayYear].push(row.year_label);
+        });
+
+        const validYears = Object.keys(labelsByDisplayYear)
+          .map((year) => Number(year))
           .filter((year) => Number.isInteger(year));
 
         if (validYears.length === 0) {
           setYears([]);
+          setYearLabelsByDisplayYear({});
           setSelectedYear(null);
           return;
         }
@@ -64,6 +107,7 @@ function FilmsContent() {
           (_, index) => minYear + index,
         );
         setYears(yearRange);
+        setYearLabelsByDisplayYear(labelsByDisplayYear);
         setSelectedDecade(Math.floor(maxYear / 10) * 10);
         setSelectedYear(maxYear);
       } catch (err) {
@@ -108,6 +152,15 @@ function FilmsContent() {
         setError(null);
         setIsLoadingFilms(true);
         console.log(`films-selected-year: ${selectedYear}`);
+
+        const sourceYearLabels = yearLabelsByDisplayYear[selectedYear] ?? [];
+        if (sourceYearLabels.length === 0) {
+          setCategoryGroups([]);
+          setIsLoadingFilms(false);
+          return;
+        }
+
+        const placeholders = sourceYearLabels.map(() => '?').join(', ');
         const rows = await db.getAllAsync<NominationMovieRow>(
           `SELECT c.id AS category_id,
                   c.name AS category_name,
@@ -137,9 +190,9 @@ function FilmsContent() {
            INNER JOIN categories c ON c.id = n.category_id
            INNER JOIN nomination_movies nm ON nm.nomination_id = n.id
            INNER JOIN movies m ON m.id = nm.movie_id
-           WHERE CAST(cer.year_label AS INTEGER) = ?
+           WHERE cer.year_label IN (${placeholders})
            ORDER BY c.name ASC, m.title ASC`,
-          [selectedYear],
+          sourceYearLabels,
         );
 
         const groupedByCategory = new Map<number, CategoryGroup>();
@@ -207,7 +260,7 @@ function FilmsContent() {
     };
 
     loadNominations();
-  }, [db, selectedYear]);
+  }, [db, selectedYear, yearLabelsByDisplayYear]);
 
   if (isLoadingYears) {
     return (
