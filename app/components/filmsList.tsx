@@ -1,8 +1,9 @@
-import { FlatList, StyleSheet, Text, View } from 'react-native';
+import { FlatList, Image, StyleSheet, Text, View } from 'react-native';
 
 type CategoryMovie = {
   id: number;
   title: string;
+  isWinner: boolean;
 };
 
 export type CategoryGroup = {
@@ -29,6 +30,12 @@ export default function FilmsList({ categories }: Props) {
               key={`${item.categoryId}-${movie.id}-${index}`}
               style={styles.movieRow}
             >
+              {movie.isWinner && (
+                <Image
+                  source={require('../../assets/images/winner.png')}
+                  style={styles.winnerIcon}
+                />
+              )}
               <Text style={styles.movieTitle}>{movie.title}</Text>
             </View>
           ))}
@@ -57,7 +64,14 @@ const styles = StyleSheet.create({
     marginBottom: 8,
   },
   movieRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 8,
     paddingVertical: 12,
+  },
+  winnerIcon: {
+    width: 16,
+    height: 16,
   },
   movieTitle: {
     color: '#fff',

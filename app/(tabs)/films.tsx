@@ -10,6 +10,7 @@ type NominationMovieRow = {
   category_name: string;
   movie_id: number;
   movie_title: string;
+  is_winner: number;
 };
 
 type YearLabelRow = {
@@ -101,7 +102,8 @@ function FilmsContent() {
           `SELECT c.id AS category_id,
                   c.name AS category_name,
                   m.id AS movie_id,
-                  m.title AS movie_title
+                  m.title AS movie_title,
+                  n.won AS is_winner
            FROM ceremonies cer
            INNER JOIN nominations n ON n.ceremony_id = cer.id
            INNER JOIN categories c ON c.id = n.category_id
@@ -120,6 +122,7 @@ function FilmsContent() {
             existingGroup.movies.push({
               id: row.movie_id,
               title: row.movie_title,
+              isWinner: row.is_winner === 1,
             });
             return;
           }
@@ -127,7 +130,13 @@ function FilmsContent() {
           groupedByCategory.set(row.category_id, {
             categoryId: row.category_id,
             categoryName: row.category_name,
-            movies: [{ id: row.movie_id, title: row.movie_title }],
+            movies: [
+              {
+                id: row.movie_id,
+                title: row.movie_title,
+                isWinner: row.is_winner === 1,
+              },
+            ],
           });
         });
 
