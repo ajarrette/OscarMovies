@@ -2,12 +2,14 @@ import { SQLiteProvider, useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import FilmsList from '../components/filmsList';
+import type { CategoryGroup } from '../components/filmsList';
 import FilmsYearPicker from '../components/filmsYearPicker';
 
-type FilmRow = {
-  id: number;
-  title: string;
-  nominations: number;
+type NominationMovieRow = {
+  category_id: number;
+  category_name: string;
+  movie_id: number;
+  movie_title: string;
 };
 
 type YearLabelRow = {
@@ -16,7 +18,7 @@ type YearLabelRow = {
 
 function FilmsContent() {
   const db = useSQLiteContext();
-  const [films, setFilms] = useState<FilmRow[]>([]);
+  const [categoryGroups, setCategoryGroups] = useState<CategoryGroup[]>([]);
   const [years, setYears] = useState<number[]>([]);
   const [selectedDecade, setSelectedDecade] = useState<number | null>(null);
   const [selectedYear, setSelectedYear] = useState<number | null>(null);
@@ -90,24 +92,49 @@ function FilmsContent() {
       return;
     }
 
-    const loadFilms = async () => {
+    const loadNominations = async () => {
       try {
         setError(null);
         setIsLoadingFilms(true);
         console.log(`films-selected-year: ${selectedYear}`);
-        const rows = await db.getAllAsync<FilmRow>(
-          `SELECT DISTINCT m.id, m.title, m.nominations
-           FROM movies m
-           INNER JOIN nomination_movies nm ON nm.movie_id = m.id
-           INNER JOIN nominations n ON n.id = nm.nomination_id
-           INNER JOIN ceremonies c ON c.id = n.ceremony_id
-           WHERE CAST(c.year_label AS INTEGER) = ? AND m.nominations > ?
-           ORDER BY m.title ASC`,
-          [selectedYear, 0],
+        const rows = await db.getAllAsync<NominationMovieRow>(
+          `SELECT c.id AS category_id,
+                  c.name AS category_name,
+                  m.id AS movie_id,
+                  m.title AS movie_title
+           FROM ceremonies cer
+           INNER JOIN nominations n ON n.ceremony_id = cer.id
+           INNER JOIN categories c ON c.id = n.category_id
+           INNER JOIN nomination_movies nm ON nm.nomination_id = n.id
+           INNER JOIN movies m ON m.id = nm.movie_id
+           WHERE CAST(cer.year_label AS INTEGER) = ?
+           ORDER BY c.name ASC, m.title ASC`,
+          [selectedYear],
         );
 
-        console.log(`films-year-${selectedYear}-count: ${rows.length}`);
-        setFilms(rows);
+        const groupedByCategory = new Map<number, CategoryGroup>();
+        rows.forEach((row) => {
+          const existingGroup = groupedByCategory.get(row.category_id);
+
+          if (existingGroup) {
+            existingGroup.movies.push({
+              id: row.movie_id,
+              title: row.movie_title,
+            });
+            return;
+          }
+
+          groupedByCategory.set(row.category_id, {
+            categoryId: row.category_id,
+            categoryName: row.category_name,
+            movies: [{ id: row.movie_id, title: row.movie_title }],
+          });
+        });
+
+        const groups = Array.from(groupedByCategory.values());
+        console.log(`films-year-${selectedYear}-movie-rows: ${rows.length}`);
+        console.log(`films-year-${selectedYear}-category-count: ${groups.length}`);
+        setCategoryGroups(groups);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load films');
       } finally {
@@ -115,7 +142,7 @@ function FilmsContent() {
       }
     };
 
-    loadFilms();
+    loadNominations();
   }, [db, selectedYear]);
 
   if (isLoadingYears) {
@@ -168,13 +195,13 @@ function FilmsContent() {
         />
         <View style={styles.centeredInline}>
           <ActivityIndicator color='#fff' />
-          <Text style={styles.helperText}>Loading films...</Text>
+          <Text style={styles.helperText}>Loading nominations...</Text>
         </View>
       </View>
     );
   }
 
-  if (films.length === 0) {
+  if (categoryGroups.length === 0) {
     return (
       <View style={styles.container}>
         <FilmsYearPicker
@@ -187,7 +214,7 @@ function FilmsContent() {
         />
         <View style={styles.centeredInline}>
           <Text style={styles.helperText}>
-            No nominated films found for {selectedYear}.
+            No nomination categories found for {selectedYear}.
           </Text>
         </View>
       </View>
@@ -204,7 +231,7 @@ function FilmsContent() {
         onSelectDecade={setSelectedDecade}
         onSelectYear={setSelectedYear}
       />
-      <FilmsList films={films} />
+      <FilmsList categories={categoryGroups} />
     </View>
   );
 }

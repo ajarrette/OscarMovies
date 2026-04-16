@@ -32,7 +32,10 @@ export default function FilmsYearPicker({
                 onPress={() => onSelectDecade(decade)}
               >
                 <Text
-                  style={[styles.pillText, isSelected && styles.pillTextSelected]}
+                  style={[
+                    styles.pillText,
+                    isSelected && styles.pillTextSelected,
+                  ]}
                 >
                   {decade}s
                 </Text>
@@ -54,7 +57,10 @@ export default function FilmsYearPicker({
                 onPress={() => onSelectYear(year)}
               >
                 <Text
-                  style={[styles.pillText, isSelected && styles.pillTextSelected]}
+                  style={[
+                    styles.pillText,
+                    isSelected && styles.pillTextSelected,
+                  ]}
                 >
                   {year}
                 </Text>
