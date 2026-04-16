@@ -11,7 +11,8 @@
     "test": "jest --watchAll",
     "lint": "expo lint",
     "seed": "node ./assets/data/db-seed.js",
-    "enrich": "node ./assets/data/enrich-data.js"
+    "enrich": "node ./assets/data/enrich-data.js",
+    "enrich-people": "node ./assets/data/enrich-people.js"
   },
   "jest": {
     "preset": "jest-expo"
