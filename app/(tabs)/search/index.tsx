@@ -178,6 +178,7 @@ function SearchContent() {
                           WHERE np.person_id = p.id
                         ), 0) AS nominations
                  FROM people p
+                 WHERE p.known_for_department = 'Acting'
                  ORDER BY nominations DESC, wins DESC, p.name ASC
                  LIMIT ${DEFAULT_RESULTS_LIMIT}`,
               )
