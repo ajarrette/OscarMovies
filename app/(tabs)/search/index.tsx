@@ -354,21 +354,19 @@ function SearchContent() {
               const imageUri = item.imagePath
                 ? `https://image.tmdb.org/t/p/w300${item.imagePath}`
                 : undefined;
+              const handlePress = () =>
+                item.kind === 'films'
+                  ? router.push(`/search/films/${item.id}`)
+                  : router.push(`/search/people/${item.id}`);
 
               return (
-                <Pressable
-                  onPress={() =>
-                    item.kind === 'films'
-                      ? router.push(`/search/films/${item.id}`)
-                      : router.push(`/search/people/${item.id}`)
-                  }
-                  style={styles.resultRow}
-                >
+                <Pressable onPress={handlePress} style={styles.resultRow}>
                   {imageUri ? (
                     <MoviePoster
                       selectedImage={imageUri}
                       width={posterWidth}
                       height={posterHeight}
+                      onPress={handlePress}
                     />
                   ) : (
                     <View
