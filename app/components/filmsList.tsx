@@ -1,6 +1,7 @@
 import { router } from 'expo-router';
 import {
   FlatList,
+  Pressable,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -50,7 +51,10 @@ export default function FilmsList({ categories }: Props) {
           <Text style={styles.categoryTitle}>{item.categoryName}</Text>
           <View style={styles.movieList}>
             {item.movies.map((movie, index) => (
-              <View key={`${item.categoryId}-${movie.id}-${index}`}>
+              <View
+                key={`${item.categoryId}-${movie.id}-${index}`}
+                style={[styles.movieItem, { width: posterWidth }]}
+              >
                 {movie.posterPath ? (
                   <View
                     style={[
@@ -66,17 +70,22 @@ export default function FilmsList({ categories }: Props) {
                     />
                   </View>
                 ) : (
-                  <Text style={styles.movieTitle}>
-                    {item.isSongFirstCategory && movie.songTitle
-                      ? movie.peopleNames
-                        ? `${movie.songTitle} - ${movie.title} - ${movie.peopleNames}`
-                        : `${movie.songTitle} - ${movie.title}`
-                      : item.isPersonFirstCategory && movie.peopleNames
-                        ? `${movie.peopleNames} - ${movie.title}`
-                        : movie.peopleNames
-                          ? `${movie.title} - ${movie.peopleNames}`
-                          : movie.title}
-                  </Text>
+                  <Pressable
+                    style={[styles.textTile, { height: posterHeight }]}
+                    onPress={() => onShowDetails(movie.id)}
+                  >
+                    <Text style={styles.movieTitle}>
+                      {item.isSongFirstCategory && movie.songTitle
+                        ? movie.peopleNames
+                          ? `${movie.songTitle} - ${movie.title} - ${movie.peopleNames}`
+                          : `${movie.songTitle} - ${movie.title}`
+                        : item.isPersonFirstCategory && movie.peopleNames
+                          ? `${movie.peopleNames} - ${movie.title}`
+                          : movie.peopleNames
+                            ? `${movie.title} - ${movie.peopleNames}`
+                            : movie.title}
+                    </Text>
+                  </Pressable>
                 )}
               </View>
             ))}
@@ -102,7 +111,6 @@ const styles = StyleSheet.create({
   categoryTitle: {
     color: '#fff',
     fontSize: 16,
-    fontWeight: '700',
     marginBottom: 8,
   },
   movieList: {
@@ -117,16 +125,25 @@ const styles = StyleSheet.create({
     marginBottom: 8,
     borderRadius: 5,
   },
+  movieItem: {
+    marginBottom: 8,
+  },
   winnerPoster: {
     borderWidth: 4,
     borderColor: '#ffd33d',
+  },
+  textTile: {
+    width: '100%',
+    borderWidth: 1,
+    borderColor: '#fff',
+    padding: 8,
+    justifyContent: 'center',
   },
   movieTitle: {
     color: '#fff',
     fontSize: 15,
     fontWeight: '500',
-    maxWidth: 180,
-    marginBottom: 8,
+    width: '100%',
   },
   movieRow: {
     flexDirection: 'row',

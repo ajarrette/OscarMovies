@@ -217,7 +217,7 @@ function FilmsContent() {
 
           groupedByCategory.set(row.category_id, {
             categoryId: row.category_id,
-            categoryName: row.category_name,
+            categoryName: row.category_name.toUpperCase(),
             isPersonFirstCategory: personFirst,
             isSongFirstCategory: songFirst,
             movies: [

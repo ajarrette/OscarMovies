@@ -1,4 +1,4 @@
-import LoadFilmDetail from '@/app/components/loadFilmDetail';
+import LoadFilmDetail from '../../components/loadFilmDetail';
 import { useLocalSearchParams } from 'expo-router';
 import { SQLiteProvider } from 'expo-sqlite';
 import { StyleSheet, View } from 'react-native';

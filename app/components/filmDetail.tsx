@@ -23,8 +23,35 @@ export default function FilmDetail({ film }: Props) {
   const router = useRouter();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
+  const title = film.title ?? 'Unknown Title';
+  const originalTitle = film.original_title ?? title;
+  const director = film.director ?? 'Unknown';
+  const overview = film.overview ?? 'No overview available.';
+  const runtimeText =
+    typeof film.runtime === 'number' ? `${film.runtime} mins` : 'Runtime N/A';
+  const releaseYear = (() => {
+    if (!film.release_date) {
+      return 'Unknown';
+    }
+
+    const date = new Date(film.release_date);
+    const year = date.getFullYear();
+    return Number.isNaN(year) ? 'Unknown' : String(year);
+  })();
+  const tagline = film.tagline?.trim();
+  const upperTagline = tagline ? tagline.toUpperCase() : null;
+  const backdropUri = film.backdrop_path
+    ? `https://image.tmdb.org/t/p/w500${film.backdrop_path}`
+    : undefined;
+  const posterUri = film.poster_path
+    ? `https://image.tmdb.org/t/p/w300${film.poster_path}`
+    : undefined;
 
   const onImdbPress = () => {
+    if (!film.imdb_id) {
+      return;
+    }
+
     const url = `https://www.imdb.com/title/${film.imdb_id}/`;
     const handlePress = async () => {
       await Linking.openURL(url);
@@ -78,7 +105,7 @@ export default function FilmDetail({ film }: Props) {
         <View>
           <Animated.Image
             source={{
-              uri: `https://image.tmdb.org/t/p/w500${film.backdrop_path}`,
+              uri: backdropUri,
             }}
             style={[styles.image, imageAnimatedStyle]}
           />
@@ -96,19 +123,19 @@ export default function FilmDetail({ film }: Props) {
           <View style={styles.detailsContainer}>
             <View style={styles.topRow}>
               <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{film.title}</Text>
-                {film.title !== film.original_title && (
-                  <Text style={styles.subtitle}>{film.original_title}</Text>
+                <Text style={styles.title}>{title}</Text>
+                {title !== originalTitle && (
+                  <Text style={styles.subtitle}>{originalTitle}</Text>
                 )}
                 <Text style={styles.releaseDate}>
-                  {new Date(film.release_date).getFullYear()} • DIRECTED BY
+                  {releaseYear} • DIRECTED BY
                 </Text>
-                <Text style={styles.director}>{film.director}</Text>
+                <Text style={styles.director}>{director}</Text>
                 <View style={styles.row}>
                   <Pressable onPress={onImdbPress}>
                     <Text style={styles.button}>IMDB</Text>
                   </Pressable>
-                  <Text style={styles.defaultText}>{film.runtime} mins</Text>
+                  <Text style={styles.defaultText}>{runtimeText}</Text>
                 </View>
                 <NomineeStrip
                   nominations={film.nominations}
@@ -118,14 +145,14 @@ export default function FilmDetail({ film }: Props) {
               </View>
               <View>
                 <MoviePoster
-                  selectedImage={`https://image.tmdb.org/t/p/w300${film.poster_path}`}
+                  selectedImage={posterUri}
                   width={120}
                   height={180}
                 />
               </View>
             </View>
-            <Text style={styles.tagline}>{film.tagline.toUpperCase()}</Text>
-            <Text style={styles.overview}>{film.overview}</Text>
+            {upperTagline && <Text style={styles.tagline}>{upperTagline}</Text>}
+            <Text style={styles.overview}>{overview}</Text>
           </View>
         </View>
       </Animated.ScrollView>
