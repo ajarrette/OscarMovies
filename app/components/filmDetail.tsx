@@ -1,6 +1,6 @@
 import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, usePathname, useRouter } from 'expo-router';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
   interpolate,
@@ -35,8 +35,10 @@ export default function FilmDetail({
   castPeople = [],
 }: Props) {
   const router = useRouter();
+  const pathname = usePathname();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
+  const isSearchRoute = pathname.startsWith('/search');
   const title = film.title ?? 'Unknown Title';
   const originalTitle = film.original_title ?? title;
   const director = film.director ?? 'Unknown';
@@ -82,11 +84,17 @@ export default function FilmDetail({
       return;
     }
 
-    router.push(`/people/${directorPersonId}`);
+    router.push(
+      isSearchRoute
+        ? `/search/people/${directorPersonId}`
+        : `/people/${directorPersonId}`,
+    );
   };
 
   const onShowCastPerson = (personId: number) => {
-    router.push(`/people/${personId}`);
+    router.push(
+      isSearchRoute ? `/search/people/${personId}` : `/people/${personId}`,
+    );
   };
 
   const imageAnimatedStyle = useAnimatedStyle(() => {

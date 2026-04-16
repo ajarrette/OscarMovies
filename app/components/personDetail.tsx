@@ -1,7 +1,7 @@
 import Person from '@/types/person';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
-import { useNavigation, useRouter } from 'expo-router';
+import { useNavigation, usePathname, useRouter } from 'expo-router';
 import { useLayoutEffect } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -70,8 +70,10 @@ function getAge(birthday: string | null, deathday: string | null) {
 export default function PersonDetail({ person, movies = [] }: Props) {
   const navigation = useNavigation();
   const router = useRouter();
+  const pathname = usePathname();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
+  const isSearchRoute = pathname.startsWith('/search');
   const name = person.name ?? 'Unknown Person';
   const biography = person.biography?.trim() || 'No biography available.';
   const knownForDepartment =
@@ -109,7 +111,9 @@ export default function PersonDetail({ person, movies = [] }: Props) {
   };
 
   const onShowMovie = (movieId: number) => {
-    router.push(`/films/${movieId}`);
+    router.push(
+      isSearchRoute ? `/search/films/${movieId}` : `/films/${movieId}`,
+    );
   };
 
   const headerBackgroundAnimatedStyle = useAnimatedStyle(() => {
