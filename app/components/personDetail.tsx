@@ -183,7 +183,8 @@ export default function PersonDetail({ person }: Props) {
                 <MoviePoster
                   selectedImage={profileUri}
                   width={120}
-                  height={180}
+                  height={120}
+                  isCircle={true}
                 />
               </View>
             </View>

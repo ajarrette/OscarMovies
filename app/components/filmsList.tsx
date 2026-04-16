@@ -91,6 +91,9 @@ export default function FilmsList({ categories }: Props) {
                       <View
                         style={[
                           styles.posterContainer,
+                          item.isPersonFirstCategory && {
+                            borderRadius: posterWidth / 2,
+                          },
                           movie.isWinner && styles.winnerPoster,
                         ]}
                       >
@@ -102,8 +105,15 @@ export default function FilmsList({ categories }: Props) {
                           }`}
                           width={movie.isWinner ? posterWidth - 8 : posterWidth}
                           height={
-                            movie.isWinner ? posterHeight - 8 : posterHeight
+                            item.isPersonFirstCategory
+                              ? movie.isWinner
+                                ? posterWidth - 8
+                                : posterWidth
+                              : movie.isWinner
+                                ? posterHeight - 8
+                                : posterHeight
                           }
+                          isCircle={item.isPersonFirstCategory}
                           onPress={() =>
                             item.isPersonFirstCategory &&
                             movie.personId !== null

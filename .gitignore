@@ -38,3 +38,7 @@ yarn-error.*
 app-example
 
 .env
+
+assets/data/oscar-movies.db-shm
+
+assets/data/oscar-movies.db-wal
