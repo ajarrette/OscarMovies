@@ -4,13 +4,13 @@
 const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
+const { normalizeNameForComparison } = require('./name-normalization');
 
 const ROOT = path.join(__dirname, '..', '..');
 const JSON_SRC = path.join(ROOT, 'assets', 'data', 'oscar-nominations.json');
 const DB_OUT = path.join(ROOT, 'assets', 'data', 'oscar-movies.db');
 
-// ── Clean start ───────────────────────────────────────────────────────────────
-if (fs.existsSync(DB_OUT)) fs.unlinkSync(DB_OUT);
+// ── Open existing DB or create if missing ─────────────────────────────────────
 const db = new Database(DB_OUT);
 
 db.pragma('journal_mode = WAL');
@@ -18,17 +18,17 @@ db.pragma('foreign_keys = ON');
 
 // ── Schema ────────────────────────────────────────────────────────────────────
 db.exec(`
-  CREATE TABLE ceremonies (
+  CREATE TABLE IF NOT EXISTS ceremonies (
     id         INTEGER PRIMARY KEY,
     year_label TEXT    NOT NULL UNIQUE
   );
 
-  CREATE TABLE categories (
+  CREATE TABLE IF NOT EXISTS categories (
     id   INTEGER PRIMARY KEY,
     name TEXT    NOT NULL UNIQUE
   );
 
-  CREATE TABLE movies (
+  CREATE TABLE IF NOT EXISTS movies (
     id            INTEGER PRIMARY KEY,
     title         TEXT    NOT NULL,
     tmdb_id       INTEGER UNIQUE,
@@ -46,12 +46,12 @@ db.exec(`
     nominations   INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)
   );
 
-  CREATE TABLE people (
+  CREATE TABLE IF NOT EXISTS people (
     id   INTEGER PRIMARY KEY,
     name TEXT    NOT NULL UNIQUE
   );
 
-  CREATE TABLE nominations (
+  CREATE TABLE IF NOT EXISTS nominations (
     id           INTEGER PRIMARY KEY,
     ceremony_id  INTEGER NOT NULL,
     category_id  INTEGER NOT NULL,
@@ -61,7 +61,7 @@ db.exec(`
     FOREIGN KEY (category_id) REFERENCES categories(id)
   );
 
-  CREATE TABLE nomination_movies (
+  CREATE TABLE IF NOT EXISTS nomination_movies (
     nomination_id INTEGER NOT NULL,
     movie_id      INTEGER NOT NULL,
     ordinal       INTEGER NOT NULL DEFAULT 1,
@@ -70,7 +70,7 @@ db.exec(`
     FOREIGN KEY (movie_id)      REFERENCES movies(id)      ON DELETE CASCADE
   );
 
-  CREATE TABLE nomination_people (
+  CREATE TABLE IF NOT EXISTS nomination_people (
     nomination_id INTEGER NOT NULL,
     person_id     INTEGER NOT NULL,
     ordinal       INTEGER NOT NULL DEFAULT 1,
@@ -79,7 +79,7 @@ db.exec(`
     FOREIGN KEY (person_id)     REFERENCES people(id)      ON DELETE CASCADE
   );
 
-  CREATE TABLE nomination_nominees (
+  CREATE TABLE IF NOT EXISTS nomination_nominees (
     id            INTEGER PRIMARY KEY,
     nomination_id INTEGER NOT NULL,
     nominee_text  TEXT    NOT NULL,
@@ -89,10 +89,13 @@ db.exec(`
     FOREIGN KEY (nomination_id) REFERENCES nominations(id) ON DELETE CASCADE
   );
 
-  CREATE INDEX idx_nominations_ceremony_category ON nominations(ceremony_id, category_id);
-  CREATE INDEX idx_nomination_movies_movie        ON nomination_movies(movie_id);
-  CREATE INDEX idx_nomination_people_person       ON nomination_people(person_id);
-  CREATE INDEX idx_nomination_nominees_nomination ON nomination_nominees(nomination_id);
+  CREATE INDEX IF NOT EXISTS idx_nominations_ceremony_category ON nominations(ceremony_id, category_id);
+  CREATE INDEX IF NOT EXISTS idx_nomination_movies_movie        ON nomination_movies(movie_id);
+  CREATE INDEX IF NOT EXISTS idx_nomination_people_person       ON nomination_people(person_id);
+  CREATE INDEX IF NOT EXISTS idx_nomination_nominees_nomination ON nomination_nominees(nomination_id);
+  CREATE INDEX IF NOT EXISTS idx_nominations_source_order       ON nominations(source_order);
+  CREATE UNIQUE INDEX IF NOT EXISTS idx_nomination_nominees_unique
+    ON nomination_nominees(nomination_id, ordinal);
 `);
 
 // ── Prepared statements ───────────────────────────────────────────────────────
@@ -136,6 +139,9 @@ const stmts = {
     INSERT INTO nominations (ceremony_id, category_id, won, source_order)
     VALUES (?, ?, ?, ?)
   `),
+  getNominationBySourceOrder: db.prepare(
+    'SELECT id FROM nominations WHERE source_order = ?',
+  ),
 
   insertNomMovie: db.prepare(`
     INSERT OR IGNORE INTO nomination_movies (nomination_id, movie_id, ordinal)
@@ -146,9 +152,10 @@ const stmts = {
     VALUES (?, ?, ?)
   `),
   insertNomNominee: db.prepare(`
-    INSERT INTO nomination_nominees (nomination_id, nominee_text, nominee_kind, ordinal)
+    INSERT OR IGNORE INTO nomination_nominees (nomination_id, nominee_text, nominee_kind, ordinal)
     VALUES (?, ?, ?, ?)
   `),
+  selectPeople: db.prepare('SELECT id, name FROM people'),
 };
 
 // ── Helpers ────────────────────────────────────────────────────────────────────
@@ -187,6 +194,12 @@ function resolveMovieId(m) {
 
 // ── Seed ──────────────────────────────────────────────────────────────────────
 const records = JSON.parse(fs.readFileSync(JSON_SRC, 'utf8'));
+const personIdByNormalizedName = new Map(
+  stmts.selectPeople
+    .all()
+    .map((person) => [normalizeNameForComparison(person.name), person.id])
+    .filter(([normalized]) => normalized !== ''),
+);
 
 const seed = db.transaction(() => {
   records.forEach((rec, sourceOrder) => {
@@ -216,12 +229,16 @@ const seed = db.transaction(() => {
     }
 
     // core nomination row
-    const { lastInsertRowid: nominationId } = stmts.insertNomination.run(
-      ceremony.id,
-      category.id,
-      rec.won ? 1 : 0,
-      sourceOrder,
-    );
+    let nominationId = stmts.getNominationBySourceOrder.get(sourceOrder)?.id;
+    if (nominationId == null) {
+      const inserted = stmts.insertNomination.run(
+        ceremony.id,
+        category.id,
+        rec.won ? 1 : 0,
+        sourceOrder,
+      );
+      nominationId = Number(inserted.lastInsertRowid);
+    }
 
     // nomination → movies join
     rec.movies.forEach((m, i) => {
@@ -238,9 +255,26 @@ const seed = db.transaction(() => {
       stmts.insertNomNominee.run(nominationId, name, kind, i + 1);
 
       if (kind === 'person') {
-        stmts.insertPerson.run(name);
-        const person = stmts.getPerson.get(name);
-        stmts.insertNomPerson.run(nominationId, person.id, i + 1);
+        const normalizedName = normalizeNameForComparison(name);
+        let personId =
+          normalizedName === ''
+            ? null
+            : (personIdByNormalizedName.get(normalizedName) ?? null);
+
+        if (personId == null) {
+          stmts.insertPerson.run(name);
+          const person = stmts.getPerson.get(name);
+          if (!person) {
+            throw new Error(`Failed to resolve person id for nominee: ${name}`);
+          }
+
+          personId = person.id;
+          if (normalizedName !== '') {
+            personIdByNormalizedName.set(normalizedName, personId);
+          }
+        }
+
+        stmts.insertNomPerson.run(nominationId, personId, i + 1);
       }
     });
   });

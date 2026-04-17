@@ -3,6 +3,7 @@
 
 const path = require('path');
 const Database = require('better-sqlite3');
+const { normalizeNameForComparison } = require('./name-normalization');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const API_KEY = process.env.TMDB_API_KEY;
@@ -110,12 +111,6 @@ async function fetchPersonDetails(tmdbId) {
   );
 }
 
-function normalizeName(name) {
-  return String(name ?? '')
-    .trim()
-    .toLocaleLowerCase('en-US');
-}
-
 function nullableText(value) {
   if (value == null) return null;
   const text = String(value).trim();
@@ -136,7 +131,9 @@ async function run() {
       .filter((tmdbId) => tmdbId != null),
   );
   const existingNames = new Set(
-    existingPeople.map((person) => normalizeName(person.name)).filter(Boolean),
+    existingPeople
+      .map((person) => normalizeNameForComparison(person.name))
+      .filter(Boolean),
   );
 
   console.log(
@@ -157,7 +154,7 @@ async function run() {
 
       for (const person of results) {
         const tmdbId = person.id;
-        const normalizedName = normalizeName(person.name);
+        const normalizedName = normalizeNameForComparison(person.name);
 
         if (
           tmdbId == null ||

@@ -3,6 +3,7 @@
 
 const path = require('path');
 const Database = require('better-sqlite3');
+const { normalizeNameForComparison } = require('./name-normalization');
 require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
 
 const API_KEY = process.env.TMDB_API_KEY;
@@ -66,27 +67,37 @@ const selectWithoutTmdbId = db.prepare(`
 `);
 
 const updateTmdbId = db.prepare(`
-  UPDATE people SET tmdb_id = ? WHERE id = ?
+  UPDATE people SET tmdb_id = ? WHERE id = ? AND tmdb_id IS NULL
 `);
 
 const selectWithoutDetails = db.prepare(`
   SELECT id, tmdb_id FROM people
   WHERE tmdb_id IS NOT NULL
-    AND profile_path IS NULL
+    AND (
+      imdb_id IS NULL
+      OR biography IS NULL
+      OR birthday IS NULL
+      OR deathday IS NULL
+      OR gender IS NULL
+      OR known_for_department IS NULL
+      OR place_of_birth IS NULL
+      OR popularity IS NULL
+      OR profile_path IS NULL
+    )
   ORDER BY id ASC
 `);
 
 const updateDetails = db.prepare(`
   UPDATE people SET
-    imdb_id              = ?,
-    biography            = ?,
-    birthday             = ?,
-    deathday             = ?,
-    gender               = ?,
-    known_for_department = ?,
-    place_of_birth       = ?,
-    popularity           = ?,
-    profile_path         = ?
+    imdb_id              = COALESCE(imdb_id, ?),
+    biography            = COALESCE(biography, ?),
+    birthday             = COALESCE(birthday, ?),
+    deathday             = COALESCE(deathday, ?),
+    gender               = COALESCE(gender, ?),
+    known_for_department = COALESCE(known_for_department, ?),
+    place_of_birth       = COALESCE(place_of_birth, ?),
+    popularity           = COALESCE(popularity, ?),
+    profile_path         = COALESCE(profile_path, ?)
   WHERE id = ?
 `);
 
@@ -97,8 +108,9 @@ async function searchPerson(name) {
   const res = await fetch(url);
   if (!res.ok) throw new Error(`TMDB search ${res.status} for "${name}"`);
   const data = await res.json();
+  const normalizedInput = normalizeNameForComparison(name);
   const match = (data.results ?? []).find(
-    (r) => r.name.toLowerCase() === name.toLowerCase(),
+    (r) => normalizeNameForComparison(r.name) === normalizedInput,
   );
   return match ? match.id : null;
 }
