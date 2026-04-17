@@ -18,6 +18,24 @@ import ImageSizing from '@/app/services/imageSizing';
 import MoviePoster from '@/app/components/moviePoster';
 const SEARCH_DEBOUNCE_MS = 120;
 const DEFAULT_RESULTS_LIMIT = 50;
+const PEOPLE_PREFIX_LIMIT = 50;
+const PEOPLE_CONTAINS_LIMIT = 50;
+
+const PEOPLE_FIELDS = `
+  p.id,
+  p.name,
+  p.profile_path,
+  p.known_for_department,
+  COALESCE(p.wins, 0) AS wins,
+  COALESCE(p.nominations, 0) AS nominations
+` as const;
+
+const PEOPLE_ORDER_BY_RELEVANCE = `
+  ORDER BY
+    COALESCE(p.nominations, 0) DESC,
+    COALESCE(p.popularity, 0) DESC,
+    p.name ASC
+` as const;
 
 type SearchMode = 'films' | 'people';
 
@@ -209,38 +227,61 @@ function SearchContent() {
           return;
         }
 
-        const rows =
-          debouncedQuery.length === 0
-            ? await db.getAllAsync<PersonSearchRow>(
-                `SELECT p.id,
-                        p.name,
-                        p.profile_path,
-                        p.known_for_department,
-                        COALESCE(p.wins, 0) AS wins,
-                        COALESCE(p.nominations, 0) AS nominations
-                 FROM people p
-                 WHERE p.known_for_department = 'Acting'
-                 ORDER BY nominations DESC, wins DESC, p.name ASC
-                 LIMIT ${DEFAULT_RESULTS_LIMIT}`,
-              )
-            : await db.getAllAsync<PersonSearchRow>(
-                `SELECT p.id,
-                        p.name,
-                        p.profile_path,
-                        p.known_for_department,
-                        COALESCE(p.wins, 0) AS wins,
-                        COALESCE(p.nominations, 0) AS nominations
-                 FROM people p
-                 WHERE p.name LIKE '%' || ? || '%' COLLATE NOCASE
-                 ORDER BY
-                   CASE
-                     WHEN p.name LIKE ? || '%' COLLATE NOCASE THEN 0
-                     ELSE 1
-                   END,
-                   COALESCE(p.popularity, 0) DESC,
-                   p.name ASC`,
-                [debouncedQuery, debouncedQuery],
-              );
+        let rows: PersonSearchRow[];
+
+        if (debouncedQuery.length === 0) {
+          // Default view: top actors ordered by nomination count, fast index scan.
+          rows = await db.getAllAsync<PersonSearchRow>(
+            `SELECT ${PEOPLE_FIELDS}
+             FROM people p
+             WHERE p.known_for_department = 'Acting'
+             ORDER BY nominations DESC, wins DESC, p.name ASC
+             LIMIT ${DEFAULT_RESULTS_LIMIT}`,
+          );
+        } else {
+          // Phase 1: prefix match — uses idx_people_department_name_nocase if
+          // available, otherwise a normal name B-tree prefix scan.
+          const prefixRows = await db.getAllAsync<PersonSearchRow>(
+            `SELECT ${PEOPLE_FIELDS}
+             FROM people p
+             WHERE p.name LIKE ? || '%' COLLATE NOCASE
+             ${PEOPLE_ORDER_BY_RELEVANCE}
+             LIMIT ${PEOPLE_PREFIX_LIMIT}`,
+            [debouncedQuery],
+          );
+
+          if (cancelled) {
+            return;
+          }
+
+          if (prefixRows.length >= PEOPLE_PREFIX_LIMIT) {
+            // Prefix results fill the limit — skip the more expensive scan.
+            rows = prefixRows;
+          } else {
+            // Phase 2: contains fallback — finds "Tom Hanks" when user types "hanks".
+            // Runs only when the prefix pass came up short.
+            const prefixIds = new Set(prefixRows.map((r) => r.id));
+            const containsRows = await db.getAllAsync<PersonSearchRow>(
+              `SELECT ${PEOPLE_FIELDS}
+               FROM people p
+               WHERE p.name LIKE '%' || ? || '%' COLLATE NOCASE
+                 AND p.name NOT LIKE ? || '%' COLLATE NOCASE
+               ${PEOPLE_ORDER_BY_RELEVANCE}
+               LIMIT ${PEOPLE_CONTAINS_LIMIT}`,
+              [debouncedQuery, debouncedQuery],
+            );
+
+            if (cancelled) {
+              return;
+            }
+
+            // Prefix matches first, then unique contains matches.
+            rows = [
+              ...prefixRows,
+              ...containsRows.filter((r) => !prefixIds.has(r.id)),
+            ].slice(0, DEFAULT_RESULTS_LIMIT);
+          }
+        }
 
         if (cancelled) {
           return;
