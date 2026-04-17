@@ -84,7 +84,7 @@ const selectWithoutDetails = db.prepare(`
       OR popularity IS NULL
       OR profile_path IS NULL
     )
-  ORDER BY id ASC
+  ORDER BY popularity DESC
 `);
 
 const updateDetails = db.prepare(`
