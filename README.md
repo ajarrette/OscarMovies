@@ -30,41 +30,16 @@ The experience is built around quick navigation, clear presentation, and locally
 
 ## Screenshots
 
-### Oscars Landing
-
-![Oscars Landing screen showing Oscar nomination categories by year](assets/images/app/Oscars%20Landing.jpeg)
-
-Browse Oscar nomination categories for a selected year from the main landing screen.
-
-### Search Landing
-
-![Search Landing screen with film and people search modes](assets/images/app/Search%20Landing.jpeg)
-
-Start from a dedicated search screen and switch between film and people results.
-
-### Movie Search
-
-![Movie Search results screen listing matching films](assets/images/app/Movie%20Search.jpeg)
-
-Search for films and review matching results with artwork, release details, wins, and nominations.
-
-### Film Detail
-
-![Film Detail screen with poster art, summary, and nomination information](assets/images/app/Film%20Detail.jpeg)
-
-Open a film detail page to view artwork, overview, credits, and Oscar recognition.
-
-### Person Detail
-
-![Person Detail screen showing biography, credits, and awards summary](assets/images/app/Person%20Detail.jpeg)
-
-View a person profile with biography details, related films, and nomination totals.
-
-### About
-
-![About screen describing the app and technology stack](assets/images/app/About.jpeg)
-
-Review the app summary, platform support, and core technology choices.
+<p>
+  <img src="assets/images/app/Oscars%20Landing.jpeg" width="24%" alt="Oscars Landing — nomination categories by year" />
+  <img src="assets/images/app/Search%20Landing.jpeg" width="24%" alt="Search Landing — film and people search modes" />
+  <img src="assets/images/app/Movie%20Search.jpeg" width="24%" alt="Movie Search — search results with artwork and stats" />
+  <img src="assets/images/app/Film%20Detail.jpeg" width="24%" alt="Film Detail — poster, credits, and nomination info" />
+  <img src="assets/images/app/Person%20Detail.jpeg" width="24%" alt="Person Detail — biography, films, and awards summary" />
+  <img src="assets/images/app/Film%20Detail%202.jpeg" width="24%" alt="Ballerina Detail — biography, films, and awards summary" />
+  <img src="assets/images/app/Person%20Search.jpeg" width="24%" alt="Person Search — biography, films, and awards summary" />
+  <img src="assets/images/app/About.jpeg" width="24%" alt="About — app summary and technology stack" />
+</p>
 
 ## Getting Started
 
