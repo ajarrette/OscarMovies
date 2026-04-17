@@ -1,8 +1,12 @@
 import { LinearGradient } from 'expo-linear-gradient';
+import Constants from 'expo-constants';
 import * as Linking from 'expo-linking';
+import { requireOptionalNativeModule } from 'expo-modules-core';
 import { Stack, usePathname, useRouter } from 'expo-router';
+import { useEffect, useMemo, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
+  Extrapolation,
   interpolate,
   useAnimatedRef,
   useAnimatedStyle,
@@ -28,6 +32,127 @@ const CAST_ITEM_WIDTH =
   (CAST_LIST_WIDTH - CAST_ITEM_GAP * (CAST_VISIBLE_COUNT - 1)) /
   CAST_VISIBLE_COUNT;
 const CAST_AVATAR_SIZE = 82;
+const DEFAULT_BACKGROUND = '#25292e';
+type GradientPalette = [string, string, string];
+const FALLBACK_GRADIENT: GradientPalette = [
+  '#12161b',
+  '#1b2128',
+  DEFAULT_BACKGROUND,
+];
+
+type IOSImageColors = {
+  platform: 'ios';
+  background: string;
+  primary: string;
+  detail: string;
+};
+
+type AndroidOrWebImageColors = {
+  platform: 'android' | 'web';
+  dominant: string;
+  vibrant: string;
+  darkVibrant: string;
+  muted: string;
+};
+
+type ImageColorsResult = IOSImageColors | AndroidOrWebImageColors;
+
+type ImageColorsModule = {
+  getColors: (
+    uri: string,
+    config?: {
+      fallback?: string;
+      cache?: boolean;
+      key?: string;
+      quality?: 'lowest' | 'low' | 'high' | 'highest';
+    },
+  ) => Promise<ImageColorsResult>;
+};
+
+function canUseNativeImageColors() {
+  if (Constants.appOwnership === 'expo') {
+    // Expo Go doesn't include this native module.
+    return false;
+  }
+
+  return Boolean(requireOptionalNativeModule('ImageColors'));
+}
+
+const gradientCache = new Map<string, GradientPalette>();
+
+function parseHexColor(color: string) {
+  const normalized = color.trim().replace('#', '');
+  const hex =
+    normalized.length === 3
+      ? normalized
+          .split('')
+          .map((char) => `${char}${char}`)
+          .join('')
+      : normalized;
+
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return null;
+  }
+
+  const r = Number.parseInt(hex.slice(0, 2), 16);
+  const g = Number.parseInt(hex.slice(2, 4), 16);
+  const b = Number.parseInt(hex.slice(4, 6), 16);
+  return { r, g, b };
+}
+
+function darkenColor(color: string, amount: number) {
+  const parsed = parseHexColor(color);
+  if (!parsed) {
+    return color;
+  }
+
+  const clamp = (value: number) =>
+    Math.max(0, Math.min(255, Math.round(value * (1 - amount))));
+
+  const toHex = (value: number) => clamp(value).toString(16).padStart(2, '0');
+  return `#${toHex(parsed.r)}${toHex(parsed.g)}${toHex(parsed.b)}`;
+}
+
+function getContrastOpacity(color: string) {
+  const parsed = parseHexColor(color);
+  if (!parsed) {
+    return 0.34;
+  }
+
+  const luminance =
+    (0.2126 * parsed.r + 0.7152 * parsed.g + 0.0722 * parsed.b) / 255;
+
+  if (luminance > 0.72) {
+    return 0.52;
+  }
+
+  if (luminance > 0.55) {
+    return 0.44;
+  }
+
+  return 0.34;
+}
+
+function toGradientColors(colors: ImageColorsResult) {
+  let palette: string[];
+
+  if (colors.platform === 'ios') {
+    palette = [colors.background, colors.primary, colors.detail];
+  } else {
+    palette = [
+      colors.darkVibrant || colors.dominant,
+      colors.vibrant || colors.muted || colors.dominant,
+      colors.muted || colors.dominant,
+    ];
+  }
+
+  const sanitized = palette.map((entry) => entry || DEFAULT_BACKGROUND);
+  return [
+    darkenColor(sanitized[0], 0.32),
+    darkenColor(sanitized[1], 0.42),
+    darkenColor(sanitized[2], 0.58),
+  ] as GradientPalette;
+}
 
 export default function FilmDetail({
   film,
@@ -62,6 +187,78 @@ export default function FilmDetail({
   const posterUri = film.poster_path
     ? `https://image.tmdb.org/t/p/w300${film.poster_path}`
     : undefined;
+  const [gradientColors, setGradientColors] =
+    useState<GradientPalette>(FALLBACK_GRADIENT);
+
+  useEffect(() => {
+    let isDisposed = false;
+
+    if (!backdropUri) {
+      setGradientColors(FALLBACK_GRADIENT);
+      return () => {
+        isDisposed = true;
+      };
+    }
+
+    const cached = gradientCache.get(backdropUri);
+    if (cached) {
+      setGradientColors(cached);
+      return () => {
+        isDisposed = true;
+      };
+    }
+
+    const loadGradient = async () => {
+      try {
+        if (!canUseNativeImageColors()) {
+          if (!isDisposed) {
+            setGradientColors(FALLBACK_GRADIENT);
+          }
+          return;
+        }
+
+        const imageColorsImport = await import('react-native-image-colors');
+        const imageColors = imageColorsImport.default as ImageColorsModule;
+        const colors = await imageColors.getColors(backdropUri, {
+          fallback: DEFAULT_BACKGROUND,
+          cache: true,
+          key: `film-backdrop-${film.id}`,
+          quality: 'low',
+        });
+
+        const nextGradient = toGradientColors(colors);
+        gradientCache.set(backdropUri, nextGradient);
+        if (!isDisposed) {
+          setGradientColors(nextGradient);
+        }
+      } catch {
+        if (!isDisposed) {
+          setGradientColors(FALLBACK_GRADIENT);
+        }
+      }
+    };
+
+    loadGradient();
+
+    return () => {
+      isDisposed = true;
+    };
+  }, [backdropUri, film.id]);
+
+  const contrastOverlayOpacity = useMemo(
+    () => getContrastOpacity(gradientColors[0] || DEFAULT_BACKGROUND),
+    [gradientColors],
+  );
+
+  const bodyBackgroundColor = useMemo(
+    () => darkenColor(gradientColors[2] || DEFAULT_BACKGROUND, 0.28),
+    [gradientColors],
+  );
+
+  const heroOverlayBottomOpacity = useMemo(
+    () => Math.min(0.86, Math.max(0.64, contrastOverlayOpacity + 0.28)),
+    [contrastOverlayOpacity],
+  );
 
   const onImdbPress = () => {
     if (!film.imdb_id) {
@@ -124,19 +321,45 @@ export default function FilmDetail({
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
-      opacity: interpolate(scrollOffset.value, [0, IMG_HEIGHT / 1.5], [0, 1]),
+      opacity: interpolate(
+        scrollOffset.value,
+        [0, IMG_HEIGHT / 1.5],
+        [0, 0.82],
+        Extrapolation.CLAMP,
+      ),
+    };
+  });
+
+  const bodyAnimatedStyle = useAnimatedStyle(() => {
+    return {
+      opacity: interpolate(
+        scrollOffset.value,
+        [0, IMG_HEIGHT * 0.75],
+        [1, 0.85],
+        Extrapolation.CLAMP,
+      ),
     };
   });
 
   return (
     <View style={styles.container}>
+      <LinearGradient
+        colors={gradientColors}
+        locations={[0, 0.5, 1]}
+        style={StyleSheet.absoluteFillObject}
+      />
+      <Animated.View
+        pointerEvents='none'
+        style={[
+          styles.headerOverlay,
+          { backgroundColor: bodyBackgroundColor },
+          headerAnimatedStyle,
+        ]}
+      />
       <Stack.Screen
         options={{
           headerTransparent: true,
           headerShown: true,
-          headerBackground: () => (
-            <Animated.View style={[styles.header, headerAnimatedStyle]} />
-          ),
         }}
       />
       <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
@@ -148,16 +371,21 @@ export default function FilmDetail({
             style={[styles.image, imageAnimatedStyle]}
           />
           <LinearGradient
-            colors={['transparent', 'rgba(37, 41, 46, 1)']}
+            colors={[
+              'transparent',
+              `rgba(0, 0, 0, ${heroOverlayBottomOpacity.toFixed(2)})`,
+            ]}
             locations={[0.6, 1]}
-            style={{
-              position: 'absolute',
-              width: '100%',
-              height: '100%',
-            }}
+            style={styles.imageContrastOverlay}
           />
         </View>
-        <View style={{ backgroundColor: '#25292e' }}>
+        <Animated.View
+          style={[
+            styles.contentBody,
+            { backgroundColor: bodyBackgroundColor },
+            bodyAnimatedStyle,
+          ]}
+        >
           <View style={styles.detailsContainer}>
             <View style={styles.topRow}>
               <View style={{ flex: 1 }}>
@@ -239,7 +467,7 @@ export default function FilmDetail({
             {upperTagline && <Text style={styles.tagline}>{upperTagline}</Text>}
             <Text style={styles.overview}>{overview}</Text>
           </View>
-        </View>
+        </Animated.View>
       </Animated.ScrollView>
     </View>
   );
@@ -258,8 +486,10 @@ const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    backgroundColor: '#25292e',
-    color: '#ccc',
+    backgroundColor: DEFAULT_BACKGROUND,
+  },
+  contentBody: {
+    paddingBottom: 24,
   },
   castFallbackAvatar: {
     width: CAST_AVATAR_SIZE,
@@ -354,8 +584,17 @@ const styles = StyleSheet.create({
     width: width,
     height: IMG_HEIGHT,
   },
-  header: {
-    backgroundColor: '#25292e',
-    height: 100,
+  imageContrastOverlay: {
+    position: 'absolute',
+    width: '100%',
+    height: '100%',
+  },
+  headerOverlay: {
+    position: 'absolute',
+    top: 0,
+    left: 0,
+    right: 0,
+    height: 120,
+    zIndex: 10,
   },
 });
