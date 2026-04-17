@@ -1,50 +1,131 @@
-# Welcome to your Expo app 👋
+# Oscar Movies
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+Oscar Movies is an Expo-based mobile application for exploring Oscar-nominated films and the people connected to them. It combines a bundled SQLite database with rich artwork and a focused browsing experience, making it easy to review winners, nominations, and award history across years.
 
-## Get started
+## Overview
 
-1. Install dependencies
+Oscar Movies is designed as a lightweight, offline-friendly reference app for Academy Awards exploration. Users can browse nominees by ceremony year, search across films and people, open detailed profile screens, and review nomination history without depending on a live backend for core app functionality.
 
-   ```bash
-   npm install
-   ```
+The experience is built around quick navigation, clear presentation, and locally bundled data, with TMDB artwork used to enrich film and person detail views.
 
-2. Start the app
+## Core Features
 
-   ```bash
-    npx expo start
-   ```
+- Browse Oscar nomination categories by year
+- Explore nominated films across Academy Award categories
+- Search films by title and people by name
+- Open detailed film pages with artwork, credits, and nomination summaries
+- Open person pages with biography details, related films, and nomination totals
+- Review nomination history for both films and people
+- Use a bundled local SQLite database for a fast, offline-friendly experience
 
-In the output, you'll find options to open the app in a
+## Technology Stack
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+- Expo SDK 55
+- React Native 0.83
+- React 19
+- TypeScript
+- Expo Router for file-based navigation
+- Expo SQLite for the bundled local database
+- Expo Image and TMDB artwork for rich visuals
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## Screenshots
 
-## Get a fresh project
+### Oscars Landing
 
-When you're ready, run:
+![Oscars Landing screen showing Oscar nomination categories by year](assets/images/app/Oscars%20Landing.jpeg)
+
+Browse Oscar nomination categories for a selected year from the main landing screen.
+
+### Search Landing
+
+![Search Landing screen with film and people search modes](assets/images/app/Search%20Landing.jpeg)
+
+Start from a dedicated search screen and switch between film and people results.
+
+### Movie Search
+
+![Movie Search results screen listing matching films](assets/images/app/Movie%20Search.jpeg)
+
+Search for films and review matching results with artwork, release details, wins, and nominations.
+
+### Film Detail
+
+![Film Detail screen with poster art, summary, and nomination information](assets/images/app/Film%20Detail.jpeg)
+
+Open a film detail page to view artwork, overview, credits, and Oscar recognition.
+
+### Person Detail
+
+![Person Detail screen showing biography, credits, and awards summary](assets/images/app/Person%20Detail.jpeg)
+
+View a person profile with biography details, related films, and nomination totals.
+
+### About
+
+![About screen describing the app and technology stack](assets/images/app/About.jpeg)
+
+Review the app summary, platform support, and core technology choices.
+
+## Getting Started
+
+### Prerequisites
+
+- Node.js and npm
+- Xcode for iOS development on macOS
+- Android Studio for Android development
+
+### Install Dependencies
 
 ```bash
-npm run reset-project
+npm install
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+### Start the Development Server
 
-## Learn more
+```bash
+npx expo start
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+### Run on Specific Platforms
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+```bash
+npm run ios
+npm run android
+npm run web
+```
 
-## Join the community
+### Lint the Project
 
-Join our community of developers creating universal apps.
+```bash
+npm run lint
+```
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+## Available Scripts
+
+- `npm run start` starts the Expo development server
+- `npm run ios` runs the app on iOS
+- `npm run android` runs the app on Android
+- `npm run web` runs the app on the web
+- `npm run lint` runs the Expo lint configuration
+- `npm run test` runs the Jest test suite
+- `npm run seed` seeds the local Oscar movie database
+- `npm run enrich` runs the main data enrichment workflow
+- `npm run enrich-people` enriches person records
+- `npm run enrich-person-by-id` enriches a single person record
+- `npm run enrich-cast-people` enriches cast-related people data
+- `npm run import-popular-movies` imports additional movie popularity data
+- `npm run import-popular-people` imports additional people popularity data
+- `npm run import-movie-cast` imports movie cast relationships
+
+## Data and Content Notes
+
+Oscar Movies uses a bundled local SQLite database to power browsing and search. This keeps the app responsive and usable without depending on a live backend for its primary experience.
+
+Film and person artwork are sourced from TMDB image paths where available. Repository scripts in `assets/data` are used to seed and enrich the Oscar-related dataset used by the app.
+
+## Future Improvements
+
+- Expanded filtering and sorting options
+- More detailed ceremony and category context
+- Additional test coverage for data-loading and navigation flows
+- Further enrichment of people, cast, and nomination relationships
