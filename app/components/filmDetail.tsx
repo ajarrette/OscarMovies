@@ -379,9 +379,10 @@ export default function FilmDetail({
           <LinearGradient
             colors={[
               'transparent',
-              `rgba(0, 0, 0, ${heroOverlayBottomOpacity.toFixed(2)})`,
+              `rgba(0, 0, 0, ${(heroOverlayBottomOpacity * 0.4).toFixed(2)})`,
+              bodyBackgroundColor,
             ]}
-            locations={[0.6, 1]}
+            locations={[0.45, 0.75, 1]}
             style={styles.imageContrastOverlay}
           />
         </View>
