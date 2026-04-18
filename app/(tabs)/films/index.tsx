@@ -190,11 +190,31 @@ function FilmsContent() {
         }
 
         const placeholders = sourceYearLabels.map(() => '?').join(', ');
+
+        // Optimized query: pre-aggregate people names and song titles at SQL level
+        // to avoid correlated subqueries which are slow
         const rows = await db.getAllAsync<NominationMovieRow>(
-          // np_first: one pre-aggregated row per nomination containing the
-          // primary (min-ordinal) person.  SQLite guarantees that bare columns
-          // in an aggregate query come from the same row as the MIN() value.
-          `SELECT c.id   AS category_id,
+          `WITH nom_people AS (
+             SELECT nomination_id,
+                    group_concat(p.name, ', ') AS people_names
+             FROM nomination_people np
+             INNER JOIN people p ON p.id = np.person_id
+             GROUP BY nomination_id
+           ),
+           nom_songs AS (
+             SELECT nomination_id,
+                    nominee_text AS song_title
+             FROM nomination_nominees
+             WHERE nominee_kind = 'song'
+           ),
+           nom_primary_person AS (
+             SELECT nomination_id,
+                    min(ordinal),
+                    person_id
+             FROM nomination_people
+             GROUP BY nomination_id
+           )
+           SELECT c.id   AS category_id,
                   c.name AS category_name,
                   m.id   AS movie_id,
                   m.title AS movie_title,
@@ -202,32 +222,17 @@ function FilmsContent() {
                   p_primary.profile_path AS person_profile_path,
                   m.poster_path          AS poster_path,
                   n.won                  AS is_winner,
-                  (
-                    SELECT group_concat(p2.name, ', ')
-                    FROM nomination_people np2
-                    INNER JOIN people p2 ON p2.id = np2.person_id
-                    WHERE np2.nomination_id = n.id
-                    ORDER BY np2.ordinal ASC
-                  ) AS people_names,
-                  (
-                    SELECT nn.nominee_text
-                    FROM nomination_nominees nn
-                    WHERE nn.nomination_id = n.id
-                      AND nn.nominee_kind = 'song'
-                    ORDER BY nn.ordinal ASC
-                    LIMIT 1
-                  ) AS song_title
+                  COALESCE(np.people_names, '') AS people_names,
+                  COALESCE(ns.song_title, '') AS song_title
            FROM ceremonies cer
            INNER JOIN nominations n  ON n.ceremony_id  = cer.id
            INNER JOIN categories c   ON c.id            = n.category_id
            INNER JOIN nomination_movies nm ON nm.nomination_id = n.id
            INNER JOIN movies m        ON m.id            = nm.movie_id
-           LEFT JOIN (
-             SELECT nomination_id, min(ordinal), person_id
-             FROM nomination_people
-             GROUP BY nomination_id
-           ) np_first ON np_first.nomination_id = n.id
-           LEFT JOIN people p_primary ON p_primary.id = np_first.person_id
+           LEFT JOIN nom_people np ON np.nomination_id = n.id
+           LEFT JOIN nom_songs ns ON ns.nomination_id = n.id
+           LEFT JOIN nom_primary_person npp ON npp.nomination_id = n.id
+           LEFT JOIN people p_primary ON p_primary.id = npp.person_id
            WHERE cer.year_label IN (${placeholders})
            ORDER BY c.name ASC, m.title ASC`,
           sourceYearLabels,
