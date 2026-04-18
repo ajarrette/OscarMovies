@@ -10,6 +10,7 @@ export interface OmdbRatingsData {
   year: string;
   poster: string;
   rated: string;
+  tomatoURL: string;
   ratings: OmdbRatingEntry[];
   imdbRatingValue: string;
 }
@@ -24,6 +25,7 @@ type OmdbApiResponse = {
   Year: string;
   Poster: string;
   Rated: string;
+  tomatoURL?: string;
   Ratings: OmdbApiRatingEntry[];
   imdbRating: string;
   Response?: string;
@@ -43,6 +45,7 @@ function normalizeOmdbRatingsData(raw: unknown): OmdbRatingsData {
     year: String(record.Year ?? record.year ?? ''),
     poster: String(record.Poster ?? record.poster ?? ''),
     rated: String(record.Rated ?? record.rated ?? 'N/A'),
+    tomatoURL: String(record.tomatoURL ?? ''),
     ratings: rawRatings.map((rating) => ({
       source: String(rating.Source ?? rating.source ?? ''),
       value: String(rating.Value ?? rating.value ?? ''),
@@ -75,7 +78,7 @@ export async function fetchOmdbRatingsByImdbId(
     return null;
   }
 
-  const url = `https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`;
+  const url = `https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}&tomatoes=true`;
 
   try {
     const response = await fetch(url);

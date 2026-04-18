@@ -433,6 +433,7 @@ export default function FilmDetail({
             <View style={[{ marginTop: 20 }]}>
               <FilmRatings
                 imdbId={film.imdb_id}
+                filmName={title}
                 letterboxdTmdbId={film.tmdb_id.toString() || ''}
                 omdbRatingsData={omdbRatingsData}
                 isOmdbLoading={isOmdbLoading}

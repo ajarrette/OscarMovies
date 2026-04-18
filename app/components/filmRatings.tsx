@@ -78,6 +78,7 @@ function getContrastTint(color: string, amount: number, alpha: number) {
  */
 interface FilmRatingsProps {
   imdbId: string;
+  filmName?: string;
   letterboxdTmdbId: string;
   omdbRatingsData: OmdbRatingsData | null;
   isOmdbLoading: boolean;
@@ -88,6 +89,7 @@ const DEFAULT_BACKGROUND_COLOR = '#2b313a';
 
 const FilmRatings: React.FC<FilmRatingsProps> = ({
   imdbId,
+  filmName = '',
   letterboxdTmdbId,
   omdbRatingsData,
   isOmdbLoading,
@@ -118,6 +120,7 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
     rottenTomatoesValue,
     isOmdbLoading,
   );
+  const rottenTomatoesUrl = omdbRatingsData?.tomatoURL?.trim() || '';
   const surfaceBackgroundColor = getContrastTint(backgroundColor, 0.28, 0.3);
   const dividerColor = getContrastTint(backgroundColor, 0.32, 0.18);
   const cardBorderColor = getContrastTint(backgroundColor, 0.4, 0.26);
@@ -128,6 +131,57 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
     }
 
     const url = `https://www.imdb.com/title/${imdbId}/`;
+    console.log('Opening IMDb URL:', url);
+    const handlePress = async () => {
+      await Linking.openURL(url);
+    };
+
+    handlePress();
+  };
+
+  const onLetterboxdPress = () => {
+    if (!imdbId) {
+      return;
+    }
+
+    const url = `https://www.letterboxd.com/tmdb/${letterboxdTmdbId}/`;
+    console.log('Opening Letterboxd URL:', url);
+    const handlePress = async () => {
+      await Linking.openURL(url);
+    };
+
+    handlePress();
+  };
+
+  const onRottenTomatoesPress = () => {
+    console.log('Opening Rotten Tomatoes URL:', rottenTomatoesUrl);
+    if (!rottenTomatoesUrl) {
+      return;
+    }
+
+    const handlePress = async () => {
+      await Linking.openURL(rottenTomatoesUrl);
+    };
+
+    handlePress();
+  };
+
+  const onMetacriticPress = () => {
+    if (!filmName) {
+      return;
+    }
+
+    const filmNameSlug = filmName
+      .toLowerCase()
+      .replace(/[^a-z0-9]+/g, '-')
+      .replace(/^-+|-+$/g, '');
+
+    if (!filmNameSlug) {
+      return;
+    }
+
+    const url = `https://www.metacritic.com/movie/${filmNameSlug}`;
+    console.log('Opening Metacritic URL:', url);
     const handlePress = async () => {
       await Linking.openURL(url);
     };
@@ -160,10 +214,12 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
             { borderColor: dividerColor },
           ]}
         >
-          <RottenTomatoRating
-            ratingText={rottenTomatoesDisplayRating}
-            isRotten={isRotten}
-          />
+          <Pressable onPress={onRottenTomatoesPress}>
+            <RottenTomatoRating
+              ratingText={rottenTomatoesDisplayRating}
+              isRotten={isRotten}
+            />
+          </Pressable>
         </View>
       ) : (
         <View
@@ -173,7 +229,9 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
             { borderColor: dividerColor },
           ]}
         >
-          <MetaCriticRating ratingText={metacriticDisplayRating} />
+          <Pressable onPress={onMetacriticPress}>
+            <MetaCriticRating ratingText={metacriticDisplayRating} />
+          </Pressable>
         </View>
       )}
 
@@ -185,7 +243,9 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
           { borderColor: dividerColor },
         ]}
       >
-        <LetterboxdRating tmdbId={letterboxdTmdbId} />
+        <Pressable onPress={onLetterboxdPress}>
+          <LetterboxdRating tmdbId={letterboxdTmdbId} />
+        </Pressable>
       </View>
     </View>
   );
