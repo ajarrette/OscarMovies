@@ -17,9 +17,9 @@ import {
 import ImageSizing from '@/app/services/imageSizing';
 import MoviePoster from '@/app/components/moviePoster';
 const SEARCH_DEBOUNCE_MS = 120;
-const DEFAULT_RESULTS_LIMIT = 50;
-const PEOPLE_PREFIX_LIMIT = 50;
-const PEOPLE_CONTAINS_LIMIT = 50;
+const DEFAULT_RESULTS_LIMIT = 100;
+const PEOPLE_PREFIX_LIMIT = 100;
+const PEOPLE_CONTAINS_LIMIT = 100;
 
 const PEOPLE_FIELDS = `
   p.id,
@@ -172,7 +172,7 @@ function SearchContent() {
                           wins,
                           nominations
                    FROM movies
-                   ORDER BY nominations DESC, wins DESC, title ASC
+                   ORDER BY popularity DESC, wins DESC, title ASC
                    LIMIT ${DEFAULT_RESULTS_LIMIT}`,
                 )
               : await db.getAllAsync<FilmSearchRow>(
@@ -235,7 +235,22 @@ function SearchContent() {
             `SELECT ${PEOPLE_FIELDS}
              FROM people p
              WHERE p.known_for_department = 'Acting'
-             ORDER BY nominations DESC, wins DESC, p.name ASC
+             ORDER BY
+               (
+                 COALESCE(p.popularity, 0) *
+                 COALESCE(
+                   (
+                     SELECT COUNT(DISTINCT mc.movie_id)
+                     FROM movie_cast mc
+                     INNER JOIN movies m ON m.id = mc.movie_id
+                     WHERE mc.person_id = p.id
+                       AND m.release_date IS NOT NULL
+                       AND DATE(m.release_date) >= DATE('now', '-3 years')
+                       AND m.popularity >= 20
+                   ) * 0.2,
+                   0
+                 )
+               ) DESC
              LIMIT ${DEFAULT_RESULTS_LIMIT}`,
           );
         } else {
