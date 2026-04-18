@@ -141,6 +141,7 @@ function SearchContent() {
   const [debouncedQuery, setDebouncedQuery] = useState('');
   const [results, setResults] = useState<SearchItem[]>([]);
   const [loading, setLoading] = useState(false);
+  const [peopleTabPending, setPeopleTabPending] = useState(false);
 
   const posterWidth = ImageSizing.getImageSize(92, width - 32, 4, 120, 10);
   const posterHeight = Math.round((posterWidth / 115) * 173);
@@ -231,27 +232,29 @@ function SearchContent() {
         let rows: PersonSearchRow[];
 
         if (debouncedQuery.length === 0) {
-          // Default view: top actors ordered by nomination count, fast index scan.
+          // Default people view: weighted popularity using recent 3-year film count.
           rows = await db.getAllAsync<PersonSearchRow>(
-            `SELECT ${PEOPLE_FIELDS}
+            `WITH recent_movie_counts AS (
+               SELECT mc.person_id,
+                      COUNT(DISTINCT mc.movie_id) AS recent_movie_count
+               FROM movie_cast mc
+               INNER JOIN movies m ON m.id = mc.movie_id
+               WHERE m.release_date IS NOT NULL
+                 AND DATE(m.release_date) >= DATE('now', '-3 years')
+                 AND COALESCE(m.popularity, 0) >= 20
+               GROUP BY mc.person_id
+             )
+             SELECT ${PEOPLE_FIELDS}
              FROM people p
+             LEFT JOIN recent_movie_counts rmc ON rmc.person_id = p.id
              WHERE p.known_for_department = 'Acting'
              ORDER BY
                (
                  COALESCE(p.popularity, 0) *
-                 COALESCE(
-                   (
-                     SELECT COUNT(DISTINCT mc.movie_id)
-                     FROM movie_cast mc
-                     INNER JOIN movies m ON m.id = mc.movie_id
-                     WHERE mc.person_id = p.id
-                       AND m.release_date IS NOT NULL
-                       AND DATE(m.release_date) >= DATE('now', '-3 years')
-                       AND m.popularity >= 20
-                   ) * 0.2,
-                   0
-                 )
-               ) DESC
+                 COALESCE(rmc.recent_movie_count * 0.2, 0)
+               ) DESC,
+               COALESCE(p.wins, 0) DESC,
+               p.name ASC
              LIMIT ${DEFAULT_RESULTS_LIMIT}`,
           );
         } else {
@@ -317,6 +320,9 @@ function SearchContent() {
         );
       } finally {
         if (!cancelled) {
+          if (mode === 'people') {
+            setPeopleTabPending(false);
+          }
           setLoading(false);
         }
       }
@@ -342,6 +348,19 @@ function SearchContent() {
   }, [debouncedQuery.length, loading, mode]);
 
   const listData = results;
+  const isPeopleLoading = mode === 'people' && (loading || peopleTabPending);
+  const onSelectMode = useCallback(
+    (nextMode: SearchMode) => {
+      if (nextMode === mode) {
+        return;
+      }
+
+      setPeopleTabPending(nextMode === 'people');
+      setLoading(true);
+      setMode(nextMode);
+    },
+    [mode],
+  );
   const onOpenItem = useCallback((kind: SearchMode, id: number) => {
     if (kind === 'films') {
       router.push(`/search/films/${id}`);
@@ -386,7 +405,7 @@ function SearchContent() {
         <Text style={styles.toggleLabel}>Search Type</Text>
         <View style={styles.toggleRow}>
           <Pressable
-            onPress={() => setMode('films')}
+            onPress={() => onSelectMode('films')}
             style={[
               styles.toggleButton,
               mode === 'films' && styles.toggleActive,
@@ -402,25 +421,33 @@ function SearchContent() {
             </Text>
           </Pressable>
           <Pressable
-            onPress={() => setMode('people')}
+            onPress={() => onSelectMode('people')}
             style={[
               styles.toggleButton,
               mode === 'people' && styles.toggleActive,
             ]}
           >
-            <Text
-              style={[
-                styles.toggleText,
-                mode === 'people' && styles.toggleTextActive,
-              ]}
-            >
-              People
-            </Text>
+            <View style={styles.peopleToggleContent}>
+              <Text
+                style={[
+                  styles.toggleText,
+                  mode === 'people' && styles.toggleTextActive,
+                ]}
+              >
+                People
+              </Text>
+              {isPeopleLoading ? (
+                <ActivityIndicator
+                  size='small'
+                  color={mode === 'people' ? '#25292e' : '#fff'}
+                />
+              ) : null}
+            </View>
           </Pressable>
         </View>
       </View>
     ),
-    [mode, query, usesNativeHeaderSearch],
+    [isPeopleLoading, mode, onSelectMode, query, usesNativeHeaderSearch],
   );
   const listEmptyComponent = useMemo(
     () =>
@@ -482,6 +509,14 @@ function SearchContent() {
             windowSize={8}
             renderItem={renderItem}
           />
+          {isPeopleLoading ? (
+            <View pointerEvents='none' style={styles.loadingOverlay}>
+              <View style={styles.loadingOverlayCard}>
+                <ActivityIndicator size='large' color='#fff' />
+                <Text style={styles.loadingOverlayText}>Loading people...</Text>
+              </View>
+            </View>
+          ) : null}
         </View>
       </TouchableWithoutFeedback>
     </>
@@ -541,6 +576,12 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     flex: 1,
     paddingVertical: 10,
+  },
+  peopleToggleContent: {
+    alignItems: 'center',
+    columnGap: 6,
+    flexDirection: 'row',
+    justifyContent: 'center',
   },
   toggleActive: {
     backgroundColor: '#ffd33d',
@@ -617,5 +658,30 @@ const styles = StyleSheet.create({
   footerLoading: {
     alignItems: 'center',
     paddingVertical: 12,
+  },
+  loadingOverlay: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(37, 41, 46, 0.7)',
+    bottom: 0,
+    justifyContent: 'center',
+    left: 0,
+    position: 'absolute',
+    right: 0,
+    top: 0,
+  },
+  loadingOverlayCard: {
+    alignItems: 'center',
+    backgroundColor: 'rgba(20, 22, 26, 0.92)',
+    borderColor: '#5a6168',
+    borderRadius: 14,
+    borderWidth: 1,
+    gap: 10,
+    paddingHorizontal: 20,
+    paddingVertical: 18,
+  },
+  loadingOverlayText: {
+    color: '#fff',
+    fontSize: 14,
+    fontWeight: '600',
   },
 });

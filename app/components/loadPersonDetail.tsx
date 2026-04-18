@@ -47,16 +47,35 @@ export default function LoadPersonDetail({ id }: Props) {
 
       try {
         foundMovies = await db.getAllAsync<PersonMovie>(
-          `SELECT DISTINCT m.id,
+          `WITH person_movies AS (
+             SELECT mc.movie_id AS movie_id
+             FROM movie_cast mc
+             WHERE mc.person_id = ?
+
+             UNION
+
+             SELECT nm.movie_id AS movie_id
+             FROM nomination_people np
+             INNER JOIN nomination_movies nm ON nm.nomination_id = np.nomination_id
+             WHERE np.person_id = ?
+
+             UNION
+
+             SELECT m.id AS movie_id
+             FROM people p
+             INNER JOIN movies m
+               ON LOWER(TRIM(m.director)) = LOWER(TRIM(p.name))
+             WHERE p.id = ?
+           )
+           SELECT DISTINCT m.id,
                   m.title,
                   m.poster_path,
                   m.popularity
-           FROM movie_cast mc
-           INNER JOIN movies m ON m.id = mc.movie_id
-           WHERE mc.person_id = ?
+           FROM person_movies pm
+           INNER JOIN movies m ON m.id = pm.movie_id
            ORDER BY COALESCE(m.popularity, 0) DESC,
                     m.title ASC`,
-          [id],
+          [id, id, id],
         );
       } catch (error) {
         console.error('Error loading movies from movie_cast:', error);

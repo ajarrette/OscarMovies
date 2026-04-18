@@ -139,6 +139,14 @@ function normalizeDepartment(castPerson) {
   return 'Acting';
 }
 
+function normalizeCrewDepartment(crewPerson) {
+  return (
+    nullableText(crewPerson.department) ??
+    nullableText(crewPerson.job) ??
+    'Crew'
+  );
+}
+
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function run() {
@@ -174,21 +182,55 @@ async function run() {
   let linked = 0;
   let failed = 0;
 
-  const tx = db.transaction((movieId, cast) => {
-    for (const castPerson of cast) {
+  const tx = db.transaction((movieId, credits) => {
+    const creditByTmdbPersonId = new Map();
+
+    // Prefer cast entries when present to keep character/order data for actors.
+    for (const castPerson of credits.cast ?? []) {
       const tmdbPersonId = nullableNumber(castPerson.id);
       if (tmdbPersonId == null) {
         continue;
       }
 
+      if (creditByTmdbPersonId.has(tmdbPersonId)) {
+        continue;
+      }
+
+      creditByTmdbPersonId.set(tmdbPersonId, {
+        name: nullableText(castPerson.name) ?? 'Unknown Person',
+        popularity: nullableNumber(castPerson.popularity),
+        profilePath: nullableText(castPerson.profile_path),
+        department: normalizeDepartment(castPerson),
+        castOrder: nullableNumber(castPerson.order),
+        character: nullableText(castPerson.character),
+      });
+    }
+
+    for (const crewPerson of credits.crew ?? []) {
+      const tmdbPersonId = nullableNumber(crewPerson.id);
+      if (tmdbPersonId == null || creditByTmdbPersonId.has(tmdbPersonId)) {
+        continue;
+      }
+
+      creditByTmdbPersonId.set(tmdbPersonId, {
+        name: nullableText(crewPerson.name) ?? 'Unknown Person',
+        popularity: nullableNumber(crewPerson.popularity),
+        profilePath: nullableText(crewPerson.profile_path),
+        department: normalizeCrewDepartment(crewPerson),
+        castOrder: null,
+        character: null,
+      });
+    }
+
+    for (const [tmdbPersonId, credit] of creditByTmdbPersonId.entries()) {
       let personId = findPersonByTmdbId.get(tmdbPersonId)?.id ?? null;
       if (personId == null) {
         insertPerson.run(
-          nullableText(castPerson.name) ?? 'Unknown Person',
+          credit.name,
           tmdbPersonId,
-          nullableNumber(castPerson.popularity),
-          nullableText(castPerson.profile_path),
-          normalizeDepartment(castPerson),
+          credit.popularity,
+          credit.profilePath,
+          credit.department,
         );
         personId = findPersonByTmdbId.get(tmdbPersonId)?.id ?? null;
       }
@@ -198,19 +240,19 @@ async function run() {
       }
 
       updatePerson.run(
-        nullableText(castPerson.name),
-        nullableNumber(castPerson.popularity),
-        nullableText(castPerson.profile_path),
-        normalizeDepartment(castPerson),
+        credit.name,
+        credit.popularity,
+        credit.profilePath,
+        credit.department,
         personId,
       );
 
       insertMovieCast.run(
         movieId,
         personId,
-        nullableNumber(castPerson.order),
-        nullableText(castPerson.character),
-        normalizeDepartment(castPerson),
+        credit.castOrder,
+        credit.character,
+        credit.department,
       );
 
       linked++;
@@ -220,7 +262,7 @@ async function run() {
   for (const movie of movies) {
     try {
       const credits = await fetchMovieCredits(movie.tmdb_id);
-      tx(movie.id, credits.cast ?? []);
+      tx(movie.id, credits);
       processed++;
 
       if (processed % 50 === 0 || processed === movies.length) {

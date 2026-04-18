@@ -50,6 +50,14 @@ function normalizeDepartment(castPerson) {
   return 'Acting';
 }
 
+function normalizeCrewDepartment(crewPerson) {
+  return (
+    nullableText(crewPerson.department) ??
+    nullableText(crewPerson.job) ??
+    'Crew'
+  );
+}
+
 async function fetchJson(url, label) {
   const response = await fetch(url);
   if (!response.ok) {
@@ -295,11 +303,45 @@ function upsertMovieAndCast(detail, discoverMovie) {
   return movieId;
 }
 
-function upsertMovieCast(movieId, cast) {
+function upsertMovieCast(movieId, credits) {
   deleteMovieCast.run(movieId);
 
-  for (const castPerson of cast) {
+  const creditByTmdbPersonId = new Map();
+
+  // Prefer cast entries where possible for character/order detail.
+  for (const castPerson of credits.cast ?? []) {
     const tmdbPersonId = nullableNumber(castPerson.id);
+    if (tmdbPersonId == null || creditByTmdbPersonId.has(tmdbPersonId)) {
+      continue;
+    }
+
+    creditByTmdbPersonId.set(tmdbPersonId, {
+      name: nullableText(castPerson.name) ?? 'Unknown Person',
+      popularity: nullableNumber(castPerson.popularity),
+      profilePath: nullableText(castPerson.profile_path),
+      department: normalizeDepartment(castPerson),
+      castOrder: nullableNumber(castPerson.order),
+      character: nullableText(castPerson.character),
+    });
+  }
+
+  for (const crewPerson of credits.crew ?? []) {
+    const tmdbPersonId = nullableNumber(crewPerson.id);
+    if (tmdbPersonId == null || creditByTmdbPersonId.has(tmdbPersonId)) {
+      continue;
+    }
+
+    creditByTmdbPersonId.set(tmdbPersonId, {
+      name: nullableText(crewPerson.name) ?? 'Unknown Person',
+      popularity: nullableNumber(crewPerson.popularity),
+      profilePath: nullableText(crewPerson.profile_path),
+      department: normalizeCrewDepartment(crewPerson),
+      castOrder: null,
+      character: null,
+    });
+  }
+
+  for (const [tmdbPersonId, credit] of creditByTmdbPersonId.entries()) {
     if (tmdbPersonId == null) {
       continue;
     }
@@ -307,11 +349,11 @@ function upsertMovieCast(movieId, cast) {
     let personId = findPersonByTmdbId.get(tmdbPersonId)?.id ?? null;
     if (personId == null) {
       insertPerson.run(
-        nullableText(castPerson.name) ?? 'Unknown Person',
+        credit.name,
         tmdbPersonId,
-        nullableNumber(castPerson.popularity),
-        nullableText(castPerson.profile_path),
-        normalizeDepartment(castPerson),
+        credit.popularity,
+        credit.profilePath,
+        credit.department,
       );
       personId = findPersonByTmdbId.get(tmdbPersonId)?.id ?? null;
     }
@@ -321,26 +363,26 @@ function upsertMovieCast(movieId, cast) {
     }
 
     updatePerson.run(
-      nullableText(castPerson.name),
-      nullableNumber(castPerson.popularity),
-      nullableText(castPerson.profile_path),
-      normalizeDepartment(castPerson),
+      credit.name,
+      credit.popularity,
+      credit.profilePath,
+      credit.department,
       personId,
     );
 
     insertMovieCast.run(
       movieId,
       personId,
-      nullableNumber(castPerson.order),
-      nullableText(castPerson.character),
-      normalizeDepartment(castPerson),
+      credit.castOrder,
+      credit.character,
+      credit.department,
     );
   }
 }
 
 const syncMovie = db.transaction((detail, discoverMovie) => {
   const movieId = upsertMovieAndCast(detail, discoverMovie);
-  upsertMovieCast(movieId, detail.credits?.cast ?? []);
+  upsertMovieCast(movieId, detail.credits ?? {});
   return movieId;
 });
 
@@ -380,7 +422,9 @@ async function run() {
             updated++;
           }
 
-          castLinks += detail.credits?.cast?.length ?? 0;
+          castLinks +=
+            (detail.credits?.cast?.length ?? 0) +
+            (detail.credits?.crew?.length ?? 0);
           processed++;
 
           if (processed % 20 === 0 || processed === TARGET_MOVIE_COUNT) {
