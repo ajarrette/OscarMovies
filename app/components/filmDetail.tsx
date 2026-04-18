@@ -428,7 +428,7 @@ export default function FilmDetail({
             <View style={[{ marginTop: 20 }]}>
               <FilmRatings
                 imdb={film.imdb_id}
-                rottenTomatoes='tt0816692'
+                rottenTomatoes={film.imdb_id}
                 letterboxd={film.tmdb_id.toString() || ''}
               />
             </View>

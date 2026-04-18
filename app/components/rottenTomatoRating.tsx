@@ -1,66 +1,77 @@
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
-import { WebView, WebViewMessageEvent } from 'react-native-webview';
 import FreshTomatoIcon from './tomatoFreshIcon';
+import RottenTomatoIcon from './tomatoRottenIcon';
+
+// Define the shape of the OMDb Response
+interface OmdbRating {
+  Source: string;
+  Value: string;
+}
+
+interface OmdbData {
+  Title: string;
+  Year: string;
+  Poster: string;
+  Ratings: OmdbRating[];
+  imdbRating: string;
+}
 
 const RottenTomatoRating = ({ imdbId }: { imdbId: string }) => {
-  const [rating, setRating] = useState<string | null>(null);
+  const [rating, setRating] = useState<OmdbData | null>(null);
   const ratingLabel =
     rating === null
       ? 'Loading...'
-      : rating !== 'N/A'
-        ? `${rating}%`
-        : 'No rating';
+      : rating?.Ratings.find((r) => r.Source === 'Rotten Tomatoes')?.Value ||
+        'No rating';
 
-  // This script runs INSIDE the IMDb webpage
-  const injectedJavaScript = `
-    (function() {
-      function getRating() {
-        // Try Strategy 1: JSON-LD
-        const jsonLd = document.querySelector('script[type="application/ld+json"]');
-        if (jsonLd) {
-          const data = JSON.parse(jsonLd.innerText);
-          if (data.aggregateRating) return data.aggregateRating.ratingValue;
+  // Extract numeric rating to determine which icon to show
+  const getRatingValue = (): number | null => {
+    if (
+      !ratingLabel ||
+      ratingLabel === 'Loading...' ||
+      ratingLabel === 'No rating'
+    ) {
+      return null;
+    }
+    const match = ratingLabel.match(/(\d+)/);
+    return match ? parseInt(match[1], 10) : null;
+  };
+
+  const ratingValue = getRatingValue();
+  const isRotten = ratingValue !== null && ratingValue < 60;
+
+  useEffect(() => {
+    const fetchMovieData = async () => {
+      const apiKey = process.env.EXPO_PUBLIC_OMDB_API_KEY;
+      const url = `https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`;
+
+      try {
+        const response = await fetch(url);
+        const result = await response.json();
+
+        if (result.Response === 'False') {
+          throw new Error(result.Error || 'Movie not found');
         }
 
-        // Try Strategy 2: Text lookup (Plan B)
-        const ratingElement = document.querySelector('[data-testid="hero-rating-bar__aggregate-rating__score"] span');
-        if (ratingElement) return ratingElement.innerText;
-
-        return null;
+        setRating(result);
+      } catch (err) {
+        console.log('Error fetching OMDb data:', err);
+      } finally {
       }
+    };
 
-      // Send the result back to React Native
-      window.ReactNativeWebView.postMessage(getRating());
-    })();
-    true; // Required for injectedJS to work
-  `;
-
-  const onMessage = (event: WebViewMessageEvent) => {
-    const scrapedRating = event.nativeEvent.data;
-    if (scrapedRating && scrapedRating !== 'null') {
-      console.log({ scrapedRating });
-      setRating(scrapedRating);
-    }
-  };
+    fetchMovieData();
+  }, [imdbId]);
 
   return (
     <View style={styles.container}>
-      <FreshTomatoIcon size={24} />
+      {isRotten ? (
+        <RottenTomatoIcon size={24} />
+      ) : (
+        <FreshTomatoIcon size={24} />
+      )}
       <Text style={styles.scoreText}>{ratingLabel}</Text>
-
-      {/* Hidden WebView */}
-      <View style={styles.hidden}>
-        <WebView
-          source={{ uri: `https://www.imdb.com/title/${imdbId}/` }}
-          injectedJavaScript={injectedJavaScript}
-          onMessage={onMessage}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          // Start injecting as soon as the DOM is ready
-          injectedJavaScriptBeforeContentLoaded={`window.isScraper = true;`}
-        />
-      </View>
     </View>
   );
 };
