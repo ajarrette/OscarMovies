@@ -32,7 +32,6 @@ const PEOPLE_FIELDS = `
 
 const PEOPLE_ORDER_BY_RELEVANCE = `
   ORDER BY
-    COALESCE(p.nominations, 0) DESC,
     COALESCE(p.popularity, 0) DESC,
     p.name ASC
 ` as const;
@@ -232,7 +231,7 @@ function SearchContent() {
         let rows: PersonSearchRow[];
 
         if (debouncedQuery.length === 0) {
-          // Default people view: weighted popularity using recent 3-year film count.
+          // Default people view: weighted popularity.
           rows = await db.getAllAsync<PersonSearchRow>(
             `WITH recent_movie_counts AS (
                SELECT mc.person_id,
@@ -241,7 +240,7 @@ function SearchContent() {
                INNER JOIN movies m ON m.id = mc.movie_id
                WHERE m.release_date IS NOT NULL
                  AND DATE(m.release_date) >= DATE('now', '-3 years')
-                 AND COALESCE(m.popularity, 0) >= 20
+                 AND COALESCE(m.popularity, 0) > 20
                GROUP BY mc.person_id
              )
              SELECT ${PEOPLE_FIELDS}
@@ -253,20 +252,22 @@ function SearchContent() {
                  COALESCE(p.popularity, 0) *
                  COALESCE(rmc.recent_movie_count * 0.2, 0)
                ) DESC,
-               COALESCE(p.wins, 0) DESC,
+               COALESCE(p.popularity, 0) DESC,
                p.name ASC
              LIMIT ${DEFAULT_RESULTS_LIMIT}`,
           );
         } else {
-          // Phase 1: prefix match — uses idx_people_department_name_nocase if
-          // available, otherwise a normal name B-tree prefix scan.
+          // Phase 1: word-start prefix match — treats first and last names equally
+          // by matching either the start of the full name or the start of any
+          // later name segment after a space.
           const prefixRows = await db.getAllAsync<PersonSearchRow>(
             `SELECT ${PEOPLE_FIELDS}
              FROM people p
              WHERE p.name LIKE ? || '%' COLLATE NOCASE
+                OR p.name LIKE '% ' || ? || '%' COLLATE NOCASE
              ${PEOPLE_ORDER_BY_RELEVANCE}
              LIMIT ${PEOPLE_PREFIX_LIMIT}`,
-            [debouncedQuery],
+            [debouncedQuery, debouncedQuery],
           );
 
           if (cancelled) {
@@ -285,9 +286,10 @@ function SearchContent() {
                FROM people p
                WHERE p.name LIKE '%' || ? || '%' COLLATE NOCASE
                  AND p.name NOT LIKE ? || '%' COLLATE NOCASE
+                 AND p.name NOT LIKE '% ' || ? || '%' COLLATE NOCASE
                ${PEOPLE_ORDER_BY_RELEVANCE}
                LIMIT ${PEOPLE_CONTAINS_LIMIT}`,
-              [debouncedQuery, debouncedQuery],
+              [debouncedQuery, debouncedQuery, debouncedQuery],
             );
 
             if (cancelled) {
