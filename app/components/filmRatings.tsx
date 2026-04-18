@@ -13,6 +13,66 @@ import LetterboxdRating from './letterboxdRating';
 import MetaCriticRating from './metaCriticRating';
 import RottenTomatoRating from './rottenTomatoRating';
 
+function parseHexColor(color: string) {
+  const normalized = color.trim().replace('#', '');
+  const hex =
+    normalized.length === 3 || normalized.length === 4
+      ? normalized
+          .slice(0, 3)
+          .split('')
+          .map((char) => `${char}${char}`)
+          .join('')
+      : normalized.slice(0, 6);
+
+  if (!/^[0-9a-fA-F]{6}$/.test(hex)) {
+    return null;
+  }
+
+  return {
+    r: Number.parseInt(hex.slice(0, 2), 16),
+    g: Number.parseInt(hex.slice(2, 4), 16),
+    b: Number.parseInt(hex.slice(4, 6), 16),
+  };
+}
+
+function getColorLuminance(color: string) {
+  const parsed = parseHexColor(color);
+  if (!parsed) {
+    return 0.2;
+  }
+
+  return (0.2126 * parsed.r + 0.7152 * parsed.g + 0.0722 * parsed.b) / 255;
+}
+
+function blendColor(color: string, target: number, amount: number) {
+  const parsed = parseHexColor(color);
+  if (!parsed) {
+    return color;
+  }
+
+  const mix = (value: number) =>
+    Math.round(value + (target - value) * amount)
+      .toString(16)
+      .padStart(2, '0');
+
+  return `#${mix(parsed.r)}${mix(parsed.g)}${mix(parsed.b)}`;
+}
+
+function getContrastTint(color: string, amount: number, alpha: number) {
+  const luminance = getColorLuminance(color);
+  const adjusted =
+    luminance > 0.58
+      ? blendColor(color, 0, amount)
+      : blendColor(color, 255, amount);
+
+  const parsed = parseHexColor(adjusted);
+  if (!parsed) {
+    return `rgba(255, 255, 255, ${alpha})`;
+  }
+
+  return `rgba(${parsed.r}, ${parsed.g}, ${parsed.b}, ${alpha})`;
+}
+
 /**
  * Props definition for the MovieRatings component
  */
@@ -21,13 +81,17 @@ interface FilmRatingsProps {
   letterboxdTmdbId: string;
   omdbRatingsData: OmdbRatingsData | null;
   isOmdbLoading: boolean;
+  backgroundColor?: string;
 }
+
+const DEFAULT_BACKGROUND_COLOR = '#2b313a';
 
 const FilmRatings: React.FC<FilmRatingsProps> = ({
   imdbId,
   letterboxdTmdbId,
   omdbRatingsData,
   isOmdbLoading,
+  backgroundColor = DEFAULT_BACKGROUND_COLOR,
 }) => {
   const imdbDisplayRating = getImdbDisplayRating(
     omdbRatingsData,
@@ -54,6 +118,9 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
     rottenTomatoesValue,
     isOmdbLoading,
   );
+  const surfaceBackgroundColor = getContrastTint(backgroundColor, 0.28, 0.3);
+  const dividerColor = getContrastTint(backgroundColor, 0.32, 0.18);
+  const cardBorderColor = getContrastTint(backgroundColor, 0.4, 0.26);
 
   const onImdbPress = () => {
     if (!imdbId) {
@@ -69,7 +136,15 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
   };
 
   return (
-    <View style={styles.container}>
+    <View
+      style={[
+        styles.container,
+        {
+          backgroundColor: surfaceBackgroundColor,
+          borderColor: cardBorderColor,
+        },
+      ]}
+    >
       {/* IMDb Rating */}
       <View style={styles.ratingItem}>
         <Pressable onPress={onImdbPress}>
@@ -78,20 +153,38 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
       </View>
 
       {useRottenTomatoesRating ? (
-        <View style={[styles.ratingItem, styles.borderLeft]}>
+        <View
+          style={[
+            styles.ratingItem,
+            styles.borderLeft,
+            { borderColor: dividerColor },
+          ]}
+        >
           <RottenTomatoRating
             ratingText={rottenTomatoesDisplayRating}
             isRotten={isRotten}
           />
         </View>
       ) : (
-        <View style={[styles.ratingItem, styles.borderLeft]}>
+        <View
+          style={[
+            styles.ratingItem,
+            styles.borderLeft,
+            { borderColor: dividerColor },
+          ]}
+        >
           <MetaCriticRating ratingText={metacriticDisplayRating} />
         </View>
       )}
 
       {/* Letterboxd Rating */}
-      <View style={[styles.ratingItem, styles.borderLeft]}>
+      <View
+        style={[
+          styles.ratingItem,
+          styles.borderLeft,
+          { borderColor: dividerColor },
+        ]}
+      >
         <LetterboxdRating tmdbId={letterboxdTmdbId} />
       </View>
     </View>
@@ -104,10 +197,8 @@ const styles = StyleSheet.create({
     alignItems: 'stretch',
     paddingVertical: 14,
     paddingHorizontal: 16,
-    backgroundColor: '#3a3f4775',
     borderRadius: 16,
     borderWidth: 1,
-    borderColor: '#4a5160',
   },
   ratingItem: {
     flex: 1,
@@ -120,7 +211,6 @@ const styles = StyleSheet.create({
   },
   borderLeft: {
     borderLeftWidth: 1,
-    borderColor: '#fff',
   },
 });
 

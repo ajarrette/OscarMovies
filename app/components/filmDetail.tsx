@@ -435,6 +435,7 @@ export default function FilmDetail({
                 letterboxdTmdbId={film.tmdb_id.toString() || ''}
                 omdbRatingsData={omdbRatingsData}
                 isOmdbLoading={isOmdbLoading}
+                backgroundColor={gradientColors[1] || DEFAULT_BACKGROUND}
               />
             </View>
             {castPeople.length > 0 && (
