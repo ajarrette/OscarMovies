@@ -15,6 +15,8 @@
     "enrich-people": "node ./assets/data/enrich-people.js",
     "enrich-person-by-id": "node ./assets/data/enrich-person-by-id.js",
     "enrich-cast-people": "node ./assets/data/enrich-cast-people.js",
+    "update-popular-movies-db": "node ./assets/data/update-popular-movies-db.js",
+    "update-popular-people-db": "node ./assets/data/update-popular-people-db.js",
     "import-popular-movies": "node ./assets/data/import-popular-movies.js",
     "import-popular-people": "node ./assets/data/import-popular-people.js",
     "import-movie-cast": "node ./assets/data/import-movie-cast.js"
