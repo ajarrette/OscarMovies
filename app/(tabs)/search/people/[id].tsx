@@ -1,6 +1,5 @@
 import LoadPersonDetail from '@/app/components/loadPersonDetail';
 import { useLocalSearchParams } from 'expo-router';
-import FilmsDbProvider from '@/app/components/filmsDbProvider';
 import { StyleSheet, View } from 'react-native';
 
 export default function Person() {
@@ -8,9 +7,7 @@ export default function Person() {
 
   return (
     <View style={styles.container}>
-      <FilmsDbProvider>
-        <LoadPersonDetail id={+id} />
-      </FilmsDbProvider>
+      <LoadPersonDetail id={+id} />
     </View>
   );
 }

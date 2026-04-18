@@ -15,7 +15,6 @@ import {
   View,
 } from 'react-native';
 import ImageSizing from '@/app/services/imageSizing';
-import FilmsDbProvider from '@/app/components/filmsDbProvider';
 import MoviePoster from '@/app/components/moviePoster';
 const SEARCH_DEBOUNCE_MS = 120;
 const DEFAULT_RESULTS_LIMIT = 50;
@@ -217,18 +216,8 @@ function SearchContent() {
                         p.name,
                         p.profile_path,
                         p.known_for_department,
-                        COALESCE((
-                          SELECT COUNT(DISTINCT np.nomination_id)
-                          FROM nomination_people np
-                          INNER JOIN nominations n ON n.id = np.nomination_id
-                          WHERE np.person_id = p.id
-                            AND n.won = 1
-                        ), 0) AS wins,
-                        COALESCE((
-                          SELECT COUNT(DISTINCT np.nomination_id)
-                          FROM nomination_people np
-                          WHERE np.person_id = p.id
-                        ), 0) AS nominations
+                        COALESCE(p.wins, 0) AS wins,
+                        COALESCE(p.nominations, 0) AS nominations
                  FROM people p
                  WHERE p.known_for_department = 'Acting'
                  ORDER BY nominations DESC, wins DESC, p.name ASC
@@ -239,18 +228,8 @@ function SearchContent() {
                         p.name,
                         p.profile_path,
                         p.known_for_department,
-                        COALESCE((
-                          SELECT COUNT(DISTINCT np.nomination_id)
-                          FROM nomination_people np
-                          INNER JOIN nominations n ON n.id = np.nomination_id
-                          WHERE np.person_id = p.id
-                            AND n.won = 1
-                        ), 0) AS wins,
-                        COALESCE((
-                          SELECT COUNT(DISTINCT np.nomination_id)
-                          FROM nomination_people np
-                          WHERE np.person_id = p.id
-                        ), 0) AS nominations
+                        COALESCE(p.wins, 0) AS wins,
+                        COALESCE(p.nominations, 0) AS nominations
                  FROM people p
                  WHERE p.name LIKE '%' || ? || '%' COLLATE NOCASE
                  ORDER BY
@@ -354,7 +333,10 @@ function SearchContent() {
         <View style={styles.toggleRow}>
           <Pressable
             onPress={() => setMode('films')}
-            style={[styles.toggleButton, mode === 'films' && styles.toggleActive]}
+            style={[
+              styles.toggleButton,
+              mode === 'films' && styles.toggleActive,
+            ]}
           >
             <Text
               style={[
@@ -367,7 +349,10 @@ function SearchContent() {
           </Pressable>
           <Pressable
             onPress={() => setMode('people')}
-            style={[styles.toggleButton, mode === 'people' && styles.toggleActive]}
+            style={[
+              styles.toggleButton,
+              mode === 'people' && styles.toggleActive,
+            ]}
           >
             <Text
               style={[
@@ -442,9 +427,7 @@ function SearchContent() {
 export default function SearchScreen() {
   return (
     <View style={styles.screen}>
-      <FilmsDbProvider>
-        <SearchContent />
-      </FilmsDbProvider>
+      <SearchContent />
     </View>
   );
 }

@@ -16,7 +16,6 @@ import {
   View,
 } from 'react-native';
 import ImageSizing from '@/app/services/imageSizing';
-import FilmsDbProvider from '@/app/components/filmsDbProvider';
 import MoviePoster from '@/app/components/moviePoster';
 
 type NomineeRow = {
@@ -287,9 +286,7 @@ export default function Nominations() {
         }}
       />
       {Number.isFinite(filmId) ? (
-        <FilmsDbProvider>
-          <NominationsContent filmId={filmId} />
-        </FilmsDbProvider>
+        <NominationsContent filmId={filmId} />
       ) : (
         <View style={styles.centeredState}>
           <Text style={styles.stateText}>Invalid film ID.</Text>

@@ -1,6 +1,5 @@
 import LoadFilmDetail from '@/app/components/loadFilmDetail';
 import { useLocalSearchParams } from 'expo-router';
-import FilmsDbProvider from '@/app/components/filmsDbProvider';
 import { StyleSheet, View } from 'react-native';
 
 export default function Film() {
@@ -8,9 +7,7 @@ export default function Film() {
 
   return (
     <View style={styles.container}>
-      <FilmsDbProvider>
-        <LoadFilmDetail id={+id} />
-      </FilmsDbProvider>
+      <LoadFilmDetail id={+id} />
     </View>
   );
 }

@@ -35,6 +35,8 @@ const newColumns = [
   'place_of_birth      TEXT',
   'popularity          REAL',
   'profile_path        TEXT',
+  'wins                INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0)',
+  'nominations         INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)',
 ];
 
 const existingColumns = db
@@ -54,6 +56,15 @@ for (const colDef of newColumns) {
 try {
   db.prepare(
     'CREATE UNIQUE INDEX IF NOT EXISTS idx_people_tmdb_id ON people(tmdb_id)',
+  ).run();
+  db.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_people_department_name_nocase ON people(known_for_department, name COLLATE NOCASE)',
+  ).run();
+  db.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_nomination_people_person_nomination ON nomination_people(person_id, nomination_id)',
+  ).run();
+  db.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_nomination_movies_nomination_ordinal_movie ON nomination_movies(nomination_id, ordinal, movie_id)',
   ).run();
 } catch {
   // Index may already exist with a different definition — safe to ignore

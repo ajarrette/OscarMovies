@@ -48,7 +48,9 @@ db.exec(`
 
   CREATE TABLE IF NOT EXISTS people (
     id   INTEGER PRIMARY KEY,
-    name TEXT    NOT NULL UNIQUE
+    name TEXT    NOT NULL UNIQUE,
+    wins INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0),
+    nominations INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)
   );
 
   CREATE TABLE IF NOT EXISTS nominations (
@@ -92,11 +94,39 @@ db.exec(`
   CREATE INDEX IF NOT EXISTS idx_nominations_ceremony_category ON nominations(ceremony_id, category_id);
   CREATE INDEX IF NOT EXISTS idx_nomination_movies_movie        ON nomination_movies(movie_id);
   CREATE INDEX IF NOT EXISTS idx_nomination_people_person       ON nomination_people(person_id);
+  CREATE INDEX IF NOT EXISTS idx_nomination_people_person_nomination
+    ON nomination_people(person_id, nomination_id);
+  CREATE INDEX IF NOT EXISTS idx_nomination_movies_nomination_ordinal_movie
+    ON nomination_movies(nomination_id, ordinal, movie_id);
   CREATE INDEX IF NOT EXISTS idx_nomination_nominees_nomination ON nomination_nominees(nomination_id);
   CREATE INDEX IF NOT EXISTS idx_nominations_source_order       ON nominations(source_order);
   CREATE UNIQUE INDEX IF NOT EXISTS idx_nomination_nominees_unique
     ON nomination_nominees(nomination_id, ordinal);
 `);
+
+// Keep older DB files compatible by adding stats columns if they do not exist.
+const existingPeopleColumns = db
+  .prepare('PRAGMA table_info(people)')
+  .all()
+  .map((column) => column.name);
+
+if (!existingPeopleColumns.includes('wins')) {
+  db.prepare(
+    'ALTER TABLE people ADD COLUMN wins INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0)',
+  ).run();
+}
+
+if (!existingPeopleColumns.includes('nominations')) {
+  db.prepare(
+    'ALTER TABLE people ADD COLUMN nominations INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)',
+  ).run();
+}
+
+if (existingPeopleColumns.includes('known_for_department')) {
+  db.prepare(
+    'CREATE INDEX IF NOT EXISTS idx_people_department_name_nocase ON people(known_for_department, name COLLATE NOCASE)',
+  ).run();
+}
 
 // ── Prepared statements ───────────────────────────────────────────────────────
 const stmts = {
@@ -296,6 +326,21 @@ db.exec(`
       FROM nomination_movies nm
       JOIN nominations n ON n.id = nm.nomination_id
       WHERE nm.movie_id = movies.id
+        AND n.won = 1
+    );
+
+  UPDATE people
+  SET
+    nominations = (
+      SELECT COUNT(*)
+      FROM nomination_people np
+      WHERE np.person_id = people.id
+    ),
+    wins = (
+      SELECT COUNT(*)
+      FROM nomination_people np
+      JOIN nominations n ON n.id = np.nomination_id
+      WHERE np.person_id = people.id
         AND n.won = 1
     );
 `);

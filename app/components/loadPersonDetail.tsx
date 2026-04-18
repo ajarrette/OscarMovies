@@ -36,18 +36,8 @@ export default function LoadPersonDetail({ id }: Props) {
                 p.place_of_birth,
                 p.popularity,
                 p.profile_path,
-                COALESCE((
-                  SELECT COUNT(DISTINCT np.nomination_id)
-                  FROM nomination_people np
-                  WHERE np.person_id = p.id
-                ), 0) AS nominations,
-                COALESCE((
-                  SELECT COUNT(DISTINCT np.nomination_id)
-                  FROM nomination_people np
-                  INNER JOIN nominations n ON n.id = np.nomination_id
-                  WHERE np.person_id = p.id
-                    AND n.won = 1
-                ), 0) AS wins
+                COALESCE(p.nominations, 0) AS nominations,
+                COALESCE(p.wins, 0) AS wins
          FROM people p
          WHERE p.id = ?`,
         [id],

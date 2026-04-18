@@ -16,7 +16,6 @@ import {
   View,
 } from 'react-native';
 import ImageSizing from '@/app/services/imageSizing';
-import FilmsDbProvider from '@/app/components/filmsDbProvider';
 import MoviePoster from '@/app/components/moviePoster';
 
 type PersonNominationRow = {
@@ -321,9 +320,7 @@ export default function PersonNominations() {
         }}
       />
       {Number.isFinite(personId) ? (
-        <FilmsDbProvider>
-          <PersonNominationsContent personId={personId} />
-        </FilmsDbProvider>
+        <PersonNominationsContent personId={personId} />
       ) : (
         <View style={styles.centeredState}>
           <Text style={styles.stateText}>Invalid person ID.</Text>

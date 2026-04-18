@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { CategoryGroup } from '../../components/filmsList';
 import FilmsList from '../../components/filmsList';
-import FilmsDbProvider from '../../components/filmsDbProvider';
 import FilmsYearPicker from '../../components/filmsYearPicker';
 
 type NominationMovieRow = {
@@ -427,9 +426,7 @@ function FilmsContent() {
 export default function Films() {
   return (
     <View style={styles.container}>
-      <FilmsDbProvider>
-        <FilmsContent />
-      </FilmsDbProvider>
+      <FilmsContent />
     </View>
   );
 }
