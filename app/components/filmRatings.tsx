@@ -3,7 +3,7 @@ import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import {
   fetchOmdbRatingsByImdbId,
   OmdbRatingsData,
-} from '../services/omdbRatings';
+} from '../services/omdb-rating-service';
 import ImdbRating from './imdbRating';
 import LetterboxdRating from './letterboxdRating';
 import RottenTomatoRating from './rottenTomatoRating';
@@ -67,17 +67,38 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
     return `${omdbRatingsData.imdbRatingValue}/10`;
   }, [isOmdbLoading, omdbRatingsData]);
 
-  const rottenTomatoesDisplayRating = useMemo(() => {
+  const rottenTomatoesValue = useMemo(() => {
     if (isOmdbLoading) {
-      return 'Loading...';
+      return null;
     }
 
     return (
       omdbRatingsData?.ratings.find(
         (rating) => rating.source === 'Rotten Tomatoes',
-      )?.value || 'No rating'
+      )?.value ?? null
     );
   }, [isOmdbLoading, omdbRatingsData]);
+
+  const rottenTomatoesDisplayRating = useMemo(() => {
+    if (isOmdbLoading) {
+      return 'Loading...';
+    }
+
+    return rottenTomatoesValue || 'No rating';
+  }, [isOmdbLoading, rottenTomatoesValue]);
+
+  const isRottenTomatoesRatingRotten = useMemo(() => {
+    if (!rottenTomatoesValue) {
+      return false;
+    }
+
+    const match = rottenTomatoesValue.match(/(\d+)/);
+    if (!match) {
+      return false;
+    }
+
+    return parseInt(match[1], 10) < 60;
+  }, [rottenTomatoesValue]);
 
   const onImdbPress = () => {
     if (!imdbId) {
@@ -103,7 +124,10 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
 
       {/* Rotten Tomatoes Rating */}
       <View style={[styles.ratingItem, styles.borderLeft]}>
-        <RottenTomatoRating ratingText={rottenTomatoesDisplayRating} />
+        <RottenTomatoRating
+          ratingText={rottenTomatoesDisplayRating}
+          isRotten={isRottenTomatoesRatingRotten}
+        />
       </View>
 
       {/* Letterboxd Rating */}

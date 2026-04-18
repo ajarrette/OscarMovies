@@ -90,3 +90,7 @@ export async function fetchOmdbRatingsByImdbId(
     return null;
   }
 }
+
+export default function OmdbRatingsServiceRoute(): null {
+  return null;
+}

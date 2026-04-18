@@ -1,27 +1,16 @@
 import { StyleSheet, Text, View } from 'react-native';
 import FreshTomatoIcon from './tomatoFreshIcon';
 import RottenTomatoIcon from './tomatoRottenIcon';
+
 type RottenTomatoRatingProps = {
   ratingText: string;
+  isRotten: boolean;
 };
 
-const RottenTomatoRating = ({ ratingText }: RottenTomatoRatingProps) => {
-  // Extract numeric rating to determine which icon to show
-  const getRatingValue = (): number | null => {
-    if (
-      !ratingText ||
-      ratingText === 'Loading...' ||
-      ratingText === 'No rating'
-    ) {
-      return null;
-    }
-    const match = ratingText.match(/(\d+)/);
-    return match ? parseInt(match[1], 10) : null;
-  };
-
-  const ratingValue = getRatingValue();
-  const isRotten = ratingValue !== null && ratingValue < 60;
-
+const RottenTomatoRating = ({
+  ratingText,
+  isRotten,
+}: RottenTomatoRatingProps) => {
   return (
     <View style={styles.container}>
       {isRotten ? (
