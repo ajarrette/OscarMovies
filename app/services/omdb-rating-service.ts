@@ -9,6 +9,7 @@ export interface OmdbRatingsData {
   title: string;
   year: string;
   poster: string;
+  rated: string;
   ratings: OmdbRatingEntry[];
   imdbRatingValue: string;
 }
@@ -22,6 +23,7 @@ type OmdbApiResponse = {
   Title: string;
   Year: string;
   Poster: string;
+  Rated: string;
   Ratings: OmdbApiRatingEntry[];
   imdbRating: string;
   Response?: string;
@@ -40,6 +42,7 @@ function normalizeOmdbRatingsData(raw: unknown): OmdbRatingsData {
     title: String(record.Title ?? record.title ?? ''),
     year: String(record.Year ?? record.year ?? ''),
     poster: String(record.Poster ?? record.poster ?? ''),
+    rated: String(record.Rated ?? record.rated ?? 'N/A'),
     ratings: rawRatings.map((rating) => ({
       source: String(rating.Source ?? rating.source ?? ''),
       value: String(rating.Value ?? rating.value ?? ''),

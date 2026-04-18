@@ -1,9 +1,13 @@
-import React, { useEffect, useMemo, useState } from 'react';
+import React from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import { OmdbRatingsData } from '../services/omdb-rating-service';
 import {
-  fetchOmdbRatingsByImdbId,
-  OmdbRatingsData,
-} from '../services/omdb-rating-service';
+  getImdbDisplayRating,
+  getOmdbDisplayRating,
+  getOmdbSourceRatingValue,
+  isRottenTomatoesRatingRotten,
+  shouldUseRottenTomatoesRating,
+} from '../utils/index';
 import ImdbRating from './imdbRating';
 import LetterboxdRating from './letterboxdRating';
 import MetaCriticRating from './metaCriticRating';
@@ -15,118 +19,41 @@ import RottenTomatoRating from './rottenTomatoRating';
 interface FilmRatingsProps {
   imdbId: string;
   letterboxdTmdbId: string;
+  omdbRatingsData: OmdbRatingsData | null;
+  isOmdbLoading: boolean;
 }
 
 const FilmRatings: React.FC<FilmRatingsProps> = ({
   imdbId,
   letterboxdTmdbId,
+  omdbRatingsData,
+  isOmdbLoading,
 }) => {
-  const [omdbRatingsData, setOmdbRatingsData] =
-    useState<OmdbRatingsData | null>(null);
-  const [isOmdbLoading, setIsOmdbLoading] = useState(true);
-
-  useEffect(() => {
-    let isMounted = true;
-
-    const loadOmdbRatingsData = async () => {
-      if (!imdbId) {
-        if (isMounted) {
-          setOmdbRatingsData(null);
-          setIsOmdbLoading(false);
-        }
-        return;
-      }
-
-      setIsOmdbLoading(true);
-      const data = await fetchOmdbRatingsByImdbId(imdbId);
-
-      if (isMounted) {
-        setOmdbRatingsData(data);
-        setIsOmdbLoading(false);
-      }
-    };
-
-    loadOmdbRatingsData();
-
-    return () => {
-      isMounted = false;
-    };
-  }, [imdbId]);
-
-  const imdbDisplayRating = useMemo(() => {
-    if (isOmdbLoading) {
-      return 'Loading...';
-    }
-
-    if (
-      !omdbRatingsData?.imdbRatingValue ||
-      omdbRatingsData.imdbRatingValue === 'N/A'
-    ) {
-      return 'No rating';
-    }
-
-    return `${omdbRatingsData.imdbRatingValue}/10`;
-  }, [isOmdbLoading, omdbRatingsData]);
-
-  const rottenTomatoesValue = useMemo(() => {
-    if (isOmdbLoading) {
-      return null;
-    }
-
-    return (
-      omdbRatingsData?.ratings.find(
-        (rating) => rating.source === 'Rotten Tomatoes',
-      )?.value ?? null
-    );
-  }, [isOmdbLoading, omdbRatingsData]);
-
-  const metacriticValue = useMemo(() => {
-    if (isOmdbLoading) {
-      return null;
-    }
-
-    return (
-      omdbRatingsData?.ratings.find((rating) => rating.source === 'Metacritic')
-        ?.value ?? null
-    );
-  }, [isOmdbLoading, omdbRatingsData]);
-
-  const rottenTomatoesDisplayRating = useMemo(() => {
-    if (isOmdbLoading) {
-      return 'Loading...';
-    }
-
-    return rottenTomatoesValue || 'No rating';
-  }, [isOmdbLoading, rottenTomatoesValue]);
-
-  const isRottenTomatoesRatingRotten = useMemo(() => {
-    if (!rottenTomatoesValue) {
-      return false;
-    }
-
-    const match = rottenTomatoesValue.match(/(\d+)/);
-    if (!match) {
-      return false;
-    }
-
-    return parseInt(match[1], 10) < 60;
-  }, [rottenTomatoesValue]);
-
-  const metacriticDisplayRating = useMemo(() => {
-    if (isOmdbLoading) {
-      return 'Loading...';
-    }
-
-    return metacriticValue || 'No rating';
-  }, [isOmdbLoading, metacriticValue]);
-
-  const useRottenTomatoesRating = useMemo(() => {
-    if (isOmdbLoading) {
-      return true;
-    }
-
-    return rottenTomatoesValue ? true : false;
-  }, [isOmdbLoading, rottenTomatoesValue]);
+  const imdbDisplayRating = getImdbDisplayRating(
+    omdbRatingsData,
+    isOmdbLoading,
+  );
+  const rottenTomatoesValue = getOmdbSourceRatingValue(
+    omdbRatingsData,
+    'Rotten Tomatoes',
+  );
+  const metacriticValue = getOmdbSourceRatingValue(
+    omdbRatingsData,
+    'Metacritic',
+  );
+  const rottenTomatoesDisplayRating = getOmdbDisplayRating(
+    rottenTomatoesValue,
+    isOmdbLoading,
+  );
+  const isRotten = isRottenTomatoesRatingRotten(rottenTomatoesValue);
+  const metacriticDisplayRating = getOmdbDisplayRating(
+    metacriticValue,
+    isOmdbLoading,
+  );
+  const useRottenTomatoesRating = shouldUseRottenTomatoesRating(
+    rottenTomatoesValue,
+    isOmdbLoading,
+  );
 
   const onImdbPress = () => {
     if (!imdbId) {
@@ -154,7 +81,7 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
         <View style={[styles.ratingItem, styles.borderLeft]}>
           <RottenTomatoRating
             ratingText={rottenTomatoesDisplayRating}
-            isRotten={isRottenTomatoesRatingRotten}
+            isRotten={isRotten}
           />
         </View>
       ) : (

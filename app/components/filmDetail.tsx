@@ -1,7 +1,6 @@
 import Film from '@/types/film';
 import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
-import * as Linking from 'expo-linking';
 import { requireOptionalNativeModule } from 'expo-modules-core';
 import { Stack, usePathname, useRouter } from 'expo-router';
 import { useEffect, useMemo, useState } from 'react';
@@ -13,6 +12,7 @@ import Animated, {
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
+import { getFilmRatingLabel, useOmdbRatings } from '../utils/index';
 import FilmRatings from './filmRatings';
 import type { FilmCastPerson } from './loadFilmDetail';
 import MoviePoster from './moviePoster';
@@ -155,6 +155,18 @@ function toGradientColors(colors: ImageColorsResult) {
   ] as GradientPalette;
 }
 
+function formatMovieDuration(totalMinutes: number): string {
+  if (totalMinutes <= 0) return '0m';
+
+  const hours = Math.floor(totalMinutes / 60);
+  const minutes = totalMinutes % 60;
+
+  const hoursPart = hours > 0 ? `${hours}h ` : '';
+  const minutesPart = minutes > 0 || hours === 0 ? `${minutes}m` : '';
+
+  return `${hoursPart}${minutesPart}`.trim();
+}
+
 export default function FilmDetail({
   film,
   directorPersonId = null,
@@ -170,7 +182,9 @@ export default function FilmDetail({
   const director = film.director ?? 'Unknown';
   const overview = film.overview ?? 'No overview available.';
   const runtimeText =
-    typeof film.runtime === 'number' ? `${film.runtime} mins` : 'Runtime N/A';
+    typeof film.runtime === 'number'
+      ? formatMovieDuration(film.runtime)
+      : 'Runtime N/A';
   const releaseYear = (() => {
     if (!film.release_date) {
       return 'Unknown';
@@ -190,6 +204,7 @@ export default function FilmDetail({
     : undefined;
   const [gradientColors, setGradientColors] =
     useState<GradientPalette>(FALLBACK_GRADIENT);
+  const { omdbRatingsData, isOmdbLoading } = useOmdbRatings(film.imdb_id);
 
   useEffect(() => {
     let isDisposed = false;
@@ -261,18 +276,6 @@ export default function FilmDetail({
     [contrastOverlayOpacity],
   );
 
-  const onImdbPress = () => {
-    if (!film.imdb_id) {
-      return;
-    }
-
-    const url = `https://www.imdb.com/title/${film.imdb_id}/`;
-    const handlePress = async () => {
-      await Linking.openURL(url);
-    };
-    handlePress();
-  };
-
   const onShowNominations = () => {
     router.push(
       isSearchRoute
@@ -319,6 +322,8 @@ export default function FilmDetail({
       ],
     };
   });
+
+  const filmRating = getFilmRatingLabel(omdbRatingsData, isOmdbLoading);
 
   const headerAnimatedStyle = useAnimatedStyle(() => {
     return {
@@ -394,9 +399,12 @@ export default function FilmDetail({
                 {title !== originalTitle && (
                   <Text style={styles.subtitle}>{originalTitle}</Text>
                 )}
-                <Text style={styles.releaseDate}>
-                  {releaseYear} • DIRECTED BY
+
+                <Text style={styles.yearAndRating}>
+                  {releaseYear} • {filmRating} • {runtimeText}
                 </Text>
+
+                <Text style={styles.defaultText}>DIRECTED BY</Text>
                 {directorPersonId === null ? (
                   <Text style={styles.director}>{director}</Text>
                 ) : (
@@ -405,16 +413,12 @@ export default function FilmDetail({
                   </Pressable>
                 )}
                 <View style={styles.row}>
-                  <Pressable onPress={onImdbPress}>
-                    <Text style={styles.button}>IMDB</Text>
-                  </Pressable>
-                  <Text style={styles.defaultText}>{runtimeText}</Text>
+                  <NomineeStrip
+                    nominations={film.nominations}
+                    wins={film.wins}
+                    onPress={onShowNominations}
+                  />
                 </View>
-                <NomineeStrip
-                  nominations={film.nominations}
-                  wins={film.wins}
-                  onPress={onShowNominations}
-                />
               </View>
               <View>
                 <MoviePoster
@@ -429,6 +433,8 @@ export default function FilmDetail({
               <FilmRatings
                 imdbId={film.imdb_id}
                 letterboxdTmdbId={film.tmdb_id.toString() || ''}
+                omdbRatingsData={omdbRatingsData}
+                isOmdbLoading={isOmdbLoading}
               />
             </View>
             {castPeople.length > 0 && (
@@ -604,5 +610,11 @@ const styles = StyleSheet.create({
     right: 0,
     height: 120,
     zIndex: 10,
+  },
+  yearAndRating: {
+    fontSize: 14,
+    color: '#ccc',
+    marginBottom: 10,
+    marginTop: -8,
   },
 });
