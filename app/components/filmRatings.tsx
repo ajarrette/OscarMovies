@@ -36,7 +36,7 @@ const FilmRatings: React.FC<MovieRatingsProps> = ({
       {/* Letterboxd Rating */}
       <View style={[styles.ratingItem, styles.borderLeft]}>
         <LetterboxdRating
-          tmdbId={1491}
+          tmdbId={letterboxd}
           onRatingFound={(rating) => console.log('Letterboxd rating:', rating)}
         />
       </View>

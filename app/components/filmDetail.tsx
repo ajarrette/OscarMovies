@@ -16,6 +16,7 @@ import Film from '@/types/film';
 import type { FilmCastPerson } from './loadFilmDetail';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
+import FilmRatings from './filmRatings';
 
 type Props = {
   film: Film;
@@ -422,6 +423,14 @@ export default function FilmDetail({
                   height={180}
                 />
               </View>
+            </View>
+
+            <View style={[{ marginTop: 20 }]}>
+              <FilmRatings
+                imdb='8.1/10'
+                rottenTomatoes='91%'
+                letterboxd={film.tmdb_id.toString() || ''}
+              />
             </View>
             {castPeople.length > 0 && (
               <View style={styles.castSection}>

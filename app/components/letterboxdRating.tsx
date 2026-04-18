@@ -14,7 +14,7 @@ const LetterboxdRating: React.FC<Props> = ({ tmdbId, onRatingFound }) => {
     rating === null
       ? 'Loading...'
       : rating !== 'N/A'
-        ? `${rating}/5`
+        ? `${(+rating).toFixed(1)}/5`
         : 'No rating';
 
   const scraperJS = `
