@@ -12,8 +12,13 @@ import Animated, {
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
+import {
+  getCachedLetterboxdFilmData,
+  type LetterboxdFilmData,
+} from '../services/letterboxd-film-service';
 import { getFilmRatingLabel, useOmdbRatings } from '../utils/index';
 import FilmRatings from './filmRatings';
+import LetterboxdFilmScraper from './letterboxdFilmScraper';
 import type { FilmCastPerson } from './loadFilmDetail';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
@@ -204,6 +209,10 @@ export default function FilmDetail({
     : undefined;
   const [gradientColors, setGradientColors] =
     useState<GradientPalette>(FALLBACK_GRADIENT);
+  const [LetterboxdFilmData, setLetterboxdFilmData] =
+    useState<LetterboxdFilmData | null>(null);
+  const [shouldScrapeLetterboxd, setShouldScrapeLetterboxd] =
+    useState<boolean>(false);
   const { omdbRatingsData, isOmdbLoading } = useOmdbRatings(film.imdb_id);
 
   useEffect(() => {
@@ -260,6 +269,46 @@ export default function FilmDetail({
       isDisposed = true;
     };
   }, [backdropUri, film.id]);
+
+  useEffect(() => {
+    let isDisposed = false;
+    const tmdbId = String(film.tmdb_id || '').trim();
+
+    if (!tmdbId) {
+      setLetterboxdFilmData({ rating: 'N/A' });
+      setShouldScrapeLetterboxd(false);
+      return () => {
+        isDisposed = true;
+      };
+    }
+
+    const loadLetterboxdFilmData = async () => {
+      const cachedMovieData = await getCachedLetterboxdFilmData(tmdbId);
+
+      if (isDisposed) {
+        return;
+      }
+
+      if (cachedMovieData) {
+        setLetterboxdFilmData(cachedMovieData);
+        setShouldScrapeLetterboxd(false);
+      } else {
+        setLetterboxdFilmData(null);
+        setShouldScrapeLetterboxd(true);
+      }
+    };
+
+    loadLetterboxdFilmData();
+
+    return () => {
+      isDisposed = true;
+    };
+  }, [film.tmdb_id]);
+
+  const onLetterboxdFilmDataFound = (data: LetterboxdFilmData) => {
+    setLetterboxdFilmData(data);
+    setShouldScrapeLetterboxd(false);
+  };
 
   const contrastOverlayOpacity = useMemo(
     () => getContrastOpacity(gradientColors[0] || DEFAULT_BACKGROUND),
@@ -435,6 +484,7 @@ export default function FilmDetail({
                 imdbId={film.imdb_id}
                 filmName={title}
                 letterboxdTmdbId={film.tmdb_id.toString() || ''}
+                LetterboxdFilmData={LetterboxdFilmData}
                 omdbRatingsData={omdbRatingsData}
                 isOmdbLoading={isOmdbLoading}
                 backgroundColor={gradientColors[1] || DEFAULT_BACKGROUND}
@@ -486,6 +536,11 @@ export default function FilmDetail({
           </View>
         </Animated.View>
       </Animated.ScrollView>
+      <LetterboxdFilmScraper
+        tmdbId={film.tmdb_id}
+        enabled={shouldScrapeLetterboxd}
+        onMovieDataFound={onLetterboxdFilmDataFound}
+      />
     </View>
   );
 }

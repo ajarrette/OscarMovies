@@ -12,6 +12,7 @@ import ImdbRating from './imdbRating';
 import LetterboxdRating from './letterboxdRating';
 import MetaCriticRating from './metaCriticRating';
 import RottenTomatoRating from './rottenTomatoRating';
+import type { LetterboxdFilmData } from '../services/letterboxd-film-service';
 
 function parseHexColor(color: string) {
   const normalized = color.trim().replace('#', '');
@@ -80,6 +81,7 @@ interface FilmRatingsProps {
   imdbId: string;
   filmName?: string;
   letterboxdTmdbId: string;
+  LetterboxdFilmData: LetterboxdFilmData | null;
   omdbRatingsData: OmdbRatingsData | null;
   isOmdbLoading: boolean;
   backgroundColor?: string;
@@ -91,6 +93,7 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
   imdbId,
   filmName = '',
   letterboxdTmdbId,
+  LetterboxdFilmData,
   omdbRatingsData,
   isOmdbLoading,
   backgroundColor = DEFAULT_BACKGROUND_COLOR,
@@ -244,7 +247,7 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
         ]}
       >
         <Pressable onPress={onLetterboxdPress}>
-          <LetterboxdRating tmdbId={letterboxdTmdbId} />
+          <LetterboxdRating movieData={LetterboxdFilmData} />
         </Pressable>
       </View>
     </View>
