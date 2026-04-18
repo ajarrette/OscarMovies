@@ -88,3 +88,7 @@ export async function clearCachedRating(key: string): Promise<void> {
     console.error(`Error clearing cache for ${key}:`, err);
   }
 }
+
+export default function RatingCacheRoute(): null {
+  return null;
+}
