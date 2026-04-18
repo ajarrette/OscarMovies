@@ -74,10 +74,8 @@ type SearchResultRowProps = {
   item: SearchItem;
   posterWidth: number;
   posterHeight: number;
-  onOpenItem: (item: SearchItem) => void;
+  onOpenItem: (kind: SearchMode, id: number) => void;
 };
-
-const EMPTY_RESULTS: SearchItem[] = [];
 
 const SearchResultRow = memo(function SearchResultRow({
   item,
@@ -88,7 +86,10 @@ const SearchResultRow = memo(function SearchResultRow({
   const imageUri = item.imagePath
     ? `https://image.tmdb.org/t/p/w300${item.imagePath}`
     : undefined;
-  const handlePress = useCallback(() => onOpenItem(item), [item, onOpenItem]);
+  const handlePress = useCallback(
+    () => onOpenItem(item.kind, item.id),
+    [item.id, item.kind, onOpenItem],
+  );
 
   return (
     <Pressable onPress={handlePress} style={styles.resultRow}>
@@ -340,17 +341,14 @@ function SearchContent() {
     return 'No matching results.';
   }, [debouncedQuery.length, loading, mode]);
 
-  const listData = useMemo(
-    () => (loading ? EMPTY_RESULTS : results),
-    [loading, results],
-  );
-  const onOpenItem = useCallback((item: SearchItem) => {
-    if (item.kind === 'films') {
-      router.push(`/search/films/${item.id}`);
+  const listData = results;
+  const onOpenItem = useCallback((kind: SearchMode, id: number) => {
+    if (kind === 'films') {
+      router.push(`/search/films/${id}`);
       return;
     }
 
-    router.push(`/search/people/${item.id}`);
+    router.push(`/search/people/${id}`);
   }, []);
   const keyExtractor = useCallback(
     (item: SearchItem) => `${item.kind}-${item.id}`,
@@ -426,7 +424,7 @@ function SearchContent() {
   );
   const listEmptyComponent = useMemo(
     () =>
-      loading ? (
+      loading && listData.length === 0 ? (
         <View style={styles.centeredState}>
           <ActivityIndicator size='large' color='#fff' />
         </View>
@@ -435,7 +433,16 @@ function SearchContent() {
           <Text style={styles.emptyText}>{emptyText}</Text>
         </View>
       ),
-    [emptyText, loading],
+    [emptyText, listData.length, loading],
+  );
+  const listFooterComponent = useMemo(
+    () =>
+      loading && listData.length > 0 ? (
+        <View style={styles.footerLoading}>
+          <ActivityIndicator size='small' color='#fff' />
+        </View>
+      ) : null,
+    [listData.length, loading],
   );
 
   return (
@@ -460,6 +467,7 @@ function SearchContent() {
             keyExtractor={keyExtractor}
             ListHeaderComponent={listHeaderComponent}
             ListEmptyComponent={listEmptyComponent}
+            ListFooterComponent={listFooterComponent}
             contentContainerStyle={[
               styles.listContent,
               listData.length === 0 && styles.listContentEmpty,
@@ -605,5 +613,9 @@ const styles = StyleSheet.create({
     color: '#fff',
     fontSize: 16,
     textAlign: 'center',
+  },
+  footerLoading: {
+    alignItems: 'center',
+    paddingVertical: 12,
   },
 });
