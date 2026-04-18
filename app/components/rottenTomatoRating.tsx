@@ -2,6 +2,7 @@ import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import FreshTomatoIcon from './tomatoFreshIcon';
 import RottenTomatoIcon from './tomatoRottenIcon';
+import { getCachedRating, setCachedRating } from '../utils/ratingCache';
 
 // Define the shape of the OMDb Response
 interface OmdbRating {
@@ -43,6 +44,22 @@ const RottenTomatoRating = ({ imdbId }: { imdbId: string }) => {
 
   useEffect(() => {
     const fetchMovieData = async () => {
+      const cacheKey = `omdb_${imdbId}`;
+
+      // Check cache first
+      const cachedData = await getCachedRating(cacheKey);
+      if (cachedData) {
+        try {
+          const result = JSON.parse(cachedData);
+          setRating(result);
+          return;
+        } catch (err) {
+          console.error('Error parsing cached OMDb data:', err);
+          // Fall through to fetch if cache parse fails
+        }
+      }
+
+      // Cache miss or parse error, fetch from API
       const apiKey = process.env.EXPO_PUBLIC_OMDB_API_KEY;
       const url = `https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`;
 
@@ -55,9 +72,10 @@ const RottenTomatoRating = ({ imdbId }: { imdbId: string }) => {
         }
 
         setRating(result);
+        // Cache the result
+        await setCachedRating(cacheKey, JSON.stringify(result));
       } catch (err) {
         console.log('Error fetching OMDb data:', err);
-      } finally {
       }
     };
 

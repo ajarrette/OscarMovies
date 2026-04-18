@@ -1,6 +1,7 @@
-import React, { useRef, useState } from 'react';
+import React, { useRef, useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { getCachedRating, setCachedRating } from '../utils/ratingCache';
 
 interface Props {
   tmdbId: string | number;
@@ -9,6 +10,7 @@ interface Props {
 
 const LetterboxdRating: React.FC<Props> = ({ tmdbId, onRatingFound }) => {
   const [rating, setRating] = useState<string | null>(null);
+  const [shouldScrape, setShouldScrape] = useState<boolean>(true);
   const webViewRef = useRef<WebView>(null);
   const ratingLabel =
     rating === null
@@ -58,7 +60,31 @@ const LetterboxdRating: React.FC<Props> = ({ tmdbId, onRatingFound }) => {
     if (onRatingFound) {
       onRatingFound(result);
     }
+    // Cache the rating
+    setCachedRating(`letterboxd_${tmdbId}`, result);
   };
+
+  // Check cache on mount
+  useEffect(() => {
+    const loadFromCacheOrScrape = async () => {
+      const cacheKey = `letterboxd_${tmdbId}`;
+      const cachedRating = await getCachedRating(cacheKey);
+
+      if (cachedRating) {
+        // Cache hit, use cached value
+        setRating(cachedRating);
+        if (onRatingFound) {
+          onRatingFound(cachedRating);
+        }
+        setShouldScrape(false);
+      } else {
+        // Cache miss, will scrape
+        setShouldScrape(true);
+      }
+    };
+
+    loadFromCacheOrScrape();
+  }, [tmdbId, onRatingFound]);
 
   return (
     <View style={styles.container}>
@@ -69,27 +95,27 @@ const LetterboxdRating: React.FC<Props> = ({ tmdbId, onRatingFound }) => {
       </View>
       <Text style={styles.scoreText}>{ratingLabel}</Text>
 
-      {/* Hidden WebView: incognito={true} ensures we don't store 
-          Cloudflare "challenge" cookies that might brick the scraper later.
-      */}
-      <View style={styles.hidden}>
-        <WebView
-          ref={webViewRef}
-          source={{ uri: `https://letterboxd.com/tmdb/${tmdbId}/` }}
-          injectedJavaScript={scraperJS}
-          onMessage={handleMessage}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          incognito={true} // Bypasses cache and shared cookies
-          startInLoadingState={true}
-          userAgent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1'
-          onShouldStartLoadWithRequest={(request) => {
-            // Silently block about:srcdoc navigations (from inline iframes on Letterboxd)
-            // to suppress "Can't open url" console warnings
-            return !request.url.startsWith('about:');
-          }}
-        />
-      </View>
+      {/* Hidden WebView: only load if we need to scrape (cache miss) */}
+      {shouldScrape && (
+        <View style={styles.hidden}>
+          <WebView
+            ref={webViewRef}
+            source={{ uri: `https://letterboxd.com/tmdb/${tmdbId}/` }}
+            injectedJavaScript={scraperJS}
+            onMessage={handleMessage}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            incognito={true} // Bypasses cache and shared cookies
+            startInLoadingState={true}
+            userAgent='Mozilla/5.0 (iPhone; CPU iPhone OS 17_4 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.4 Mobile/15E148 Safari/604.1'
+            onShouldStartLoadWithRequest={(request) => {
+              // Silently block about:srcdoc navigations (from inline iframes on Letterboxd)
+              // to suppress "Can't open url" console warnings
+              return !request.url.startsWith('about:');
+            }}
+          />
+        </View>
+      )}
     </View>
   );
 };

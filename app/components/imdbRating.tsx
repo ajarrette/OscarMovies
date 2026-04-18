@@ -1,9 +1,11 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import { WebView, WebViewMessageEvent } from 'react-native-webview';
+import { getCachedRating, setCachedRating } from '../utils/ratingCache';
 
 const ImdbRating = ({ imdbId }: { imdbId: string }) => {
   const [rating, setRating] = useState<string | null>(null);
+  const [shouldScrape, setShouldScrape] = useState<boolean>(true);
   const ratingLabel =
     rating === null
       ? 'Loading...'
@@ -39,8 +41,29 @@ const ImdbRating = ({ imdbId }: { imdbId: string }) => {
     const scrapedRating = event.nativeEvent.data;
     if (scrapedRating && scrapedRating !== 'null') {
       setRating(scrapedRating);
+      // Cache the rating
+      setCachedRating(`imdb_${imdbId}`, scrapedRating);
     }
   };
+
+  // Check cache on mount
+  useEffect(() => {
+    const loadFromCacheOrScrape = async () => {
+      const cacheKey = `imdb_${imdbId}`;
+      const cachedRating = await getCachedRating(cacheKey);
+
+      if (cachedRating) {
+        // Cache hit, use cached value
+        setRating(cachedRating);
+        setShouldScrape(false);
+      } else {
+        // Cache miss, will scrape
+        setShouldScrape(true);
+      }
+    };
+
+    loadFromCacheOrScrape();
+  }, [imdbId]);
 
   return (
     <View style={styles.container}>
@@ -49,18 +72,20 @@ const ImdbRating = ({ imdbId }: { imdbId: string }) => {
       </View>
       <Text style={styles.scoreText}>{ratingLabel}</Text>
 
-      {/* Hidden WebView */}
-      <View style={styles.hidden}>
-        <WebView
-          source={{ uri: `https://www.imdb.com/title/${imdbId}/` }}
-          injectedJavaScript={injectedJavaScript}
-          onMessage={onMessage}
-          javaScriptEnabled={true}
-          domStorageEnabled={true}
-          // Start injecting as soon as the DOM is ready
-          injectedJavaScriptBeforeContentLoaded={`window.isScraper = true;`}
-        />
-      </View>
+      {/* Hidden WebView: only load if we need to scrape (cache miss) */}
+      {shouldScrape && (
+        <View style={styles.hidden}>
+          <WebView
+            source={{ uri: `https://www.imdb.com/title/${imdbId}/` }}
+            injectedJavaScript={injectedJavaScript}
+            onMessage={onMessage}
+            javaScriptEnabled={true}
+            domStorageEnabled={true}
+            // Start injecting as soon as the DOM is ready
+            injectedJavaScriptBeforeContentLoaded={`window.isScraper = true;`}
+          />
+        </View>
+      )}
     </View>
   );
 };
