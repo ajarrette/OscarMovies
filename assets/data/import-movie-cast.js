@@ -1,9 +1,12 @@
 #!/usr/bin/env node
+/* eslint-env node */
 'use strict';
 
 const path = require('path');
 const Database = require('better-sqlite3');
-require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+
+const ROOT = path.resolve(process.cwd());
+require('dotenv').config({ path: path.join(ROOT, '.env') });
 
 const API_KEY = process.env.TMDB_API_KEY;
 if (!API_KEY) {
@@ -11,14 +14,7 @@ if (!API_KEY) {
   process.exit(1);
 }
 
-const DB_PATH = path.join(
-  __dirname,
-  '..',
-  '..',
-  'assets',
-  'data',
-  'oscar-movies.db',
-);
+const DB_PATH = path.join(ROOT, 'assets', 'data', 'oscar-movies.db');
 const REQUEST_DELAY_MS = 25;
 
 const db = new Database(DB_PATH);

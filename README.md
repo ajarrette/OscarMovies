@@ -91,6 +91,7 @@ npm run lint
 - `npm run import-popular-movies` imports additional movie popularity data
 - `npm run import-popular-people` imports additional people popularity data
 - `npm run import-movie-cast` imports movie cast relationships
+- `npm run prune-people` deletes low-value people rows not linked in `nomination_people` and vacuums the database
 
 ## Data and Content Notes
 

@@ -19,7 +19,8 @@
     "update-popular-people-db": "node ./assets/data/update-popular-people-db.js",
     "import-popular-movies": "node ./assets/data/import-popular-movies.js",
     "import-popular-people": "node ./assets/data/import-popular-people.js",
-    "import-movie-cast": "node ./assets/data/import-movie-cast.js"
+    "import-movie-cast": "node ./assets/data/import-movie-cast.js",
+    "prune-people": "node ./assets/data/prune-people.js"
   },
   "jest": {
     "preset": "jest-expo"
