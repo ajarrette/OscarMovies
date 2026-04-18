@@ -44,6 +44,8 @@ db.exec(`
     imdb_rating   REAL,
     letterboxd_rating REAL,
     film_rating   REAL,
+    imdb_rating_last_fetched TEXT,
+    letterbox_rating_last_fetched TEXT,
     director      TEXT,
     wins          INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0),
     nominations   INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)
@@ -122,6 +124,18 @@ if (!existingMovieColumns.includes('letterboxd_rating')) {
 
 if (!existingMovieColumns.includes('film_rating')) {
   db.prepare('ALTER TABLE movies ADD COLUMN film_rating REAL').run();
+}
+
+if (!existingMovieColumns.includes('imdb_rating_last_fetched')) {
+  db.prepare(
+    'ALTER TABLE movies ADD COLUMN imdb_rating_last_fetched TEXT',
+  ).run();
+}
+
+if (!existingMovieColumns.includes('letterbox_rating_last_fetched')) {
+  db.prepare(
+    'ALTER TABLE movies ADD COLUMN letterbox_rating_last_fetched TEXT',
+  ).run();
 }
 
 // Keep older DB files compatible by adding stats columns if they do not exist.
