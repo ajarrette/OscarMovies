@@ -1,5 +1,5 @@
 import React from 'react';
-import { StyleSheet, View } from 'react-native';
+import { Linking, Pressable, StyleSheet, View } from 'react-native';
 import ImdbRating from './imdbRating';
 import LetterboxdRating from './letterboxdRating';
 import RottenTomatoRating from './rottenTomatoRating';
@@ -18,11 +18,26 @@ const FilmRatings: React.FC<MovieRatingsProps> = ({
   rottenTomatoes,
   letterboxd,
 }) => {
+  const onImdbPress = () => {
+    if (!imdb) {
+      return;
+    }
+
+    const url = `https://www.imdb.com/title/${imdb}/`;
+    const handlePress = async () => {
+      await Linking.openURL(url);
+    };
+
+    handlePress();
+  };
+
   return (
     <View style={styles.container}>
       {/* IMDb Rating */}
       <View style={styles.ratingItem}>
-        <ImdbRating imdbId={imdb} />
+        <Pressable onPress={onImdbPress}>
+          <ImdbRating imdbId={imdb} />
+        </Pressable>
       </View>
 
       {/* Rotten Tomatoes Rating */}
