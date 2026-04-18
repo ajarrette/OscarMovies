@@ -1,8 +1,11 @@
 type Film = {
   backdrop_path: string;
   director: string;
+  film_rating: number | null;
   id: number;
   imdb_id: string;
+  imdb_rating: number | null;
+  letterboxd_rating: number | null;
   nominations: number;
   original_title: string;
   overview: string;

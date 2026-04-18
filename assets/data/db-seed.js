@@ -41,6 +41,9 @@ db.exec(`
     release_date  TEXT,
     runtime       INTEGER,
     tagline       TEXT,
+    imdb_rating   REAL,
+    letterboxd_rating REAL,
+    film_rating   REAL,
     director      TEXT,
     wins          INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0),
     nominations   INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)
@@ -103,6 +106,23 @@ db.exec(`
   CREATE UNIQUE INDEX IF NOT EXISTS idx_nomination_nominees_unique
     ON nomination_nominees(nomination_id, ordinal);
 `);
+
+const existingMovieColumns = db
+  .prepare('PRAGMA table_info(movies)')
+  .all()
+  .map((column) => column.name);
+
+if (!existingMovieColumns.includes('imdb_rating')) {
+  db.prepare('ALTER TABLE movies ADD COLUMN imdb_rating REAL').run();
+}
+
+if (!existingMovieColumns.includes('letterboxd_rating')) {
+  db.prepare('ALTER TABLE movies ADD COLUMN letterboxd_rating REAL').run();
+}
+
+if (!existingMovieColumns.includes('film_rating')) {
+  db.prepare('ALTER TABLE movies ADD COLUMN film_rating REAL').run();
+}
 
 // Keep older DB files compatible by adding stats columns if they do not exist.
 const existingPeopleColumns = db
