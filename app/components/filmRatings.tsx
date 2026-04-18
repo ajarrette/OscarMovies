@@ -6,6 +6,7 @@ import {
 } from '../services/omdb-rating-service';
 import ImdbRating from './imdbRating';
 import LetterboxdRating from './letterboxdRating';
+import MetaCriticRating from './metaCriticRating';
 import RottenTomatoRating from './rottenTomatoRating';
 
 /**
@@ -79,6 +80,17 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
     );
   }, [isOmdbLoading, omdbRatingsData]);
 
+  const metacriticValue = useMemo(() => {
+    if (isOmdbLoading) {
+      return null;
+    }
+
+    return (
+      omdbRatingsData?.ratings.find((rating) => rating.source === 'Metacritic')
+        ?.value ?? null
+    );
+  }, [isOmdbLoading, omdbRatingsData]);
+
   const rottenTomatoesDisplayRating = useMemo(() => {
     if (isOmdbLoading) {
       return 'Loading...';
@@ -99,6 +111,22 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
 
     return parseInt(match[1], 10) < 60;
   }, [rottenTomatoesValue]);
+
+  const metacriticDisplayRating = useMemo(() => {
+    if (isOmdbLoading) {
+      return 'Loading...';
+    }
+
+    return metacriticValue || 'No rating';
+  }, [isOmdbLoading, metacriticValue]);
+
+  const useRottenTomatoesRating = useMemo(() => {
+    if (isOmdbLoading) {
+      return true;
+    }
+
+    return rottenTomatoesValue ? true : false;
+  }, [isOmdbLoading, rottenTomatoesValue]);
 
   const onImdbPress = () => {
     if (!imdbId) {
@@ -122,13 +150,18 @@ const FilmRatings: React.FC<FilmRatingsProps> = ({
         </Pressable>
       </View>
 
-      {/* Rotten Tomatoes Rating */}
-      <View style={[styles.ratingItem, styles.borderLeft]}>
-        <RottenTomatoRating
-          ratingText={rottenTomatoesDisplayRating}
-          isRotten={isRottenTomatoesRatingRotten}
-        />
-      </View>
+      {useRottenTomatoesRating ? (
+        <View style={[styles.ratingItem, styles.borderLeft]}>
+          <RottenTomatoRating
+            ratingText={rottenTomatoesDisplayRating}
+            isRotten={isRottenTomatoesRatingRotten}
+          />
+        </View>
+      ) : (
+        <View style={[styles.ratingItem, styles.borderLeft]}>
+          <MetaCriticRating ratingText={metacriticDisplayRating} />
+        </View>
+      )}
 
       {/* Letterboxd Rating */}
       <View style={[styles.ratingItem, styles.borderLeft]}>
