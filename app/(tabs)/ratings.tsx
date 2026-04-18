@@ -10,7 +10,11 @@ const RatingsScreen: React.FC<Props> = ({ tmdbId }) => {
   return (
     <View style={styles.container}>
       <View style={[styles.ratingsWrapper, { marginTop: 20 }]}>
-        <FilmRatings imdb='8.1/10' rottenTomatoes='91%' letterboxd='1124' />
+        <FilmRatings
+          imdb='tt0816692'
+          rottenTomatoes='tt0816692'
+          letterboxd='1124'
+        />
       </View>
     </View>
   );

@@ -1,7 +1,8 @@
 import React from 'react';
-import { StyleSheet, Text, View } from 'react-native';
-import FreshTomatoIcon from './tomatoFreshIcon';
+import { StyleSheet, View } from 'react-native';
+import ImdbRating from './imdbRating';
 import LetterboxdRating from './letterboxdRating';
+import RottenTomatoRating from './rottenTomatoRating';
 
 /**
  * Props definition for the MovieRatings component
@@ -21,24 +22,17 @@ const FilmRatings: React.FC<MovieRatingsProps> = ({
     <View style={styles.container}>
       {/* IMDb Rating */}
       <View style={styles.ratingItem}>
-        <View style={styles.imdbBadge}>
-          <Text style={styles.imdbText}>IMDb</Text>
-        </View>
-        <Text style={styles.scoreText}>{imdb}</Text>
+        <ImdbRating imdbId={imdb} />
       </View>
 
       {/* Rotten Tomatoes Rating */}
       <View style={[styles.ratingItem, styles.borderLeft]}>
-        <FreshTomatoIcon size={24} />
-        <Text style={styles.scoreText}>{rottenTomatoes}</Text>
+        <RottenTomatoRating imdbId={rottenTomatoes} />
       </View>
 
       {/* Letterboxd Rating */}
       <View style={[styles.ratingItem, styles.borderLeft]}>
-        <LetterboxdRating
-          tmdbId={letterboxd}
-          onRatingFound={(rating) => console.log('Letterboxd rating:', rating)}
-        />
+        <LetterboxdRating tmdbId={letterboxd} />
       </View>
     </View>
   );
@@ -67,33 +61,6 @@ const styles = StyleSheet.create({
   borderLeft: {
     borderLeftWidth: 1,
     borderColor: '#fff',
-  },
-  imdbBadge: {
-    backgroundColor: '#F5C518',
-    paddingHorizontal: 6,
-    paddingVertical: 2,
-    borderRadius: 4,
-  },
-  imdbText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#000',
-  },
-  rtBadge: {
-    backgroundColor: '#FA320A',
-    paddingHorizontal: 4,
-    paddingVertical: 1,
-    borderRadius: 2,
-  },
-  rtText: {
-    fontSize: 11,
-    fontWeight: '900',
-    color: '#fff',
-  },
-  scoreText: {
-    fontSize: 14,
-    color: '#ffffff',
-    fontWeight: '700',
   },
 });
 
