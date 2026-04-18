@@ -1,5 +1,9 @@
-import React from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { Linking, Pressable, StyleSheet, View } from 'react-native';
+import {
+  fetchOmdbRatingsByImdbId,
+  OmdbRatingsData,
+} from '../services/omdbRatings';
 import ImdbRating from './imdbRating';
 import LetterboxdRating from './letterboxdRating';
 import RottenTomatoRating from './rottenTomatoRating';
@@ -7,23 +11,80 @@ import RottenTomatoRating from './rottenTomatoRating';
 /**
  * Props definition for the MovieRatings component
  */
-interface MovieRatingsProps {
-  imdb: string;
-  rottenTomatoes: string;
-  letterboxd: string;
+interface FilmRatingsProps {
+  imdbId: string;
+  letterboxdTmdbId: string;
 }
 
-const FilmRatings: React.FC<MovieRatingsProps> = ({
-  imdb,
-  rottenTomatoes,
-  letterboxd,
+const FilmRatings: React.FC<FilmRatingsProps> = ({
+  imdbId,
+  letterboxdTmdbId,
 }) => {
+  const [omdbRatingsData, setOmdbRatingsData] =
+    useState<OmdbRatingsData | null>(null);
+  const [isOmdbLoading, setIsOmdbLoading] = useState(true);
+
+  useEffect(() => {
+    let isMounted = true;
+
+    const loadOmdbRatingsData = async () => {
+      if (!imdbId) {
+        if (isMounted) {
+          setOmdbRatingsData(null);
+          setIsOmdbLoading(false);
+        }
+        return;
+      }
+
+      setIsOmdbLoading(true);
+      const data = await fetchOmdbRatingsByImdbId(imdbId);
+
+      if (isMounted) {
+        setOmdbRatingsData(data);
+        setIsOmdbLoading(false);
+      }
+    };
+
+    loadOmdbRatingsData();
+
+    return () => {
+      isMounted = false;
+    };
+  }, [imdbId]);
+
+  const imdbDisplayRating = useMemo(() => {
+    if (isOmdbLoading) {
+      return 'Loading...';
+    }
+
+    if (
+      !omdbRatingsData?.imdbRatingValue ||
+      omdbRatingsData.imdbRatingValue === 'N/A'
+    ) {
+      return 'No rating';
+    }
+
+    return `${omdbRatingsData.imdbRatingValue}/10`;
+  }, [isOmdbLoading, omdbRatingsData]);
+
+  const rottenTomatoesDisplayRating = useMemo(() => {
+    if (isOmdbLoading) {
+      return 'Loading...';
+    }
+
+    return (
+      omdbRatingsData?.ratings.find(
+        (rating) => rating.source === 'Rotten Tomatoes',
+      )?.value || 'No rating'
+    );
+  }, [isOmdbLoading, omdbRatingsData]);
+
   const onImdbPress = () => {
-    if (!imdb) {
+    if (!imdbId) {
       return;
     }
 
-    const url = `https://www.imdb.com/title/${imdb}/`;
+    const url = `https://www.imdb.com/title/${imdbId}/`;
     const handlePress = async () => {
       await Linking.openURL(url);
     };
@@ -36,18 +97,18 @@ const FilmRatings: React.FC<MovieRatingsProps> = ({
       {/* IMDb Rating */}
       <View style={styles.ratingItem}>
         <Pressable onPress={onImdbPress}>
-          <ImdbRating imdbId={imdb} />
+          <ImdbRating ratingText={imdbDisplayRating} />
         </Pressable>
       </View>
 
       {/* Rotten Tomatoes Rating */}
       <View style={[styles.ratingItem, styles.borderLeft]}>
-        <RottenTomatoRating imdbId={rottenTomatoes} />
+        <RottenTomatoRating ratingText={rottenTomatoesDisplayRating} />
       </View>
 
       {/* Letterboxd Rating */}
       <View style={[styles.ratingItem, styles.borderLeft]}>
-        <LetterboxdRating tmdbId={letterboxd} />
+        <LetterboxdRating tmdbId={letterboxdTmdbId} />
       </View>
     </View>
   );

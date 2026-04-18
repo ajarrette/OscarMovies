@@ -1,5 +1,6 @@
-import { LinearGradient } from 'expo-linear-gradient';
+import Film from '@/types/film';
 import Constants from 'expo-constants';
+import { LinearGradient } from 'expo-linear-gradient';
 import * as Linking from 'expo-linking';
 import { requireOptionalNativeModule } from 'expo-modules-core';
 import { Stack, usePathname, useRouter } from 'expo-router';
@@ -12,11 +13,10 @@ import Animated, {
   useAnimatedStyle,
   useScrollViewOffset,
 } from 'react-native-reanimated';
-import Film from '@/types/film';
+import FilmRatings from './filmRatings';
 import type { FilmCastPerson } from './loadFilmDetail';
 import MoviePoster from './moviePoster';
 import NomineeStrip from './nomineeStrip';
-import FilmRatings from './filmRatings';
 
 type Props = {
   film: Film;
@@ -427,9 +427,8 @@ export default function FilmDetail({
 
             <View style={[{ marginTop: 20 }]}>
               <FilmRatings
-                imdb={film.imdb_id}
-                rottenTomatoes={film.imdb_id}
-                letterboxd={film.tmdb_id.toString() || ''}
+                imdbId={film.imdb_id}
+                letterboxdTmdbId={film.tmdb_id.toString() || ''}
               />
             </View>
             {castPeople.length > 0 && (

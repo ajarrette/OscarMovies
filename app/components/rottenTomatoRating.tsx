@@ -1,86 +1,26 @@
-import { useEffect, useState } from 'react';
 import { StyleSheet, Text, View } from 'react-native';
 import FreshTomatoIcon from './tomatoFreshIcon';
 import RottenTomatoIcon from './tomatoRottenIcon';
-import { getCachedRating, setCachedRating } from '../utils/ratingCache';
+type RottenTomatoRatingProps = {
+  ratingText: string;
+};
 
-// Define the shape of the OMDb Response
-interface OmdbRating {
-  Source: string;
-  Value: string;
-}
-
-interface OmdbData {
-  Title: string;
-  Year: string;
-  Poster: string;
-  Ratings: OmdbRating[];
-  imdbRating: string;
-}
-
-const RottenTomatoRating = ({ imdbId }: { imdbId: string }) => {
-  const [rating, setRating] = useState<OmdbData | null>(null);
-  const ratingLabel =
-    rating === null
-      ? 'Loading...'
-      : rating?.Ratings.find((r) => r.Source === 'Rotten Tomatoes')?.Value ||
-        'No rating';
-
+const RottenTomatoRating = ({ ratingText }: RottenTomatoRatingProps) => {
   // Extract numeric rating to determine which icon to show
   const getRatingValue = (): number | null => {
     if (
-      !ratingLabel ||
-      ratingLabel === 'Loading...' ||
-      ratingLabel === 'No rating'
+      !ratingText ||
+      ratingText === 'Loading...' ||
+      ratingText === 'No rating'
     ) {
       return null;
     }
-    const match = ratingLabel.match(/(\d+)/);
+    const match = ratingText.match(/(\d+)/);
     return match ? parseInt(match[1], 10) : null;
   };
 
   const ratingValue = getRatingValue();
   const isRotten = ratingValue !== null && ratingValue < 60;
-
-  useEffect(() => {
-    const fetchMovieData = async () => {
-      const cacheKey = `omdb_${imdbId}`;
-
-      // Check cache first
-      const cachedData = await getCachedRating(cacheKey);
-      if (cachedData) {
-        try {
-          const result = JSON.parse(cachedData);
-          setRating(result);
-          return;
-        } catch (err) {
-          console.error('Error parsing cached OMDb data:', err);
-          // Fall through to fetch if cache parse fails
-        }
-      }
-
-      // Cache miss or parse error, fetch from API
-      const apiKey = process.env.EXPO_PUBLIC_OMDB_API_KEY;
-      const url = `https://www.omdbapi.com/?i=${imdbId}&apikey=${apiKey}`;
-
-      try {
-        const response = await fetch(url);
-        const result = await response.json();
-
-        if (result.Response === 'False') {
-          throw new Error(result.Error || 'Movie not found');
-        }
-
-        setRating(result);
-        // Cache the result
-        await setCachedRating(cacheKey, JSON.stringify(result));
-      } catch (err) {
-        console.log('Error fetching OMDb data:', err);
-      }
-    };
-
-    fetchMovieData();
-  }, [imdbId]);
 
   return (
     <View style={styles.container}>
@@ -89,7 +29,7 @@ const RottenTomatoRating = ({ imdbId }: { imdbId: string }) => {
       ) : (
         <FreshTomatoIcon size={24} />
       )}
-      <Text style={styles.scoreText}>{ratingLabel}</Text>
+      <Text style={styles.scoreText}>{ratingText}</Text>
     </View>
   );
 };
@@ -103,7 +43,6 @@ const styles = StyleSheet.create({
     columnGap: 8,
   },
   text: { fontSize: 16, fontWeight: 'bold' },
-  hidden: { height: 0, width: 0, opacity: 0 }, // Hide it completely
   scoreText: {
     fontSize: 14,
     color: '#fff',
