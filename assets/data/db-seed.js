@@ -97,6 +97,48 @@ db.exec(`
     FOREIGN KEY (nomination_id) REFERENCES nominations(id) ON DELETE CASCADE
   );
 
+  CREATE TABLE IF NOT EXISTS tmdb_genres (
+    id   INTEGER PRIMARY KEY,
+    name TEXT    NOT NULL UNIQUE
+  );
+
+  CREATE TABLE IF NOT EXISTS movie_tmdb_genres (
+    movie_id INTEGER NOT NULL,
+    genre_id INTEGER NOT NULL,
+    PRIMARY KEY (movie_id, genre_id),
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    FOREIGN KEY (genre_id) REFERENCES tmdb_genres(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS tmdb_production_companies (
+    id             INTEGER PRIMARY KEY,
+    name           TEXT    NOT NULL,
+    logo_path      TEXT,
+    origin_country TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS movie_tmdb_production_companies (
+    movie_id   INTEGER NOT NULL,
+    company_id INTEGER NOT NULL,
+    PRIMARY KEY (movie_id, company_id),
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    FOREIGN KEY (company_id) REFERENCES tmdb_production_companies(id) ON DELETE CASCADE
+  );
+
+  CREATE TABLE IF NOT EXISTS tmdb_spoken_languages (
+    iso_639_1    TEXT PRIMARY KEY,
+    english_name TEXT,
+    name         TEXT
+  );
+
+  CREATE TABLE IF NOT EXISTS movie_tmdb_spoken_languages (
+    movie_id      INTEGER NOT NULL,
+    language_code TEXT    NOT NULL,
+    PRIMARY KEY (movie_id, language_code),
+    FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
+    FOREIGN KEY (language_code) REFERENCES tmdb_spoken_languages(iso_639_1) ON DELETE CASCADE
+  );
+
   CREATE INDEX IF NOT EXISTS idx_nominations_ceremony_category ON nominations(ceremony_id, category_id);
   CREATE INDEX IF NOT EXISTS idx_nomination_movies_movie        ON nomination_movies(movie_id);
   CREATE INDEX IF NOT EXISTS idx_nomination_people_person       ON nomination_people(person_id);
@@ -106,6 +148,11 @@ db.exec(`
     ON nomination_movies(nomination_id, ordinal, movie_id);
   CREATE INDEX IF NOT EXISTS idx_nomination_nominees_nomination ON nomination_nominees(nomination_id);
   CREATE INDEX IF NOT EXISTS idx_nominations_source_order       ON nominations(source_order);
+  CREATE INDEX IF NOT EXISTS idx_movie_tmdb_genres_movie ON movie_tmdb_genres(movie_id);
+  CREATE INDEX IF NOT EXISTS idx_movie_tmdb_production_companies_movie
+    ON movie_tmdb_production_companies(movie_id);
+  CREATE INDEX IF NOT EXISTS idx_movie_tmdb_spoken_languages_movie
+    ON movie_tmdb_spoken_languages(movie_id);
   CREATE UNIQUE INDEX IF NOT EXISTS idx_nomination_nominees_unique
     ON nomination_nominees(nomination_id, ordinal);
 `);
