@@ -56,21 +56,6 @@ export default function TabLayout() {
         }}
       />
       <Tabs.Screen
-        name='ratings'
-        options={{
-          title: 'Ratings',
-          headerTitle: 'Ratings',
-          headerShown: true,
-          tabBarIcon: ({ color, focused }) => (
-            <Ionicons
-              name={focused ? 'star' : 'star-outline'}
-              color={color}
-              size={24}
-            />
-          ),
-        }}
-      />
-      <Tabs.Screen
         name='about'
         options={{
           title: 'About',
