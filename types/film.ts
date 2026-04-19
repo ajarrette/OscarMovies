@@ -2,6 +2,7 @@ type Film = {
   backdrop_path: string;
   director: string;
   film_rating: number | null;
+  genres?: string[];
   id: number;
   tmdb_id: number;
   imdb_id: string;

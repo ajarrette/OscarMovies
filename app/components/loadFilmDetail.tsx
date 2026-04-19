@@ -20,6 +20,10 @@ export type FilmCastPerson = {
   known_for_department: string | null;
 };
 
+type FilmGenreRow = {
+  name: string;
+};
+
 export default function LoadFilmDetail({ id }: Props) {
   const db = useSQLiteContext();
   const [loading, setLoading] = useState(true);
@@ -29,10 +33,34 @@ export default function LoadFilmDetail({ id }: Props) {
 
   useEffect(() => {
     const loadFilm = async () => {
-      const foundFilm = await db.getFirstAsync<Film | null>(
+      const foundFilmRecord = await db.getFirstAsync<Film | null>(
         'SELECT * FROM movies WHERE id = ?',
         [id],
       );
+
+      let foundFilm = foundFilmRecord;
+
+      if (foundFilmRecord) {
+        let foundGenres: FilmGenreRow[] = [];
+
+        try {
+          foundGenres = await db.getAllAsync<FilmGenreRow>(
+            `SELECT g.name
+             FROM movie_tmdb_genres mg
+             INNER JOIN tmdb_genres g ON g.id = mg.genre_id
+             WHERE mg.movie_id = ?
+             ORDER BY g.name COLLATE NOCASE ASC`,
+            [id],
+          );
+        } catch (error) {
+          console.warn('Error loading genres from movie_tmdb_genres:', error);
+        }
+
+        foundFilm = {
+          ...foundFilmRecord,
+          genres: foundGenres.map((genre) => genre.name),
+        };
+      }
 
       let foundCast: FilmCastPerson[] = [];
 

@@ -23,7 +23,6 @@ const LetterboxdFilmScraper: React.FC<Props> = ({
   }
 
   const handleMessage = (event: WebViewMessageEvent) => {
-    console.log('Received message from WebView:', event.nativeEvent);
     const result = event.nativeEvent.data || 'N/A';
     const movieData: LetterboxdFilmData = { rating: result };
     onMovieDataFound(movieData);

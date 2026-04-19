@@ -190,6 +190,7 @@ export default function FilmDetail({
     typeof film.runtime === 'number'
       ? formatMovieDuration(film.runtime)
       : 'Runtime N/A';
+  const genres = film.genres?.filter(Boolean) ?? [];
   const releaseYear = (() => {
     if (!film.release_date) {
       return 'Unknown';
@@ -462,6 +463,15 @@ export default function FilmDetail({
                     <Text style={styles.director}>{director}</Text>
                   </Pressable>
                 )}
+                {genres.length > 0 && (
+                  <View style={styles.genresRow}>
+                    {genres.map((genre) => (
+                      <View key={genre} style={styles.genreChip}>
+                        <Text style={styles.genreChipText}>{genre}</Text>
+                      </View>
+                    ))}
+                  </View>
+                )}
                 <View style={styles.row}>
                   <NomineeStrip
                     nominations={film.nominations}
@@ -606,8 +616,27 @@ const styles = StyleSheet.create({
     paddingLeft: 20,
     paddingRight: 20,
   },
+  genreChip: {
+    borderWidth: 1,
+    borderColor: '#fff',
+    borderRadius: 999,
+    paddingHorizontal: 10,
+    paddingVertical: 5,
+  },
+  genreChipText: {
+    color: '#fff',
+    fontSize: 12,
+    fontWeight: '600',
+  },
+  genresRow: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 8,
+    marginTop: 2,
+    marginBottom: 10,
+  },
   row: {
-    marginTop: 8,
+    marginTop: 0,
     display: 'flex',
     flexDirection: 'row',
     justifyContent: 'flex-start',
