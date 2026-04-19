@@ -1,4 +1,6 @@
-import { Stack, router } from 'expo-router';
+import MoviePoster from '@/app/components/moviePoster';
+import ImageSizing from '@/app/services/imageSizing';
+import { router, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -10,12 +12,9 @@ import {
   StyleSheet,
   Text,
   TextInput,
-  TouchableWithoutFeedback,
   useWindowDimensions,
   View,
 } from 'react-native';
-import ImageSizing from '@/app/services/imageSizing';
-import MoviePoster from '@/app/components/moviePoster';
 const SEARCH_DEBOUNCE_MS = 120;
 const DEFAULT_RESULTS_LIMIT = 100;
 const PEOPLE_PREFIX_LIMIT = 100;
@@ -135,19 +134,19 @@ function getReleaseYear(releaseDate: string | null) {
  * Maps a department name to a specific job title.
  * Returns the original string if no mapping exists.
  */
-function getJobTitleFromDepartment(department: string): string  {
+function getJobTitleFromDepartment(department: string): string {
   const departmentMap: Record<string, string> = {
-    'Acting': 'Actor',
-    'Art': 'Artis',
-    'Camera': 'Camera Operator',
-    'Directing': 'Director',
-    'Editing': 'Editor',
-    'Production': 'Producer',
-    'Writing': 'Writer',
+    Acting: 'Actor',
+    Art: 'Artis',
+    Camera: 'Camera Operator',
+    Directing: 'Director',
+    Editing: 'Editor',
+    Production: 'Producer',
+    Writing: 'Writer',
   };
 
   return departmentMap[department] ?? department;
-};
+}
 
 function SearchContent() {
   const db = useSQLiteContext();
@@ -332,7 +331,9 @@ function SearchContent() {
             kind: 'people',
             title: row.name,
             subtitle: null,
-            meta: getJobTitleFromDepartment(row.known_for_department),
+            meta: getJobTitleFromDepartment(
+              row.known_for_department || 'Unknown',
+            ),
             imagePath: row.profile_path,
             wins: row.wins,
             nominations: row.nominations,
@@ -498,6 +499,14 @@ function SearchContent() {
         options={{
           headerTitle: 'Search',
           headerLargeTitle: usesNativeHeaderSearch,
+          headerTransparent: usesNativeHeaderSearch,
+          headerBlurEffect: usesNativeHeaderSearch
+            ? 'systemUltraThinMaterialDark'
+            : undefined,
+          headerLargeStyle: usesNativeHeaderSearch
+            ? { backgroundColor: 'transparent' }
+            : undefined,
+          headerLargeTitleStyle: { color: '#fff' },
           headerSearchBarOptions: usesNativeHeaderSearch
             ? {
                 placeholder:
@@ -507,48 +516,42 @@ function SearchContent() {
             : undefined,
         }}
       />
-      <TouchableWithoutFeedback onPress={Keyboard.dismiss} accessible={false}>
-        <View style={styles.container}>
-          <FlatList
-            data={listData}
-            keyExtractor={keyExtractor}
-            ListHeaderComponent={listHeaderComponent}
-            ListEmptyComponent={listEmptyComponent}
-            ListFooterComponent={listFooterComponent}
-            contentContainerStyle={[
-              styles.listContent,
-              listData.length === 0 && styles.listContentEmpty,
-            ]}
-            contentInsetAdjustmentBehavior='automatic'
-            initialNumToRender={12}
-            maxToRenderPerBatch={10}
-            removeClippedSubviews
-            keyboardDismissMode='on-drag'
-            keyboardShouldPersistTaps='handled'
-            updateCellsBatchingPeriod={50}
-            windowSize={8}
-            renderItem={renderItem}
-          />
-          {isPeopleLoading ? (
-            <View pointerEvents='none' style={styles.loadingOverlay}>
-              <View style={styles.loadingOverlayCard}>
-                <ActivityIndicator size='large' color='#fff' />
-                <Text style={styles.loadingOverlayText}>Loading people...</Text>
-              </View>
-            </View>
-          ) : null}
+      <FlatList
+        data={listData}
+        keyExtractor={keyExtractor}
+        ListHeaderComponent={listHeaderComponent}
+        ListEmptyComponent={listEmptyComponent}
+        ListFooterComponent={listFooterComponent}
+        contentContainerStyle={[
+          styles.listContent,
+          listData.length === 0 && styles.listContentEmpty,
+        ]}
+        style={styles.container}
+        contentInsetAdjustmentBehavior='automatic'
+        automaticallyAdjustContentInsets
+        initialNumToRender={12}
+        maxToRenderPerBatch={10}
+        removeClippedSubviews
+        keyboardDismissMode='on-drag'
+        keyboardShouldPersistTaps='handled'
+        updateCellsBatchingPeriod={50}
+        windowSize={8}
+        renderItem={renderItem}
+      />
+      {isPeopleLoading ? (
+        <View pointerEvents='none' style={styles.loadingOverlay}>
+          <View style={styles.loadingOverlayCard}>
+            <ActivityIndicator size='large' color='#fff' />
+            <Text style={styles.loadingOverlayText}>Loading people...</Text>
+          </View>
         </View>
-      </TouchableWithoutFeedback>
+      ) : null}
     </>
   );
 }
 
 export default function SearchScreen() {
-  return (
-    <View style={styles.screen}>
-      <SearchContent />
-    </View>
-  );
+  return <SearchContent />;
 }
 
 const styles = StyleSheet.create({
