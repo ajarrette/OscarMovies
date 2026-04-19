@@ -1,9 +1,4 @@
-import {
-  useLocalSearchParams,
-  usePathname,
-  useRouter,
-  Stack,
-} from 'expo-router';
+import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import {
@@ -81,9 +76,7 @@ function isBestOriginalSongCategory(categoryKey: string) {
 function PersonNominationsContent({ personId }: { personId: number }) {
   const db = useSQLiteContext();
   const router = useRouter();
-  const pathname = usePathname();
   const { width } = useWindowDimensions();
-  const isSearchRoute = pathname.startsWith('/search');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [nominationsByYear, setNominationsByYear] = useState<
@@ -270,11 +263,7 @@ function PersonNominationsContent({ personId }: { personId: number }) {
                         width={posterWidth}
                         height={posterHeight}
                         onPress={() =>
-                          router.push(
-                            isSearchRoute
-                              ? `/search/films/${nomination.movieId}`
-                              : `/films/${nomination.movieId}`,
-                          )
+                          router.push(`/film-details/${nomination.movieId}`)
                         }
                       />
                     ) : (
@@ -284,11 +273,7 @@ function PersonNominationsContent({ personId }: { personId: number }) {
                           { height: posterHeight },
                         ]}
                         onPress={() =>
-                          router.push(
-                            isSearchRoute
-                              ? `/search/films/${nomination.movieId}`
-                              : `/films/${nomination.movieId}`,
-                          )
+                          router.push(`/film-details/${nomination.movieId}`)
                         }
                       >
                         <Text style={styles.posterFallbackText}>NO IMAGE</Text>

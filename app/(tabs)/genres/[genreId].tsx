@@ -159,7 +159,7 @@ export default function GenreFilmsScreen() {
             borderRadius={0}
             onPress={() => {
               router.push({
-                pathname: '/genres/films/[id]',
+                pathname: '/film-details/[id]',
                 params: { id: String(item.id) },
               });
             }}
@@ -168,7 +168,7 @@ export default function GenreFilmsScreen() {
           <Pressable
             onPress={() => {
               router.push({
-                pathname: '/genres/films/[id]',
+                pathname: '/film-details/[id]',
                 params: { id: String(item.id) },
               });
             }}

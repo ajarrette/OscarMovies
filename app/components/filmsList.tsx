@@ -36,7 +36,7 @@ type Props = {
 };
 
 const onShowDetails = (id: number) => {
-  router.push(`/films/${id}`);
+  router.push(`/film-details/${id}`);
 };
 
 const onShowPersonDetails = (id: number) => {

@@ -1,7 +1,7 @@
 import Person from '@/types/person';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
-import { useNavigation, usePathname, useRouter } from 'expo-router';
+import { useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -88,10 +88,8 @@ function getJobTitleFromDepartment(department: string): string {
 export default function PersonDetail({ person, movies = [] }: Props) {
   const navigation = useNavigation();
   const router = useRouter();
-  const pathname = usePathname();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
-  const isSearchRoute = pathname.startsWith('/search');
   const name = person.name ?? 'Unknown Person';
   const biography = person.biography?.trim() || 'No biography available.';
   const knownForDepartment = getJobTitleFromDepartment(
@@ -126,17 +124,11 @@ export default function PersonDetail({ person, movies = [] }: Props) {
   };
 
   const onShowNominations = () => {
-    router.push(
-      isSearchRoute
-        ? `/search/people/${person.id}/nominations`
-        : `/people/${person.id}/nominations`,
-    );
+    router.push(`/people/${person.id}/nominations`);
   };
 
   const onShowMovie = (movieId: number) => {
-    router.push(
-      isSearchRoute ? `/search/films/${movieId}` : `/films/${movieId}`,
-    );
+    router.push(`/film-details/${movieId}`);
   };
 
   const headerBackgroundAnimatedStyle = useAnimatedStyle(() => {

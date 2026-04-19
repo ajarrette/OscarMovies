@@ -1,8 +1,9 @@
 import Film from '@/types/film';
 import Constants from 'expo-constants';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { requireOptionalNativeModule } from 'expo-modules-core';
-import { Stack, usePathname, useRouter } from 'expo-router';
+import { Stack, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -180,10 +181,8 @@ export default function FilmDetail({
 }: Props) {
   const db = useSQLiteContext();
   const router = useRouter();
-  const pathname = usePathname();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
-  const isSearchRoute = pathname.startsWith('/search');
   const title = film.title ?? 'Unknown Title';
   const originalTitle = film.original_title ?? title;
   const director = film.director ?? 'Unknown';
@@ -337,11 +336,7 @@ export default function FilmDetail({
   );
 
   const onShowNominations = () => {
-    router.push(
-      isSearchRoute
-        ? `/search/films/${film.id}/nominations`
-        : `/films/${film.id}/nominations`,
-    );
+    router.push(`/film-details/${film.id}/nominations`);
   };
 
   const onShowDirector = () => {
@@ -349,17 +344,11 @@ export default function FilmDetail({
       return;
     }
 
-    router.push(
-      isSearchRoute
-        ? `/search/people/${directorPersonId}`
-        : `/people/${directorPersonId}`,
-    );
+    router.push(`/people/${directorPersonId}`);
   };
 
   const onShowCastPerson = (personId: number) => {
-    router.push(
-      isSearchRoute ? `/search/people/${personId}` : `/people/${personId}`,
-    );
+    router.push(`/people/${personId}`);
   };
 
   const onShowGenre = async (genreName: string) => {
@@ -449,6 +438,11 @@ export default function FilmDetail({
         options={{
           headerTransparent: true,
           headerShown: true,
+          headerLeft: () => (
+            <Pressable onPress={() => router.back()} hitSlop={8}>
+              <Ionicons name='chevron-back' size={28} color='#fff' />
+            </Pressable>
+          ),
         }}
       />
       <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>

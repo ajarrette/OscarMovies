@@ -90,7 +90,7 @@ export default function GenresIndexScreen() {
             style={styles.row}
             onPress={() =>
               router.push({
-                pathname: '/genres/[genreId]',
+                pathname: '/genre-films/[genreId]',
                 params: {
                   genreId: String(item.id),
                   genreName: item.name,
