@@ -1,7 +1,7 @@
 import { Stack } from 'expo-router';
 import { Platform } from 'react-native';
 
-export default function SearchStackLayout() {
+export default function GenreFilmsStackLayout() {
   const isIOS = Platform.OS === 'ios';
 
   return (
@@ -11,10 +11,14 @@ export default function SearchStackLayout() {
           backgroundColor: isIOS ? 'transparent' : '#25292e',
         },
         headerShadowVisible: false,
-        headerTintColor: '#fff',
-        headerTitleStyle: { color: '#fff' },
+        headerTintColor: 'white',
+        headerTitleStyle: {
+          color: '#fff',
+        },
         headerLargeTitle: isIOS,
-        headerLargeTitleStyle: { color: '#fff' },
+        headerLargeTitleStyle: {
+          color: '#fff',
+        },
         headerLargeStyle: {
           backgroundColor: isIOS ? 'transparent' : '#25292e',
         },
@@ -23,12 +27,13 @@ export default function SearchStackLayout() {
       }}
     >
       <Stack.Screen
-        name='index'
+        name='[genreId]'
         options={{
-          title: 'Search',
+          title: 'Genre',
           headerLargeTitle: isIOS,
           headerTransparent: isIOS,
           headerBlurEffect: isIOS ? 'systemUltraThinMaterialDark' : undefined,
+          headerBackButtonDisplayMode: 'minimal',
           headerShown: true,
         }}
       />
@@ -38,34 +43,6 @@ export default function SearchStackLayout() {
           headerStyle: { backgroundColor: 'transparent' },
           headerTransparent: true,
           headerTitle: '',
-          headerBackButtonDisplayMode: 'minimal',
-          headerShown: true,
-        }}
-      />
-      <Stack.Screen
-        name='people/[id]'
-        options={{
-          headerStyle: { backgroundColor: 'transparent' },
-          headerTransparent: true,
-          headerLargeTitle: false,
-          title: '',
-          headerTitle: () => null,
-          headerBackButtonDisplayMode: 'minimal',
-          headerShown: true,
-        }}
-      />
-      <Stack.Screen
-        name='films/[id]/nominations'
-        options={{
-          headerTitle: 'Nominations',
-          headerBackButtonDisplayMode: 'minimal',
-          headerShown: true,
-        }}
-      />
-      <Stack.Screen
-        name='people/[id]/nominations'
-        options={{
-          headerTitle: 'Nominations',
           headerBackButtonDisplayMode: 'minimal',
           headerShown: true,
         }}

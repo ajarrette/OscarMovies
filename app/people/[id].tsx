@@ -1,8 +1,18 @@
 import LoadPersonDetail from '../components/loadPersonDetail';
-import { useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 
 export default function Person() {
   const { id } = useLocalSearchParams();
 
-  return <LoadPersonDetail id={+id} />;
+  return (
+    <>
+      <Stack.Screen
+        options={{
+          headerTitle: '',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
+      <LoadPersonDetail id={+id} />
+    </>
+  );
 }

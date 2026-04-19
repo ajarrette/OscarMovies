@@ -1,5 +1,5 @@
 import LoadPersonDetail from '@/app/components/loadPersonDetail';
-import { useLocalSearchParams } from 'expo-router';
+import { Stack, useLocalSearchParams } from 'expo-router';
 import { StyleSheet, View } from 'react-native';
 
 export default function Person() {
@@ -7,6 +7,12 @@ export default function Person() {
 
   return (
     <View style={styles.container}>
+      <Stack.Screen
+        options={{
+          headerTitle: '',
+          headerBackButtonDisplayMode: 'minimal',
+        }}
+      />
       <LoadPersonDetail id={+id} />
     </View>
   );

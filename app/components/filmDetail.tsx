@@ -3,6 +3,7 @@ import Constants from 'expo-constants';
 import { LinearGradient } from 'expo-linear-gradient';
 import { requireOptionalNativeModule } from 'expo-modules-core';
 import { Stack, usePathname, useRouter } from 'expo-router';
+import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -177,6 +178,7 @@ export default function FilmDetail({
   directorPersonId = null,
   castPeople = [],
 }: Props) {
+  const db = useSQLiteContext();
   const router = useRouter();
   const pathname = usePathname();
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
@@ -360,6 +362,29 @@ export default function FilmDetail({
     );
   };
 
+  const onShowGenre = async (genreName: string) => {
+    try {
+      const foundGenre = await db.getFirstAsync<{ id: number } | null>(
+        'SELECT id FROM tmdb_genres WHERE name = ? COLLATE NOCASE LIMIT 1',
+        [genreName],
+      );
+
+      if (!foundGenre?.id) {
+        return;
+      }
+
+      router.push({
+        pathname: '/genre-films/[genreId]',
+        params: {
+          genreId: String(foundGenre.id),
+          genreName,
+        },
+      });
+    } catch (error) {
+      console.warn('Failed to open genre screen:', error);
+    }
+  };
+
   const imageAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -474,9 +499,18 @@ export default function FilmDetail({
                 {genres.length > 0 && (
                   <View style={styles.genresRow}>
                     {genres.map((genre) => (
-                      <View key={genre} style={styles.genreChip}>
+                      <Pressable
+                        key={genre}
+                        onPress={() => {
+                          void onShowGenre(genre);
+                        }}
+                        style={({ pressed }) => [
+                          styles.genreChip,
+                          pressed && styles.genreChipPressed,
+                        ]}
+                      >
                         <Text style={styles.genreChipText}>{genre}</Text>
-                      </View>
+                      </Pressable>
                     ))}
                   </View>
                 )}
@@ -641,6 +675,9 @@ const styles = StyleSheet.create({
     borderRadius: 999,
     paddingHorizontal: 10,
     paddingVertical: 5,
+  },
+  genreChipPressed: {
+    opacity: 0.7,
   },
   genreChipText: {
     color: '#fff',

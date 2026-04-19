@@ -14,6 +14,12 @@ export default function RootLayout() {
       >
         <Stack.Screen name='(tabs)' options={{ animation: 'none' }} />
         <Stack.Screen
+          name='genre-films'
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
           name='people'
           options={{
             animation: 'slide_from_right',

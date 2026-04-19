@@ -14,7 +14,8 @@ export default function PeopleLayout() {
         options={{
           headerStyle: { backgroundColor: 'transparent' },
           headerTransparent: true,
-          headerTitle: '',
+          title: '',
+          headerTitle: () => null,
           headerBackButtonDisplayMode: 'minimal',
           headerShown: true,
         }}
