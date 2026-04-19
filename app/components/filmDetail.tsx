@@ -395,6 +395,21 @@ export default function FilmDetail({
     }
   };
 
+  const onShowYear = () => {
+    const parsedYear = Number(releaseYear);
+    if (!Number.isInteger(parsedYear) || parsedYear <= 0) {
+      return;
+    }
+
+    router.push({
+      pathname: '/year-films/[year]',
+      params: {
+        year: String(parsedYear),
+        originTab,
+      },
+    });
+  };
+
   const imageAnimatedStyle = useAnimatedStyle(() => {
     return {
       transform: [
@@ -524,9 +539,26 @@ export default function FilmDetail({
                   <Text style={styles.subtitle}>{originalTitle}</Text>
                 )}
 
-                <Text style={styles.yearAndRating}>
-                  {releaseYear} • {filmRating} • {runtimeText}
-                </Text>
+                <View style={styles.yearAndRatingRow}>
+                  <Pressable
+                    onPress={onShowYear}
+                    disabled={releaseYear === 'Unknown'}
+                  >
+                    <Text
+                      style={[
+                        styles.yearAndRating,
+                        styles.yearLink,
+                        releaseYear === 'Unknown' && styles.yearLinkDisabled,
+                      ]}
+                    >
+                      {releaseYear}
+                    </Text>
+                  </Pressable>
+                  <Text style={[styles.yearAndRating, styles.yearMeta]}>
+                    {' '}
+                    • {filmRating} • {runtimeText}
+                  </Text>
+                </View>
 
                 <Text style={styles.defaultText}>DIRECTED BY</Text>
                 {directorPersonId === null ? (
@@ -799,5 +831,26 @@ const styles = StyleSheet.create({
     color: '#ccc',
     marginBottom: 10,
     marginTop: -8,
+  },
+  yearAndRatingRow: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    marginTop: -8,
+    marginBottom: 10,
+  },
+  yearLink: {
+    marginBottom: 0,
+    marginTop: 0,
+    textDecorationLine: 'underline',
+    fontSize: 14,
+    fontWeight: '700',
+    color: '#ccc',
+  },
+  yearLinkDisabled: {
+    textDecorationLine: 'none',
+  },
+  yearMeta: {
+    marginBottom: 0,
+    marginTop: 0,
   },
 });
