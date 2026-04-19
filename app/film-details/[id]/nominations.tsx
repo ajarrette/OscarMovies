@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   ActivityIndicator,
   Pressable,
@@ -52,7 +53,13 @@ function isBestOriginalSongCategory(categoryKey: string) {
   return categoryKey === 'best original song';
 }
 
-function NominationsContent({ filmId }: { filmId: number }) {
+function NominationsContent({
+  filmId,
+  originTab,
+}: {
+  filmId: number;
+  originTab?: string;
+}) {
   const db = useSQLiteContext();
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -231,12 +238,28 @@ function NominationsContent({ filmId }: { filmId: number }) {
                       selectedImage={`https://image.tmdb.org/t/p/w300${nominee.profilePath}`}
                       width={posterWidth}
                       height={posterHeight}
-                      onPress={() => router.push(`/people/${nominee.id}`)}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/people/[id]',
+                          params: {
+                            id: String(nominee.id),
+                            originTab,
+                          },
+                        })
+                      }
                     />
                   ) : (
                     <Pressable
                       style={[styles.posterFallback, { height: posterHeight }]}
-                      onPress={() => router.push(`/people/${nominee.id}`)}
+                      onPress={() =>
+                        router.push({
+                          pathname: '/people/[id]',
+                          params: {
+                            id: String(nominee.id),
+                            originTab,
+                          },
+                        })
+                      }
                     >
                       <Text style={styles.posterFallbackText}>NO IMAGE</Text>
                     </Pressable>
@@ -255,7 +278,11 @@ function NominationsContent({ filmId }: { filmId: number }) {
 }
 
 export default function Nominations() {
-  const { id } = useLocalSearchParams();
+  const { id, originTab } = useLocalSearchParams<{
+    id?: string;
+    originTab?: string;
+  }>();
+  const router = useRouter();
   const filmId = Number(Array.isArray(id) ? id[0] : id);
 
   return (
@@ -264,10 +291,30 @@ export default function Nominations() {
         options={{
           headerTitle: 'Nominations',
           headerBackButtonDisplayMode: 'minimal',
+          headerRight: () => (
+            <Pressable
+              onPress={() => {
+                if (originTab === 'search') {
+                  router.dismissTo('/(tabs)/search');
+                  return;
+                }
+
+                if (originTab === 'genres') {
+                  router.dismissTo('/(tabs)/genres');
+                  return;
+                }
+
+                router.dismissTo('/(tabs)/films');
+              }}
+              hitSlop={8}
+            >
+              <Ionicons name='close' size={22} color='#fff' />
+            </Pressable>
+          ),
         }}
       />
       {Number.isFinite(filmId) ? (
-        <NominationsContent filmId={filmId} />
+        <NominationsContent filmId={filmId} originTab={originTab} />
       ) : (
         <View style={styles.centeredState}>
           <Text style={styles.stateText}>Invalid film ID.</Text>

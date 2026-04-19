@@ -384,11 +384,23 @@ function SearchContent() {
   );
   const onOpenItem = useCallback((kind: SearchMode, id: number) => {
     if (kind === 'films') {
-      router.push(`/film-details/${id}`);
+      router.push({
+        pathname: '/film-details/[id]',
+        params: {
+          id: String(id),
+          originTab: 'search',
+        },
+      });
       return;
     }
 
-    router.push(`/people/${id}`);
+    router.push({
+      pathname: '/people/[id]',
+      params: {
+        id: String(id),
+        originTab: 'search',
+      },
+    });
   }, []);
   const keyExtractor = useCallback(
     (item: SearchItem) => `${item.kind}-${item.id}`,

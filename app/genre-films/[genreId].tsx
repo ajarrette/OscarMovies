@@ -38,7 +38,9 @@ export default function GenreFilmsScreen() {
   const params = useLocalSearchParams<{
     genreId?: string;
     genreName?: string;
+    originTab?: string;
   }>();
+  const originTab = params.originTab;
 
   const genreId = Number(params.genreId ?? '0');
   const [genreName, setGenreName] = useState(
@@ -161,7 +163,10 @@ export default function GenreFilmsScreen() {
             onPress={() => {
               router.push({
                 pathname: '/genre-films/films/[id]',
-                params: { id: String(item.id) },
+                params: {
+                  id: String(item.id),
+                  originTab,
+                },
               });
             }}
           />
@@ -170,7 +175,10 @@ export default function GenreFilmsScreen() {
             onPress={() => {
               router.push({
                 pathname: '/genre-films/films/[id]',
-                params: { id: String(item.id) },
+                params: {
+                  id: String(item.id),
+                  originTab,
+                },
               });
             }}
           >
@@ -217,6 +225,26 @@ export default function GenreFilmsScreen() {
               style={styles.headerBackButton}
             >
               <Ionicons name='chevron-back' size={24} color='#fff' />
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable
+              onPress={() => {
+                if (originTab === 'search') {
+                  router.dismissTo('/(tabs)/search');
+                  return;
+                }
+
+                if (originTab === 'films') {
+                  router.dismissTo('/(tabs)/films');
+                  return;
+                }
+
+                router.dismissTo('/(tabs)/genres');
+              }}
+              hitSlop={8}
+            >
+              <Ionicons name='close' size={22} color='#fff' />
             </Pressable>
           ),
         }}

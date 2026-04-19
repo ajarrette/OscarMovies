@@ -36,11 +36,23 @@ type Props = {
 };
 
 const onShowDetails = (id: number) => {
-  router.push(`/film-details/${id}`);
+  router.push({
+    pathname: '/film-details/[id]',
+    params: {
+      id: String(id),
+      originTab: 'films',
+    },
+  });
 };
 
 const onShowPersonDetails = (id: number) => {
-  router.push(`/people/${id}`);
+  router.push({
+    pathname: '/people/[id]',
+    params: {
+      id: String(id),
+      originTab: 'films',
+    },
+  });
 };
 
 function shouldShowPeopleByCategory(categoryName: string): boolean {

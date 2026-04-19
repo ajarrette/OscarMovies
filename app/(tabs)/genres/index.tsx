@@ -94,6 +94,7 @@ export default function GenresIndexScreen() {
                 params: {
                   genreId: String(item.id),
                   genreName: item.name,
+                  originTab: 'genres',
                 },
               })
             }

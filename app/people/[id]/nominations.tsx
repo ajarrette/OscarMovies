@@ -1,6 +1,7 @@
 import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
+import Ionicons from '@expo/vector-icons/Ionicons';
 import {
   ActivityIndicator,
   Pressable,
@@ -73,7 +74,13 @@ function isBestOriginalSongCategory(categoryKey: string) {
   return categoryKey === 'best original song';
 }
 
-function PersonNominationsContent({ personId }: { personId: number }) {
+function PersonNominationsContent({
+  personId,
+  originTab,
+}: {
+  personId: number;
+  originTab?: string;
+}) {
   const db = useSQLiteContext();
   const router = useRouter();
   const { width } = useWindowDimensions();
@@ -263,7 +270,13 @@ function PersonNominationsContent({ personId }: { personId: number }) {
                         width={posterWidth}
                         height={posterHeight}
                         onPress={() =>
-                          router.push(`/film-details/${nomination.movieId}`)
+                          router.push({
+                            pathname: '/film-details/[id]',
+                            params: {
+                              id: String(nomination.movieId),
+                              originTab,
+                            },
+                          })
                         }
                       />
                     ) : (
@@ -273,7 +286,13 @@ function PersonNominationsContent({ personId }: { personId: number }) {
                           { height: posterHeight },
                         ]}
                         onPress={() =>
-                          router.push(`/film-details/${nomination.movieId}`)
+                          router.push({
+                            pathname: '/film-details/[id]',
+                            params: {
+                              id: String(nomination.movieId),
+                              originTab,
+                            },
+                          })
                         }
                       >
                         <Text style={styles.posterFallbackText}>NO IMAGE</Text>
@@ -293,7 +312,11 @@ function PersonNominationsContent({ personId }: { personId: number }) {
 }
 
 export default function PersonNominations() {
-  const { id } = useLocalSearchParams();
+  const { id, originTab } = useLocalSearchParams<{
+    id?: string;
+    originTab?: string;
+  }>();
+  const router = useRouter();
   const personId = Number(Array.isArray(id) ? id[0] : id);
 
   return (
@@ -302,10 +325,30 @@ export default function PersonNominations() {
         options={{
           headerTitle: 'Nominations',
           headerBackButtonDisplayMode: 'minimal',
+          headerRight: () => (
+            <Pressable
+              onPress={() => {
+                if (originTab === 'search') {
+                  router.dismissTo('/(tabs)/search');
+                  return;
+                }
+
+                if (originTab === 'genres') {
+                  router.dismissTo('/(tabs)/genres');
+                  return;
+                }
+
+                router.dismissTo('/(tabs)/films');
+              }}
+              hitSlop={8}
+            >
+              <Ionicons name='close' size={22} color='#fff' />
+            </Pressable>
+          ),
         }}
       />
       {Number.isFinite(personId) ? (
-        <PersonNominationsContent personId={personId} />
+        <PersonNominationsContent personId={personId} originTab={originTab} />
       ) : (
         <View style={styles.centeredState}>
           <Text style={styles.stateText}>Invalid person ID.</Text>

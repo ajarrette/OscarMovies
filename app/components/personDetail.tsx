@@ -1,7 +1,7 @@
 import Person from '@/types/person';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import * as Linking from 'expo-linking';
-import { useNavigation, useRouter } from 'expo-router';
+import { useLocalSearchParams, useNavigation, useRouter } from 'expo-router';
 import { useLayoutEffect } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
 import Animated, {
@@ -88,6 +88,8 @@ function getJobTitleFromDepartment(department: string): string {
 export default function PersonDetail({ person, movies = [] }: Props) {
   const navigation = useNavigation();
   const router = useRouter();
+  const params = useLocalSearchParams<{ originTab?: string }>();
+  const originTab = params.originTab;
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const name = person.name ?? 'Unknown Person';
@@ -124,11 +126,23 @@ export default function PersonDetail({ person, movies = [] }: Props) {
   };
 
   const onShowNominations = () => {
-    router.push(`/people/${person.id}/nominations`);
+    router.push({
+      pathname: '/people/[id]/nominations',
+      params: {
+        id: String(person.id),
+        originTab,
+      },
+    });
   };
 
   const onShowMovie = (movieId: number) => {
-    router.push(`/film-details/${movieId}`);
+    router.push({
+      pathname: '/film-details/[id]',
+      params: {
+        id: String(movieId),
+        originTab,
+      },
+    });
   };
 
   const headerBackgroundAnimatedStyle = useAnimatedStyle(() => {
@@ -205,12 +219,18 @@ export default function PersonDetail({ person, movies = [] }: Props) {
           <Ionicons name='chevron-back' size={28} color='#fff' />
         </Pressable>
       ),
+      headerRight: () => (
+        <Pressable onPress={() => router.dismissAll()} hitSlop={8}>
+          <Ionicons name='close' size={24} color='#fff' />
+        </Pressable>
+      ),
     });
   }, [
     navigation,
     name,
     headerTitleAnimatedStyle,
     headerBackgroundAnimatedStyle,
+    originTab,
     router,
   ]);
 

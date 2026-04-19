@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { requireOptionalNativeModule } from 'expo-modules-core';
-import { Stack, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -181,6 +181,8 @@ export default function FilmDetail({
 }: Props) {
   const db = useSQLiteContext();
   const router = useRouter();
+  const params = useLocalSearchParams<{ originTab?: string }>();
+  const originTab = params.originTab;
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const title = film.title ?? 'Unknown Title';
@@ -336,7 +338,13 @@ export default function FilmDetail({
   );
 
   const onShowNominations = () => {
-    router.push(`/film-details/${film.id}/nominations`);
+    router.push({
+      pathname: '/film-details/[id]/nominations',
+      params: {
+        id: String(film.id),
+        originTab,
+      },
+    });
   };
 
   const onShowDirector = () => {
@@ -344,11 +352,23 @@ export default function FilmDetail({
       return;
     }
 
-    router.push(`/people/${directorPersonId}`);
+    router.push({
+      pathname: '/people/[id]',
+      params: {
+        id: String(directorPersonId),
+        originTab,
+      },
+    });
   };
 
   const onShowCastPerson = (personId: number) => {
-    router.push(`/people/${personId}`);
+    router.push({
+      pathname: '/people/[id]',
+      params: {
+        id: String(personId),
+        originTab,
+      },
+    });
   };
 
   const onShowGenre = async (genreName: string) => {
@@ -367,6 +387,7 @@ export default function FilmDetail({
         params: {
           genreId: String(foundGenre.id),
           genreName,
+          originTab,
         },
       });
     } catch (error) {
@@ -441,6 +462,31 @@ export default function FilmDetail({
           headerLeft: () => (
             <Pressable onPress={() => router.back()} hitSlop={8}>
               <Ionicons name='chevron-back' size={28} color='#fff' />
+            </Pressable>
+          ),
+          headerRight: () => (
+            <Pressable
+              onPress={() => {
+                if (originTab === 'search') {
+                  router.dismissTo('/(tabs)/search');
+                  return;
+                }
+
+                if (originTab === 'genres') {
+                  router.dismissTo('/(tabs)/genres');
+                  return;
+                }
+
+                if (originTab === 'films') {
+                  router.dismissTo('/(tabs)/films');
+                  return;
+                }
+
+                router.dismissAll();
+              }}
+              hitSlop={8}
+            >
+              <Ionicons name='close' size={24} color='#fff' />
             </Pressable>
           ),
         }}
