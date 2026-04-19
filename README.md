@@ -92,6 +92,54 @@ npm run lint
 - `npm run import-popular-people` imports additional people popularity data
 - `npm run import-movie-cast` imports movie cast relationships
 - `npm run prune-people` deletes low-value people rows not linked in `nomination_people` and vacuums the database
+- `npm run dedup-people` runs a dry-run person deduplication pass (no writes)
+- `npm run dedup-people:apply` applies dedupe merges and rewires person references
+
+## People Dedup Workflow
+
+The dataset can contain duplicate person rows when Oscar nominee names differ from TMDB names (for example, a nominee row with no `tmdb_id` and a TMDB-enriched row for the same person). Use the dedupe script to merge those records safely.
+
+Default behavior is dry-run.
+
+```bash
+npm run dedup-people
+```
+
+Apply mode rewires references from source people rows (`tmdb_id IS NULL`) to target rows (`tmdb_id IS NOT NULL`) and then deletes merged source rows.
+
+```bash
+npm run dedup-people:apply
+```
+
+### Script Options
+
+```bash
+node ./assets/data/dedup-people.js [options]
+
+--apply                      Apply database changes. Omit for dry-run.
+--db <path>                  Override database path.
+--alias-file <path>          Alias map JSON file (sourceName -> targetName).
+--limit <n>                  Limit number of source people considered.
+--person-id <id>             Process one source person id.
+--report-dir <path>          Report output directory.
+--allow-awarded-targets      Allow targets with existing wins/nominations.
+```
+
+### Matching and Safety Rules
+
+- Only alias map entries are used for matching, via `assets/data/people-aliases.json`.
+- No automatic exact-name or fuzzy-name merges are performed.
+- If multiple targets qualify, the source row is skipped and reported as ambiguous.
+- Dry-run is the default mode and performs no writes.
+- In apply mode, all updates run in a transaction, references are rewired to the target `person_id`, source wins/nominations are added to the target row, and the source row is deleted only after successful rewiring.
+
+### Recommended Order
+
+1. Run import/enrichment scripts first.
+2. Run `npm run dedup-people` and review the report in `assets/data/reports`.
+3. Back up the DB file.
+4. Run `npm run dedup-people:apply`.
+5. Re-run `npm run dedup-people` to confirm there are no remaining merge candidates for the processed set.
 
 ## Data and Content Notes
 
