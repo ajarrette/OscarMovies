@@ -73,17 +73,17 @@ function getAge(birthday: string | null, deathday: string | null) {
  */
 function getJobTitleFromDepartment(department: string): string {
   const departmentMap: Record<string, string> = {
-    'Acting': 'Actor',
-    'Art': 'Artis',
-    'Camera': 'Camera Operator',
-    'Directing': 'Director',
-    'Editing': 'Editor',
-    'Production': 'Producer',
-    'Writing': 'Writer',
+    Acting: 'Actor',
+    Art: 'Artis',
+    Camera: 'Camera Operator',
+    Directing: 'Director',
+    Editing: 'Editor',
+    Production: 'Producer',
+    Writing: 'Writer',
   };
 
   return departmentMap[department] ?? department;
-};
+}
 
 export default function PersonDetail({ person, movies = [] }: Props) {
   const navigation = useNavigation();
@@ -94,7 +94,9 @@ export default function PersonDetail({ person, movies = [] }: Props) {
   const isSearchRoute = pathname.startsWith('/search');
   const name = person.name ?? 'Unknown Person';
   const biography = person.biography?.trim() || 'No biography available.';
-  const knownForDepartment = getJobTitleFromDepartment(person.known_for_department?.trim() || 'Unknown Department');
+  const knownForDepartment = getJobTitleFromDepartment(
+    person.known_for_department?.trim() || 'Unknown Department',
+  );
   const age = getAge(person.birthday, person.deathday);
   const ageText = age === null ? 'AGE UNKNOWN' : `AGE ${age}`;
   const birthYear = getYear(person.birthday);
@@ -307,6 +309,11 @@ export default function PersonDetail({ person, movies = [] }: Props) {
                           </Text>
                         </Pressable>
                       )}
+                      <Pressable onPress={() => onShowMovie(movie.id)}>
+                        <Text style={styles.characterName} numberOfLines={1}>
+                          {movie.displayRoles || 'Unknown Role'}
+                        </Text>
+                      </Pressable>
                     </View>
                   );
                 })}
@@ -344,6 +351,13 @@ const styles = StyleSheet.create({
   },
   buttonRow: {
     marginBottom: 24,
+  },
+  characterName: {
+    marginTop: 2,
+    color: '#ccc',
+    fontSize: 12,
+    textAlign: 'center',
+    width: '100%',
   },
   content: {
     paddingBottom: 40,
