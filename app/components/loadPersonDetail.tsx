@@ -15,6 +15,8 @@ export type PersonMovie = {
   popularity: number | null;
   roles_csv: string | null;
   displayRoles?: string | null;
+  wins?: number;
+  nominations?: number;
 };
 
 /**
@@ -92,6 +94,8 @@ export default function LoadPersonDetail({ id }: Props) {
               m.title,
               m.poster_path,
               m.popularity,
+              COALESCE(m.wins, 0) AS wins,
+              COALESCE(m.nominations, 0) AS nominations,
               -- SQLite uses GROUP_CONCAT to merge rows
               GROUP_CONCAT(DISTINCT pm.raw_role) AS roles_csv
         FROM person_movies pm

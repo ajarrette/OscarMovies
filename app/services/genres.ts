@@ -11,6 +11,8 @@ export type GenreMovieItem = {
   title: string;
   posterPath: string | null;
   popularity: number;
+  wins: number;
+  nominations: number;
 };
 
 type GenreListRow = {
@@ -24,6 +26,8 @@ type GenreMovieRow = {
   title: string;
   poster_path: string | null;
   popularity: number | null;
+  wins: number | null;
+  nominations: number | null;
 };
 
 type GenreNameRow = {
@@ -61,7 +65,9 @@ export async function getGenreMoviesByPopularity(
     `SELECT m.id,
             m.title,
             m.poster_path,
-            m.popularity
+            m.popularity,
+            COALESCE(m.wins, 0) AS wins,
+            COALESCE(m.nominations, 0) AS nominations
      FROM movie_tmdb_genres mg
      INNER JOIN movies m ON m.id = mg.movie_id
      WHERE mg.genre_id = ?
@@ -76,6 +82,8 @@ export async function getGenreMoviesByPopularity(
     title: row.title,
     posterPath: row.poster_path,
     popularity: row.popularity ?? 0,
+    wins: row.wins ?? 0,
+    nominations: row.nominations ?? 0,
   }));
 }
 

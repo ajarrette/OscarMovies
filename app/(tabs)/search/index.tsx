@@ -96,6 +96,8 @@ const SearchResultRow = memo(function SearchResultRow({
           selectedImage={imageUri}
           width={posterWidth}
           height={posterHeight}
+          wins={item.wins}
+          nominations={item.nominations}
           onPress={handlePress}
         />
       ) : (

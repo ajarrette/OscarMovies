@@ -5,6 +5,8 @@ export type YearMovieItem = {
   title: string;
   posterPath: string | null;
   popularity: number;
+  wins: number;
+  nominations: number;
 };
 
 type YearMovieRow = {
@@ -12,6 +14,8 @@ type YearMovieRow = {
   title: string;
   poster_path: string | null;
   popularity: number | null;
+  wins: number | null;
+  nominations: number | null;
 };
 
 export async function getYearMoviesByPopularity(
@@ -24,7 +28,9 @@ export async function getYearMoviesByPopularity(
     `SELECT m.id,
             m.title,
             m.poster_path,
-            m.popularity
+            m.popularity,
+            COALESCE(m.wins, 0) AS wins,
+            COALESCE(m.nominations, 0) AS nominations
      FROM movies m
      WHERE CAST(strftime('%Y', m.release_date) AS INTEGER) = ?
      ORDER BY COALESCE(m.popularity, 0) DESC,
@@ -38,5 +44,7 @@ export async function getYearMoviesByPopularity(
     title: row.title,
     posterPath: row.poster_path,
     popularity: row.popularity ?? 0,
+    wins: row.wins ?? 0,
+    nominations: row.nominations ?? 0,
   }));
 }

@@ -309,6 +309,8 @@ export default function PersonDetail({ person, movies = [] }: Props) {
                           selectedImage={posterUri}
                           width={MOVIE_ITEM_WIDTH}
                           height={MOVIE_POSTER_HEIGHT}
+                          wins={movie.wins ?? 0}
+                          nominations={movie.nominations ?? 0}
                           onPress={() => onShowMovie(movie.id)}
                         />
                       ) : (

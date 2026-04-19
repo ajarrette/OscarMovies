@@ -160,6 +160,8 @@ export default function GenreFilmsScreen() {
             width={posterWidth}
             height={posterHeight}
             borderRadius={0}
+            wins={item.wins}
+            nominations={item.nominations}
             onPress={() => {
               router.push({
                 pathname: '/genre-films/films/[id]',
