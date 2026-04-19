@@ -216,6 +216,14 @@ export default function FilmDetail({
     useState<boolean>(false);
   const { omdbRatingsData, isOmdbLoading } = useOmdbRatings(film.imdb_id);
 
+  const truncateText = (text: string, limit: number = 25): string => {
+    if (text.length <= limit) {
+      return text;
+    }
+
+    return text.slice(0, limit) + '...';
+  };
+
   useEffect(() => {
     let isDisposed = false;
 
@@ -532,7 +540,10 @@ export default function FilmDetail({
                         )}
                         <Pressable onPress={() => onShowCastPerson(person.id)}>
                           <Text style={styles.castName} numberOfLines={1}>
-                            {person.name}
+                            {truncateText(person.name || '', 14)}
+                          </Text>
+                          <Text style={styles.characterName} numberOfLines={1}>
+                            {truncateText(person.character || '', 18)}
                           </Text>
                         </Pressable>
                       </View>
@@ -596,7 +607,15 @@ const styles = StyleSheet.create({
   castName: {
     marginTop: 8,
     color: '#ccc',
-    fontSize: 13,
+    fontSize: 14,
+    fontWeight: '600',
+    textAlign: 'center',
+    width: '100%',
+  },
+  characterName: {
+    marginTop: 2,
+    color: '#ccc',
+    fontSize: 12,
     textAlign: 'center',
     width: '100%',
   },

@@ -18,6 +18,7 @@ export type FilmCastPerson = {
   profile_path: string | null;
   popularity: number | null;
   known_for_department: string | null;
+  character: string | null;
 };
 
 type FilmGenreRow = {
@@ -66,11 +67,12 @@ export default function LoadFilmDetail({ id }: Props) {
 
       try {
         foundCast = await db.getAllAsync<FilmCastPerson>(
-          `SELECT DISTINCT p.id,
-                p.name,
-                p.profile_path,
-                p.popularity,
-                p.known_for_department
+          `SELECT mc.character,
+              p.id,
+              p.name,
+              p.profile_path,
+              p.popularity,
+              p.known_for_department
           FROM movie_cast mc
           INNER JOIN people p ON p.id = mc.person_id
           WHERE mc.movie_id = ? 
