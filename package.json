@@ -33,6 +33,7 @@
     "@react-navigation/bottom-tabs": "^7.2.0",
     "@react-navigation/elements": "^2.2.5",
     "@react-navigation/native": "^7.0.14",
+    "@shopify/flash-list": "2.0.2",
     "expo": "^55.0.15",
     "expo-blur": "~55.0.14",
     "expo-constants": "~55.0.14",

@@ -47,10 +47,25 @@ export default function TabLayout() {
       <Tabs.Screen
         name='search'
         options={{
+          title: 'Search',
           headerShown: false,
           tabBarIcon: ({ color, focused }) => (
             <Ionicons
               name={focused ? 'search-circle' : 'search-outline'}
+              color={color}
+              size={24}
+            />
+          ),
+        }}
+      />
+      <Tabs.Screen
+        name='genres'
+        options={{
+          title: 'Genres',
+          headerShown: false,
+          tabBarIcon: ({ color, focused }) => (
+            <Ionicons
+              name={focused ? 'grid' : 'grid-outline'}
               color={color}
               size={24}
             />

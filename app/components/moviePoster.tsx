@@ -7,6 +7,7 @@ type Props = {
   height?: number;
   onPress?: () => void | undefined;
   isCircle?: boolean;
+  borderRadius?: number;
 };
 
 export default function MoviePoster({
@@ -15,8 +16,10 @@ export default function MoviePoster({
   height,
   onPress,
   isCircle,
+  borderRadius: customBorderRadius,
 }: Props) {
-  const borderRadius = isCircle ? (width ? width / 2 : 60) : 5;
+  const borderRadius =
+    customBorderRadius ?? (isCircle ? (width ? width / 2 : 60) : 5);
 
   return (
     <Pressable onPress={onPress}>
