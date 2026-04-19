@@ -20,7 +20,13 @@ export default function MoviePoster({
 
   return (
     <Pressable onPress={onPress}>
-      <Image source={selectedImage} style={{ width, height, borderRadius }} />
+      <Image
+        source={selectedImage}
+        style={{ width, height, borderRadius }}
+        contentFit='cover'
+        cachePolicy='memory-disk'
+        transition={0}
+      />
     </Pressable>
   );
 }

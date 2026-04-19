@@ -1,4 +1,5 @@
 import { ReactNode, useCallback } from 'react';
+import { InteractionManager } from 'react-native';
 import { SQLiteDatabase, SQLiteProvider } from 'expo-sqlite';
 
 const FILMS_DB_NAME = 'oscar-movies.db';
@@ -17,9 +18,8 @@ export default function FilmsDbProvider({ children }: FilmsDbProviderProps) {
     }
     hasInitializedSchema = true;
 
-    // Run schema initialization asynchronously to avoid blocking UI
-    // This executes after the app is rendered
-    setTimeout(async () => {
+    // Defer schema work until after initial interactions for smoother first paint.
+    InteractionManager.runAfterInteractions(async () => {
       try {
         const peopleColumns = await db.getAllAsync<{ name: string }>(
           'PRAGMA table_info(people)',
@@ -68,7 +68,7 @@ export default function FilmsDbProvider({ children }: FilmsDbProviderProps) {
           error,
         );
       }
-    }, 100);
+    });
   }, []);
 
   const shouldCopyBundledDb = !hasInitializedBundledDb;

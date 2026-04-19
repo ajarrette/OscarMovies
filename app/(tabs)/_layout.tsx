@@ -5,6 +5,8 @@ export default function TabLayout() {
   return (
     <Tabs
       screenOptions={{
+        lazy: true,
+        sceneStyle: { backgroundColor: '#25292e' },
         tabBarActiveTintColor: '#ffd33d',
         headerStyle: { backgroundColor: '#25292e' },
         headerShadowVisible: false,

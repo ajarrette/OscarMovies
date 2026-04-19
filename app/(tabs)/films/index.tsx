@@ -1,5 +1,5 @@
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import { ActivityIndicator, StyleSheet, Text, View } from 'react-native';
 import type { CategoryGroup } from '../../components/filmsList';
 import FilmsList from '../../components/filmsList';
@@ -329,6 +329,26 @@ function FilmsContent() {
     loadNominations();
   }, [db, selectedYear, yearLabelsByDisplayYear]);
 
+  const decades = useMemo(
+    () =>
+      Array.from(new Set(years.map((year) => Math.floor(year / 10) * 10))).sort(
+        (a, b) => b - a,
+      ),
+    [years],
+  );
+
+  const yearsInSelectedDecade = useMemo(
+    () =>
+      years
+        .filter(
+          (year) =>
+            selectedDecade !== null &&
+            Math.floor(year / 10) * 10 === selectedDecade,
+        )
+        .sort((a, b) => b - a),
+    [selectedDecade, years],
+  );
+
   if (isLoadingYears) {
     return (
       <View style={styles.centered}>
@@ -354,17 +374,6 @@ function FilmsContent() {
       </View>
     );
   }
-
-  const decades = Array.from(
-    new Set(years.map((year) => Math.floor(year / 10) * 10)),
-  ).sort((a, b) => b - a);
-  const yearsInSelectedDecade = years
-    .filter(
-      (year) =>
-        selectedDecade !== null &&
-        Math.floor(year / 10) * 10 === selectedDecade,
-    )
-    .sort((a, b) => b - a);
 
   if (isLoadingFilms) {
     return (
