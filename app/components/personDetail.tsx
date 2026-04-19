@@ -67,6 +67,24 @@ function getAge(birthday: string | null, deathday: string | null) {
   return age >= 0 ? age : null;
 }
 
+/**
+ * Maps a department name to a specific job title.
+ * Returns the original string if no mapping exists.
+ */
+function getJobTitleFromDepartment(department: string): string {
+  const departmentMap: Record<string, string> = {
+    'Acting': 'Actor',
+    'Art': 'Artis',
+    'Camera': 'Camera Operator',
+    'Directing': 'Director',
+    'Editing': 'Editor',
+    'Production': 'Producer',
+    'Writing': 'Writer',
+  };
+
+  return departmentMap[department] ?? department;
+};
+
 export default function PersonDetail({ person, movies = [] }: Props) {
   const navigation = useNavigation();
   const router = useRouter();
@@ -76,8 +94,7 @@ export default function PersonDetail({ person, movies = [] }: Props) {
   const isSearchRoute = pathname.startsWith('/search');
   const name = person.name ?? 'Unknown Person';
   const biography = person.biography?.trim() || 'No biography available.';
-  const knownForDepartment =
-    person.known_for_department?.trim() || 'Unknown Department';
+  const knownForDepartment = getJobTitleFromDepartment(person.known_for_department?.trim() || 'Unknown Department');
   const age = getAge(person.birthday, person.deathday);
   const ageText = age === null ? 'AGE UNKNOWN' : `AGE ${age}`;
   const birthYear = getYear(person.birthday);

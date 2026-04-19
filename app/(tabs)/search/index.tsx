@@ -131,6 +131,24 @@ function getReleaseYear(releaseDate: string | null) {
   return Number.isNaN(year) ? null : String(year);
 }
 
+/**
+ * Maps a department name to a specific job title.
+ * Returns the original string if no mapping exists.
+ */
+function getJobTitleFromDepartment(department: string): string  {
+  const departmentMap: Record<string, string> = {
+    'Acting': 'Actor',
+    'Art': 'Artis',
+    'Camera': 'Camera Operator',
+    'Directing': 'Director',
+    'Editing': 'Editor',
+    'Production': 'Producer',
+    'Writing': 'Writer',
+  };
+
+  return departmentMap[department] ?? department;
+};
+
 function SearchContent() {
   const db = useSQLiteContext();
   const { width } = useWindowDimensions();
@@ -314,7 +332,7 @@ function SearchContent() {
             kind: 'people',
             title: row.name,
             subtitle: null,
-            meta: row.known_for_department,
+            meta: getJobTitleFromDepartment(row.known_for_department),
             imagePath: row.profile_path,
             wins: row.wins,
             nominations: row.nominations,

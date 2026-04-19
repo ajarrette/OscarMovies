@@ -67,17 +67,18 @@ export default function LoadFilmDetail({ id }: Props) {
       try {
         foundCast = await db.getAllAsync<FilmCastPerson>(
           `SELECT DISTINCT p.id,
-                  p.name,
-                  p.profile_path,
-                  p.popularity,
-                  p.known_for_department
-           FROM movie_cast mc
-           INNER JOIN people p ON p.id = mc.person_id
-           WHERE mc.movie_id = ?
-           ORDER BY mc.cast_order ASC,
-                    COALESCE(p.popularity, 0) DESC,
-                    p.name ASC
-           LIMIT 10`,
+                p.name,
+                p.profile_path,
+                p.popularity,
+                p.known_for_department
+          FROM movie_cast mc
+          INNER JOIN people p ON p.id = mc.person_id
+          WHERE mc.movie_id = ? 
+            AND mc.department = 'Acting'
+          ORDER BY mc.cast_order ASC,
+                  COALESCE(p.popularity, 0) DESC,
+                  p.name ASC
+          LIMIT 12`,
           [id],
         );
       } catch (error) {
