@@ -5,11 +5,13 @@ import { LinearGradient } from 'expo-linear-gradient';
 import { requireOptionalNativeModule } from 'expo-modules-core';
 import { Stack, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolation,
   interpolate,
+  runOnJS,
   useAnimatedRef,
   useAnimatedStyle,
   useScrollViewOffset,
@@ -18,6 +20,7 @@ import {
   getCachedLetterboxdFilmData,
   type LetterboxdFilmData,
 } from '../services/letterboxd-film-service';
+import { getGenreAdjacentMovieIds } from '../services/genres';
 import { getFilmRatingLabel, useOmdbRatings } from '../utils/index';
 import FilmRatings from './filmRatings';
 import LetterboxdFilmScraper from './letterboxdFilmScraper';
@@ -46,6 +49,7 @@ const CAST_ITEM_WIDTH =
   CAST_VISIBLE_COUNT;
 const CAST_AVATAR_SIZE = 82;
 const DEFAULT_BACKGROUND = '#25292e';
+const SWIPE_TRIGGER_DISTANCE = 56;
 type GradientPalette = [string, string, string];
 const FALLBACK_GRADIENT: GradientPalette = [
   '#12161b',
@@ -187,8 +191,35 @@ export default function FilmDetail({
 }: Props) {
   const db = useSQLiteContext();
   const router = useRouter();
-  const params = useLocalSearchParams<{ originTab?: string }>();
-  const originTab = params.originTab;
+  const params = useLocalSearchParams<{
+    originTab?: string | string[];
+    genreId?: string | string[];
+    fromGenreList?: string | string[];
+    detailPath?: string | string[];
+    swipeDirection?: string | string[];
+  }>();
+  const firstParam = (value?: string | string[]) =>
+    Array.isArray(value) ? value[0] : value;
+  const originTab = firstParam(params.originTab);
+  const genreIdParam = firstParam(params.genreId);
+  const fromGenreListParam = firstParam(params.fromGenreList);
+  const detailPathParam = firstParam(params.detailPath);
+  const genreId = Number(genreIdParam ?? '0');
+  const isGenreSwipeEnabled =
+    fromGenreListParam === '1' && Number.isInteger(genreId) && genreId > 0;
+  const detailPath =
+    detailPathParam === '/genre-films/films/[id]' ||
+    detailPathParam === '/film-details/[id]'
+      ? detailPathParam
+      : '/film-details/[id]';
+  const [adjacentGenreMovieIds, setAdjacentGenreMovieIds] = useState<{
+    previousId: number | null;
+    nextId: number | null;
+  }>({
+    previousId: null,
+    nextId: null,
+  });
+  const isSwipeNavigatingRef = useRef(false);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const title = film.title ?? 'Unknown Title';
@@ -353,6 +384,32 @@ export default function FilmDetail({
     } as Href);
   };
 
+  const onOpenGenreSwipeNeighbor = useCallback(
+    (targetFilmId: number, direction: 'next' | 'previous') => {
+      if (!isGenreSwipeEnabled || targetFilmId <= 0) {
+        return;
+      }
+
+      if (isSwipeNavigatingRef.current) {
+        return;
+      }
+
+      isSwipeNavigatingRef.current = true;
+      router.replace({
+        pathname: detailPath,
+        params: {
+          id: String(targetFilmId),
+          originTab,
+          genreId: String(genreId),
+          fromGenreList: '1',
+          detailPath,
+          swipeDirection: direction === 'previous' ? 'from-left' : 'from-right',
+        },
+      } as Href);
+    },
+    [detailPath, genreId, isGenreSwipeEnabled, originTab, router],
+  );
+
   const onShowDirector = () => {
     if (directorPersonId === null) {
       return;
@@ -461,220 +518,311 @@ export default function FilmDetail({
     };
   });
 
+  useEffect(() => {
+    isSwipeNavigatingRef.current = false;
+  }, [film.id]);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    if (!isGenreSwipeEnabled) {
+      setAdjacentGenreMovieIds({ previousId: null, nextId: null });
+      return () => {
+        cancelled = true;
+      };
+    }
+
+    const loadAdjacentMovies = async () => {
+      try {
+        const adjacent = await getGenreAdjacentMovieIds(db, genreId, film.id);
+
+        if (cancelled) {
+          return;
+        }
+
+        if (!adjacent) {
+          setAdjacentGenreMovieIds({ previousId: null, nextId: null });
+          return;
+        }
+
+        setAdjacentGenreMovieIds({
+          previousId: adjacent.previousId,
+          nextId: adjacent.nextId,
+        });
+      } catch (error) {
+        if (!cancelled) {
+          setAdjacentGenreMovieIds({ previousId: null, nextId: null });
+          console.warn('Failed to load adjacent genre movies:', error);
+        }
+      }
+    };
+
+    void loadAdjacentMovies();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [db, film.id, genreId, isGenreSwipeEnabled]);
+
+  const swipeGesture = useMemo(
+    () =>
+      Gesture.Pan()
+        .enabled(isGenreSwipeEnabled)
+        .activeOffsetX([-22, 22])
+        .failOffsetY([-14, 14])
+        .onEnd((event) => {
+          const deltaX = event.translationX;
+
+          if (deltaX <= -SWIPE_TRIGGER_DISTANCE) {
+            if (adjacentGenreMovieIds.nextId) {
+              runOnJS(onOpenGenreSwipeNeighbor)(
+                adjacentGenreMovieIds.nextId,
+                'next',
+              );
+            }
+            return;
+          }
+
+          if (deltaX >= SWIPE_TRIGGER_DISTANCE) {
+            if (adjacentGenreMovieIds.previousId) {
+              runOnJS(onOpenGenreSwipeNeighbor)(
+                adjacentGenreMovieIds.previousId,
+                'previous',
+              );
+            }
+          }
+        }),
+    [
+      adjacentGenreMovieIds.nextId,
+      adjacentGenreMovieIds.previousId,
+      isGenreSwipeEnabled,
+      onOpenGenreSwipeNeighbor,
+    ],
+  );
+
   return (
-    <View style={styles.container}>
-      <LinearGradient
-        colors={gradientColors}
-        locations={[0, 0.5, 1]}
-        style={StyleSheet.absoluteFillObject}
-      />
-      <Animated.View
-        pointerEvents='none'
-        style={[
-          styles.headerOverlay,
-          { backgroundColor: bodyBackgroundColor },
-          headerAnimatedStyle,
-        ]}
-      />
-      <Stack.Screen
-        options={{
-          headerTransparent: true,
-          headerShown: true,
-          headerLeft: () => (
-            <Pressable onPress={() => router.back()} hitSlop={8}>
-              <Ionicons name='chevron-back' size={28} color='#fff' />
-            </Pressable>
-          ),
-          headerRight: () => (
-            <Pressable
-              onPress={() => {
-                if (originTab === 'search') {
-                  router.dismissTo('/(tabs)/search');
-                  return;
-                }
-
-                if (originTab === 'genres') {
-                  router.dismissTo('/(tabs)/genres');
-                  return;
-                }
-
-                if (originTab === 'films') {
-                  router.dismissTo('/(tabs)/films');
-                  return;
-                }
-
-                router.dismissAll();
-              }}
-              hitSlop={8}
-            >
-              <Ionicons name='close' size={24} color='#fff' />
-            </Pressable>
-          ),
-        }}
-      />
-      <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
-        <View>
-          <Animated.Image
-            source={{
-              uri: backdropUri,
-            }}
-            style={[styles.image, imageAnimatedStyle]}
-          />
-          <LinearGradient
-            colors={[
-              'transparent',
-              `rgba(0, 0, 0, ${(heroOverlayBottomOpacity * 0.4).toFixed(2)})`,
-              bodyBackgroundColor,
-            ]}
-            locations={[0.45, 0.75, 1]}
-            style={styles.imageContrastOverlay}
-          />
-        </View>
+    <GestureDetector gesture={swipeGesture}>
+      <View style={styles.container}>
+        <LinearGradient
+          colors={gradientColors}
+          locations={[0, 0.5, 1]}
+          style={StyleSheet.absoluteFillObject}
+        />
         <Animated.View
+          pointerEvents='none'
           style={[
-            styles.contentBody,
+            styles.headerOverlay,
             { backgroundColor: bodyBackgroundColor },
-            bodyAnimatedStyle,
+            headerAnimatedStyle,
           ]}
-        >
-          <View style={styles.detailsContainer}>
-            <View style={styles.topRow}>
-              <View style={{ flex: 1 }}>
-                <Text style={styles.title}>{title}</Text>
-                {title !== originalTitle && (
-                  <Text style={styles.subtitle}>{originalTitle}</Text>
-                )}
+        />
+        <Stack.Screen
+          options={{
+            headerTransparent: true,
+            headerShown: true,
+            headerLeft: () => (
+              <Pressable onPress={() => router.back()} hitSlop={8}>
+                <Ionicons name='chevron-back' size={28} color='#fff' />
+              </Pressable>
+            ),
+            headerRight: () => (
+              <Pressable
+                onPress={() => {
+                  if (originTab === 'search') {
+                    router.dismissTo('/(tabs)/search');
+                    return;
+                  }
 
-                <View style={styles.yearAndRatingRow}>
-                  <Pressable
-                    onPress={onShowYear}
-                    disabled={releaseYear === 'Unknown'}
-                  >
-                    <Text
-                      style={[
-                        styles.yearAndRating,
-                        styles.yearLink,
-                        releaseYear === 'Unknown' && styles.yearLinkDisabled,
-                      ]}
+                  if (originTab === 'genres') {
+                    router.dismissTo('/(tabs)/genres');
+                    return;
+                  }
+
+                  if (originTab === 'films') {
+                    router.dismissTo('/(tabs)/films');
+                    return;
+                  }
+
+                  router.dismissAll();
+                }}
+                hitSlop={8}
+              >
+                <Ionicons name='close' size={24} color='#fff' />
+              </Pressable>
+            ),
+          }}
+        />
+        <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
+          <View>
+            <Animated.Image
+              source={{
+                uri: backdropUri,
+              }}
+              style={[styles.image, imageAnimatedStyle]}
+            />
+            <LinearGradient
+              colors={[
+                'transparent',
+                `rgba(0, 0, 0, ${(heroOverlayBottomOpacity * 0.4).toFixed(2)})`,
+                bodyBackgroundColor,
+              ]}
+              locations={[0.45, 0.75, 1]}
+              style={styles.imageContrastOverlay}
+            />
+          </View>
+          <Animated.View
+            style={[
+              styles.contentBody,
+              { backgroundColor: bodyBackgroundColor },
+              bodyAnimatedStyle,
+            ]}
+          >
+            <View style={styles.detailsContainer}>
+              <View style={styles.topRow}>
+                <View style={{ flex: 1 }}>
+                  <Text style={styles.title}>{title}</Text>
+                  {title !== originalTitle && (
+                    <Text style={styles.subtitle}>{originalTitle}</Text>
+                  )}
+
+                  <View style={styles.yearAndRatingRow}>
+                    <Pressable
+                      onPress={onShowYear}
+                      disabled={releaseYear === 'Unknown'}
                     >
-                      {releaseYear}
-                    </Text>
-                  </Pressable>
-                  <Text style={[styles.yearAndRating, styles.yearMeta]}>
-                    {' '}
-                    • {filmRating} • {runtimeText}
-                  </Text>
-                </View>
-
-                <Text style={styles.defaultText}>DIRECTED BY</Text>
-                {directorPersonId === null ? (
-                  <Text style={styles.director}>{director}</Text>
-                ) : (
-                  <Pressable onPress={onShowDirector}>
-                    <Text style={styles.director}>{director}</Text>
-                  </Pressable>
-                )}
-                {genres.length > 0 && (
-                  <View style={styles.genresRow}>
-                    {genres.map((genre) => (
-                      <Pressable
-                        key={genre}
-                        onPress={() => {
-                          void onShowGenre(genre);
-                        }}
-                        style={({ pressed }) => [
-                          styles.genreChip,
-                          pressed && styles.genreChipPressed,
+                      <Text
+                        style={[
+                          styles.yearAndRating,
+                          styles.yearLink,
+                          releaseYear === 'Unknown' && styles.yearLinkDisabled,
                         ]}
                       >
-                        <Text style={styles.genreChipText}>{genre}</Text>
-                      </Pressable>
-                    ))}
+                        {releaseYear}
+                      </Text>
+                    </Pressable>
+                    <Text style={[styles.yearAndRating, styles.yearMeta]}>
+                      {' '}
+                      • {filmRating} • {runtimeText}
+                    </Text>
                   </View>
-                )}
-                <View style={styles.row}>
-                  <NomineeStrip
-                    nominations={film.nominations}
-                    wins={film.wins}
-                    onPress={onShowNominations}
+
+                  <Text style={styles.defaultText}>DIRECTED BY</Text>
+                  {directorPersonId === null ? (
+                    <Text style={styles.director}>{director}</Text>
+                  ) : (
+                    <Pressable onPress={onShowDirector}>
+                      <Text style={styles.director}>{director}</Text>
+                    </Pressable>
+                  )}
+                  {genres.length > 0 && (
+                    <View style={styles.genresRow}>
+                      {genres.map((genre) => (
+                        <Pressable
+                          key={genre}
+                          onPress={() => {
+                            void onShowGenre(genre);
+                          }}
+                          style={({ pressed }) => [
+                            styles.genreChip,
+                            pressed && styles.genreChipPressed,
+                          ]}
+                        >
+                          <Text style={styles.genreChipText}>{genre}</Text>
+                        </Pressable>
+                      ))}
+                    </View>
+                  )}
+                  <View style={styles.row}>
+                    <NomineeStrip
+                      nominations={film.nominations}
+                      wins={film.wins}
+                      onPress={onShowNominations}
+                    />
+                  </View>
+                </View>
+                <View>
+                  <MoviePoster
+                    selectedImage={posterUri}
+                    width={120}
+                    height={180}
                   />
                 </View>
               </View>
-              <View>
-                <MoviePoster
-                  selectedImage={posterUri}
-                  width={120}
-                  height={180}
+
+              <View style={[{ marginTop: 20 }]}>
+                <FilmRatings
+                  imdbId={film.imdb_id}
+                  filmName={title}
+                  letterboxdTmdbId={film.tmdb_id.toString() || ''}
+                  LetterboxdFilmData={LetterboxdFilmData}
+                  omdbRatingsData={omdbRatingsData}
+                  isOmdbLoading={isOmdbLoading}
+                  backgroundColor={gradientColors[1] || DEFAULT_BACKGROUND}
                 />
               </View>
-            </View>
+              {castPeople.length > 0 && (
+                <View style={styles.castSection}>
+                  <Animated.ScrollView
+                    horizontal
+                    showsHorizontalScrollIndicator={false}
+                    contentContainerStyle={styles.castListContent}
+                  >
+                    {castPeople.map((person) => {
+                      const castProfileUri = person.profile_path
+                        ? `https://image.tmdb.org/t/p/w185${person.profile_path}`
+                        : undefined;
 
-            <View style={[{ marginTop: 20 }]}>
-              <FilmRatings
-                imdbId={film.imdb_id}
-                filmName={title}
-                letterboxdTmdbId={film.tmdb_id.toString() || ''}
-                LetterboxdFilmData={LetterboxdFilmData}
-                omdbRatingsData={omdbRatingsData}
-                isOmdbLoading={isOmdbLoading}
-                backgroundColor={gradientColors[1] || DEFAULT_BACKGROUND}
-              />
-            </View>
-            {castPeople.length > 0 && (
-              <View style={styles.castSection}>
-                <Animated.ScrollView
-                  horizontal
-                  showsHorizontalScrollIndicator={false}
-                  contentContainerStyle={styles.castListContent}
-                >
-                  {castPeople.map((person) => {
-                    const castProfileUri = person.profile_path
-                      ? `https://image.tmdb.org/t/p/w185${person.profile_path}`
-                      : undefined;
-
-                    return (
-                      <View key={person.id} style={styles.castItem}>
-                        {castProfileUri ? (
-                          <MoviePoster
-                            selectedImage={castProfileUri}
-                            width={CAST_AVATAR_SIZE}
-                            height={CAST_AVATAR_SIZE}
-                            isCircle={true}
-                            onPress={() => onShowCastPerson(person.id)}
-                          />
-                        ) : (
+                      return (
+                        <View key={person.id} style={styles.castItem}>
+                          {castProfileUri ? (
+                            <MoviePoster
+                              selectedImage={castProfileUri}
+                              width={CAST_AVATAR_SIZE}
+                              height={CAST_AVATAR_SIZE}
+                              isCircle={true}
+                              onPress={() => onShowCastPerson(person.id)}
+                            />
+                          ) : (
+                            <Pressable
+                              style={styles.castFallbackAvatar}
+                              onPress={() => onShowCastPerson(person.id)}
+                            >
+                              <Text style={styles.castFallbackText}>?</Text>
+                            </Pressable>
+                          )}
                           <Pressable
-                            style={styles.castFallbackAvatar}
                             onPress={() => onShowCastPerson(person.id)}
                           >
-                            <Text style={styles.castFallbackText}>?</Text>
+                            <Text style={styles.castName} numberOfLines={1}>
+                              {truncateText(person.name || '', 14)}
+                            </Text>
+                            <Text
+                              style={styles.characterName}
+                              numberOfLines={1}
+                            >
+                              {truncateText(person.character || '', 18)}
+                            </Text>
                           </Pressable>
-                        )}
-                        <Pressable onPress={() => onShowCastPerson(person.id)}>
-                          <Text style={styles.castName} numberOfLines={1}>
-                            {truncateText(person.name || '', 14)}
-                          </Text>
-                          <Text style={styles.characterName} numberOfLines={1}>
-                            {truncateText(person.character || '', 18)}
-                          </Text>
-                        </Pressable>
-                      </View>
-                    );
-                  })}
-                </Animated.ScrollView>
-              </View>
-            )}
-            {upperTagline && <Text style={styles.tagline}>{upperTagline}</Text>}
-            <Text style={styles.overview}>{overview}</Text>
-          </View>
-        </Animated.View>
-      </Animated.ScrollView>
-      <LetterboxdFilmScraper
-        tmdbId={film.tmdb_id}
-        enabled={shouldScrapeLetterboxd}
-        onMovieDataFound={onLetterboxdFilmDataFound}
-      />
-    </View>
+                        </View>
+                      );
+                    })}
+                  </Animated.ScrollView>
+                </View>
+              )}
+              {upperTagline && (
+                <Text style={styles.tagline}>{upperTagline}</Text>
+              )}
+              <Text style={styles.overview}>{overview}</Text>
+            </View>
+          </Animated.View>
+        </Animated.ScrollView>
+        <LetterboxdFilmScraper
+          tmdbId={film.tmdb_id}
+          enabled={shouldScrapeLetterboxd}
+          onMovieDataFound={onLetterboxdFilmDataFound}
+        />
+      </View>
+    </GestureDetector>
   );
 }
 

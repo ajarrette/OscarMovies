@@ -15,6 +15,11 @@ export type GenreMovieItem = {
   nominations: number;
 };
 
+export type GenreAdjacentMovieIds = {
+  previousId: number | null;
+  nextId: number | null;
+};
+
 type GenreListRow = {
   id: number;
   name: string;
@@ -32,6 +37,11 @@ type GenreMovieRow = {
 
 type GenreNameRow = {
   name: string;
+};
+
+type GenreAdjacentRow = {
+  previousId: number | null;
+  nextId: number | null;
 };
 
 export async function getGenresWithMovieCounts(
@@ -97,4 +107,54 @@ export async function getGenreNameById(
   );
 
   return row?.name ?? null;
+}
+
+export async function getGenreAdjacentMovieIds(
+  db: SQLiteDatabase,
+  genreId: number,
+  movieId: number,
+): Promise<GenreAdjacentMovieIds | null> {
+  const row = await db.getFirstAsync<GenreAdjacentRow>(
+    `WITH ordered_movies AS (
+      SELECT
+        m.id,
+        ROW_NUMBER() OVER (
+          ORDER BY
+            COALESCE(m.popularity, 0) DESC,
+            m.title COLLATE NOCASE ASC,
+            m.id ASC
+        ) AS row_num
+      FROM movie_tmdb_genres mg
+      INNER JOIN movies m ON m.id = mg.movie_id
+      WHERE mg.genre_id = ?
+    ),
+    current_movie AS (
+      SELECT row_num
+      FROM ordered_movies
+      WHERE id = ?
+      LIMIT 1
+    )
+    SELECT
+      (
+        SELECT id
+        FROM ordered_movies
+        WHERE row_num = current_movie.row_num - 1
+      ) AS previousId,
+      (
+        SELECT id
+        FROM ordered_movies
+        WHERE row_num = current_movie.row_num + 1
+      ) AS nextId
+    FROM current_movie`,
+    [genreId, movieId],
+  );
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    previousId: row.previousId ?? null,
+    nextId: row.nextId ?? null,
+  };
 }

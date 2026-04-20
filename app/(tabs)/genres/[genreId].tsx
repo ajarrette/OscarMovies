@@ -162,7 +162,13 @@ export default function GenreFilmsScreen() {
             onPress={() => {
               router.push({
                 pathname: '/film-details/[id]',
-                params: { id: String(item.id) },
+                params: {
+                  id: String(item.id),
+                  genreId: String(genreId),
+                  fromGenreList: '1',
+                  detailPath: '/film-details/[id]',
+                  originTab: 'genres',
+                },
               });
             }}
           />
@@ -171,7 +177,13 @@ export default function GenreFilmsScreen() {
             onPress={() => {
               router.push({
                 pathname: '/film-details/[id]',
-                params: { id: String(item.id) },
+                params: {
+                  id: String(item.id),
+                  genreId: String(genreId),
+                  fromGenreList: '1',
+                  detailPath: '/film-details/[id]',
+                  originTab: 'genres',
+                },
               });
             }}
           >
@@ -187,7 +199,7 @@ export default function GenreFilmsScreen() {
         )}
       </View>
     ),
-    [posterHeight, posterWidth, router],
+    [genreId, posterHeight, posterWidth, router],
   );
 
   const footer = useMemo(() => {

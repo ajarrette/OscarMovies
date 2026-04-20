@@ -167,6 +167,9 @@ export default function GenreFilmsScreen() {
                 pathname: '/genre-films/films/[id]',
                 params: {
                   id: String(item.id),
+                  genreId: String(genreId),
+                  fromGenreList: '1',
+                  detailPath: '/genre-films/films/[id]',
                   originTab,
                 },
               });
@@ -179,6 +182,9 @@ export default function GenreFilmsScreen() {
                 pathname: '/genre-films/films/[id]',
                 params: {
                   id: String(item.id),
+                  genreId: String(genreId),
+                  fromGenreList: '1',
+                  detailPath: '/genre-films/films/[id]',
                   originTab,
                 },
               });
@@ -196,7 +202,7 @@ export default function GenreFilmsScreen() {
         )}
       </View>
     ),
-    [posterHeight, posterWidth, router],
+    [genreId, originTab, posterHeight, posterWidth, router],
   );
 
   const footer = useMemo(() => {

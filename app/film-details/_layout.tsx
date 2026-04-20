@@ -12,13 +12,18 @@ export default function FilmsLayout() {
     >
       <Stack.Screen
         name='[id]'
-        options={{
+        options={({ route }) => ({
           headerStyle: { backgroundColor: 'transparent' },
           headerTransparent: true,
           headerTitle: '',
           headerBackButtonDisplayMode: 'minimal',
           headerShown: true,
-        }}
+          animationTypeForReplace: 'push',
+          animation:
+            route.params?.swipeDirection === 'from-left'
+              ? 'slide_from_left'
+              : 'slide_from_right',
+        })}
       />
       <Stack.Screen
         name='[id]/nominations'
