@@ -46,6 +46,7 @@ export default function GenreFilmsStackLayout() {
           headerTitle: '',
           headerBackButtonDisplayMode: 'minimal',
           headerShown: true,
+          gestureEnabled: false,
           animationTypeForReplace: 'push',
           animation:
             route.params?.swipeDirection === 'from-left'

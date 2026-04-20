@@ -19,6 +19,7 @@ export default function RootLayout() {
             name='genre-films'
             options={{
               animation: 'slide_from_right',
+              gestureEnabled: false,
             }}
           />
           <Stack.Screen

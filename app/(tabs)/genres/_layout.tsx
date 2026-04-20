@@ -56,6 +56,7 @@ export default function GenresStackLayout() {
           headerTitle: '',
           headerBackButtonDisplayMode: 'minimal',
           headerShown: true,
+          gestureEnabled: false,
           animationTypeForReplace: 'push',
           animation:
             route.params?.swipeDirection === 'from-left'
