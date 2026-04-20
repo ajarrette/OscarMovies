@@ -9,6 +9,11 @@ export type YearMovieItem = {
   nominations: number;
 };
 
+export type YearAdjacentMovieIds = {
+  previousId: number | null;
+  nextId: number | null;
+};
+
 type YearMovieRow = {
   id: number;
   title: string;
@@ -16,6 +21,11 @@ type YearMovieRow = {
   popularity: number | null;
   wins: number | null;
   nominations: number | null;
+};
+
+type YearAdjacentRow = {
+  previousId: number | null;
+  nextId: number | null;
 };
 
 export async function getYearMoviesByPopularity(
@@ -47,4 +57,53 @@ export async function getYearMoviesByPopularity(
     wins: row.wins ?? 0,
     nominations: row.nominations ?? 0,
   }));
+}
+
+export async function getYearAdjacentMovieIds(
+  db: SQLiteDatabase,
+  year: number,
+  movieId: number,
+): Promise<YearAdjacentMovieIds | null> {
+  const row = await db.getFirstAsync<YearAdjacentRow>(
+    `WITH ordered_movies AS (
+      SELECT
+        m.id,
+        ROW_NUMBER() OVER (
+          ORDER BY
+            COALESCE(m.popularity, 0) DESC,
+            m.title COLLATE NOCASE ASC,
+            m.id ASC
+        ) AS row_num
+      FROM movies m
+      WHERE CAST(strftime('%Y', m.release_date) AS INTEGER) = ?
+    ),
+    current_movie AS (
+      SELECT row_num
+      FROM ordered_movies
+      WHERE id = ?
+      LIMIT 1
+    )
+    SELECT
+      (
+        SELECT id
+        FROM ordered_movies
+        WHERE row_num = current_movie.row_num - 1
+      ) AS previousId,
+      (
+        SELECT id
+        FROM ordered_movies
+        WHERE row_num = current_movie.row_num + 1
+      ) AS nextId
+    FROM current_movie`,
+    [year, movieId],
+  );
+
+  if (!row) {
+    return null;
+  }
+
+  return {
+    previousId: row.previousId ?? null,
+    nextId: row.nextId ?? null,
+  };
 }

@@ -29,6 +29,13 @@ export default function RootLayout() {
             }}
           />
           <Stack.Screen
+            name='year-films'
+            options={{
+              animation: 'slide_from_right',
+              gestureEnabled: false,
+            }}
+          />
+          <Stack.Screen
             name='film-nominations'
             options={{
               animation: 'slide_from_right',

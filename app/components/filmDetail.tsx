@@ -29,6 +29,7 @@ import {
   type LetterboxdFilmData,
 } from '../services/letterboxd-film-service';
 import { getGenreAdjacentMovieIds } from '../services/genres';
+import { getYearAdjacentMovieIds } from '../services/years';
 import { getFilmRatingLabel, useOmdbRatings } from '../utils/index';
 import FilmRatings from './filmRatings';
 import LetterboxdFilmScraper from './letterboxdFilmScraper';
@@ -203,6 +204,8 @@ export default function FilmDetail({
     originTab?: string | string[];
     genreId?: string | string[];
     fromGenreList?: string | string[];
+    year?: string | string[];
+    fromYearList?: string | string[];
     detailPath?: string | string[];
     swipeDirection?: string | string[];
   }>();
@@ -211,13 +214,20 @@ export default function FilmDetail({
   const originTab = firstParam(params.originTab);
   const genreIdParam = firstParam(params.genreId);
   const fromGenreListParam = firstParam(params.fromGenreList);
+  const yearParam = firstParam(params.year);
+  const fromYearListParam = firstParam(params.fromYearList);
   const detailPathParam = firstParam(params.detailPath);
   const genreId = Number(genreIdParam ?? '0');
+  const year = Number(yearParam ?? '0');
   const isGenreSwipeEnabled =
     fromGenreListParam === '1' && Number.isInteger(genreId) && genreId >= 0;
+  const isYearSwipeEnabled =
+    fromYearListParam === '1' && Number.isInteger(year) && year > 0;
+  const isListSwipeEnabled = isGenreSwipeEnabled || isYearSwipeEnabled;
   const detailPath =
     detailPathParam === '/genre-films/films/[id]' ||
-    detailPathParam === '/film-details/[id]'
+    detailPathParam === '/film-details/[id]' ||
+    detailPathParam === '/year-films/films/[id]'
       ? detailPathParam
       : '/film-details/[id]';
   const [adjacentGenreMovieIds, setAdjacentGenreMovieIds] = useState<{
@@ -393,9 +403,9 @@ export default function FilmDetail({
     } as Href);
   };
 
-  const onOpenGenreSwipeNeighbor = useCallback(
+  const onOpenListSwipeNeighbor = useCallback(
     (targetFilmId: number, direction: 'next' | 'previous') => {
-      if (!isGenreSwipeEnabled || targetFilmId <= 0) {
+      if (!isListSwipeEnabled || targetFilmId <= 0) {
         return;
       }
 
@@ -409,14 +419,29 @@ export default function FilmDetail({
         params: {
           id: String(targetFilmId),
           originTab,
-          genreId: String(genreId),
-          fromGenreList: '1',
+          ...(isGenreSwipeEnabled
+            ? {
+                genreId: String(genreId),
+                fromGenreList: '1',
+              }
+            : {
+                year: String(year),
+                fromYearList: '1',
+              }),
           detailPath,
           swipeDirection: direction === 'previous' ? 'from-left' : 'from-right',
         },
       } as Href);
     },
-    [detailPath, genreId, isGenreSwipeEnabled, originTab, router],
+    [
+      detailPath,
+      genreId,
+      isGenreSwipeEnabled,
+      isListSwipeEnabled,
+      originTab,
+      router,
+      year,
+    ],
   );
 
   const onBoundarySwipeAttempt = useCallback(() => {
@@ -546,7 +571,7 @@ export default function FilmDetail({
   useEffect(() => {
     let cancelled = false;
 
-    if (!isGenreSwipeEnabled) {
+    if (!isListSwipeEnabled) {
       setAdjacentGenreMovieIds({ previousId: null, nextId: null });
       return () => {
         cancelled = true;
@@ -555,7 +580,9 @@ export default function FilmDetail({
 
     const loadAdjacentMovies = async () => {
       try {
-        const adjacent = await getGenreAdjacentMovieIds(db, genreId, film.id);
+        const adjacent = isGenreSwipeEnabled
+          ? await getGenreAdjacentMovieIds(db, genreId, film.id)
+          : await getYearAdjacentMovieIds(db, year, film.id);
 
         if (cancelled) {
           return;
@@ -573,7 +600,7 @@ export default function FilmDetail({
       } catch (error) {
         if (!cancelled) {
           setAdjacentGenreMovieIds({ previousId: null, nextId: null });
-          console.warn('Failed to load adjacent genre movies:', error);
+          console.warn('Failed to load adjacent list movies:', error);
         }
       }
     };
@@ -583,12 +610,12 @@ export default function FilmDetail({
     return () => {
       cancelled = true;
     };
-  }, [db, film.id, genreId, isGenreSwipeEnabled]);
+  }, [db, film.id, genreId, isGenreSwipeEnabled, isListSwipeEnabled, year]);
 
   const swipeGesture = useMemo(
     () =>
       Gesture.Pan()
-        .enabled(isGenreSwipeEnabled)
+        .enabled(isListSwipeEnabled)
         .activeOffsetX([-22, 22])
         .failOffsetY([-14, 14])
         .onEnd((event) => {
@@ -596,7 +623,7 @@ export default function FilmDetail({
 
           if (deltaX <= -SWIPE_TRIGGER_DISTANCE) {
             if (adjacentGenreMovieIds.nextId) {
-              runOnJS(onOpenGenreSwipeNeighbor)(
+              runOnJS(onOpenListSwipeNeighbor)(
                 adjacentGenreMovieIds.nextId,
                 'next',
               );
@@ -608,7 +635,7 @@ export default function FilmDetail({
 
           if (deltaX >= SWIPE_TRIGGER_DISTANCE) {
             if (adjacentGenreMovieIds.previousId) {
-              runOnJS(onOpenGenreSwipeNeighbor)(
+              runOnJS(onOpenListSwipeNeighbor)(
                 adjacentGenreMovieIds.previousId,
                 'previous',
               );
@@ -620,9 +647,9 @@ export default function FilmDetail({
     [
       adjacentGenreMovieIds.nextId,
       adjacentGenreMovieIds.previousId,
-      isGenreSwipeEnabled,
+      isListSwipeEnabled,
       onBoundarySwipeAttempt,
-      onOpenGenreSwipeNeighbor,
+      onOpenListSwipeNeighbor,
     ],
   );
 
@@ -646,7 +673,7 @@ export default function FilmDetail({
           options={{
             headerTransparent: true,
             headerShown: true,
-            gestureEnabled: !isGenreSwipeEnabled,
+            gestureEnabled: !isListSwipeEnabled,
             headerLeft: () => (
               <Pressable onPress={() => router.back()} hitSlop={8}>
                 <Ionicons name='chevron-back' size={28} color='#fff' />

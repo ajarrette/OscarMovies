@@ -136,6 +136,9 @@ export default function YearFilmsScreen() {
                 pathname: '/year-films/films/[id]',
                 params: {
                   id: String(item.id),
+                  year: String(parsedYear),
+                  fromYearList: '1',
+                  detailPath: '/year-films/films/[id]',
                   originTab,
                 },
               });
@@ -148,6 +151,9 @@ export default function YearFilmsScreen() {
                 pathname: '/year-films/films/[id]',
                 params: {
                   id: String(item.id),
+                  year: String(parsedYear),
+                  fromYearList: '1',
+                  detailPath: '/year-films/films/[id]',
                   originTab,
                 },
               });
@@ -165,7 +171,7 @@ export default function YearFilmsScreen() {
         )}
       </View>
     ),
-    [posterHeight, posterWidth, router, originTab],
+    [originTab, parsedYear, posterHeight, posterWidth, router],
   );
 
   const footer = useMemo(() => {
