@@ -9,7 +9,7 @@ export default function GenreFilmDetailScreen() {
 
   return (
     <View style={styles.container}>
-      <LoadFilmDetail id={filmId} />
+      <LoadFilmDetail id={filmId} nominationsPath='/film-nominations/[id]' />
     </View>
   );
 }

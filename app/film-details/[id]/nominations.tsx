@@ -1,11 +1,12 @@
-import { useLocalSearchParams, useRouter, Stack } from 'expo-router';
+import { useLocalSearchParams, useRouter } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
-import { useEffect, useMemo, useState } from 'react';
-import Ionicons from '@expo/vector-icons/Ionicons';
+import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
+  ListRenderItem,
+  Platform,
   Pressable,
-  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -165,115 +166,116 @@ function NominationsContent({
     return null;
   }, [error, loading, nominations.length]);
 
-  if (loading) {
-    return (
-      <View style={styles.centeredState}>
-        <ActivityIndicator size='large' color='#fff' />
-      </View>
-    );
-  }
+  const renderItem = useCallback<ListRenderItem<NominationGroup>>(
+    ({ item: nomination }) => (
+      <View key={nomination.nominationId} style={styles.section}>
+        <View style={styles.sectionHeader}>
+          <Text style={styles.categoryTitle}>{nomination.categoryName}</Text>
+          {nomination.isWinner && <Text style={styles.winnerTag}>WINNER</Text>}
+        </View>
 
-  if (error) {
-    return (
-      <View style={styles.centeredState}>
-        <Text style={styles.stateText}>{error}</Text>
-      </View>
-    );
-  }
-
-  if (emptyMessage) {
-    return (
-      <View style={styles.centeredState}>
-        <Text style={styles.stateText}>{emptyMessage}</Text>
-      </View>
-    );
-  }
-
-  return (
-    <ScrollView contentContainerStyle={styles.contentContainer}>
-      {nominations.map((nomination) => (
-        <View key={nomination.nominationId} style={styles.section}>
-          <View style={styles.sectionHeader}>
-            <Text style={styles.categoryTitle}>{nomination.categoryName}</Text>
-            {nomination.isWinner && (
-              <Text style={styles.winnerTag}>WINNER</Text>
-            )}
-          </View>
-
-          {isBestOriginalSongCategory(nomination.categoryKey) ? (
-            <View style={styles.nomineeGrid}>
-              <View style={styles.songTitleContainer}>
-                <Text style={styles.nomineeName}>
-                  {nomination.songTitle ?? 'UNKNOWN SONG'}
-                </Text>
-              </View>
+        {isBestOriginalSongCategory(nomination.categoryKey) ? (
+          <View style={styles.nomineeGrid}>
+            <View style={styles.songTitleContainer}>
+              <Text style={styles.nomineeName}>
+                {nomination.songTitle ?? 'UNKNOWN SONG'}
+              </Text>
             </View>
-          ) : isFilmOnlyCategory(nomination.categoryKey) ? (
-            <View style={styles.nomineeGrid}>
-              <View style={[styles.nomineeCard, { width: posterWidth }]}>
-                {nomination.filmPosterPath ? (
+          </View>
+        ) : isFilmOnlyCategory(nomination.categoryKey) ? (
+          <View style={styles.nomineeGrid}>
+            <View style={[styles.nomineeCard, { width: posterWidth }]}>
+              {nomination.filmPosterPath ? (
+                <MoviePoster
+                  selectedImage={`https://image.tmdb.org/t/p/w300${nomination.filmPosterPath}`}
+                  width={posterWidth}
+                  height={posterHeight}
+                />
+              ) : (
+                <View style={[styles.posterFallback, { height: posterHeight }]}>
+                  <Text style={styles.posterFallbackText}>NO IMAGE</Text>
+                </View>
+              )}
+            </View>
+          </View>
+        ) : nomination.nominees.length > 0 ? (
+          <View style={styles.nomineeGrid}>
+            {nomination.nominees.map((nominee) => (
+              <View
+                key={`${nomination.nominationId}-${nominee.id}`}
+                style={[styles.nomineeCard, { width: posterWidth }]}
+              >
+                {nominee.profilePath ? (
                   <MoviePoster
-                    selectedImage={`https://image.tmdb.org/t/p/w300${nomination.filmPosterPath}`}
+                    selectedImage={`https://image.tmdb.org/t/p/w300${nominee.profilePath}`}
                     width={posterWidth}
                     height={posterHeight}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/people/[id]',
+                        params: {
+                          id: String(nominee.id),
+                          originTab,
+                        },
+                      })
+                    }
                   />
                 ) : (
-                  <View
+                  <Pressable
                     style={[styles.posterFallback, { height: posterHeight }]}
+                    onPress={() =>
+                      router.push({
+                        pathname: '/people/[id]',
+                        params: {
+                          id: String(nominee.id),
+                          originTab,
+                        },
+                      })
+                    }
                   >
                     <Text style={styles.posterFallbackText}>NO IMAGE</Text>
-                  </View>
+                  </Pressable>
                 )}
+                <Text style={styles.nomineeName}>{nominee.name}</Text>
               </View>
-            </View>
-          ) : nomination.nominees.length > 0 ? (
-            <View style={styles.nomineeGrid}>
-              {nomination.nominees.map((nominee) => (
-                <View
-                  key={`${nomination.nominationId}-${nominee.id}`}
-                  style={[styles.nomineeCard, { width: posterWidth }]}
-                >
-                  {nominee.profilePath ? (
-                    <MoviePoster
-                      selectedImage={`https://image.tmdb.org/t/p/w300${nominee.profilePath}`}
-                      width={posterWidth}
-                      height={posterHeight}
-                      onPress={() =>
-                        router.push({
-                          pathname: '/people/[id]',
-                          params: {
-                            id: String(nominee.id),
-                            originTab,
-                          },
-                        })
-                      }
-                    />
-                  ) : (
-                    <Pressable
-                      style={[styles.posterFallback, { height: posterHeight }]}
-                      onPress={() =>
-                        router.push({
-                          pathname: '/people/[id]',
-                          params: {
-                            id: String(nominee.id),
-                            originTab,
-                          },
-                        })
-                      }
-                    >
-                      <Text style={styles.posterFallbackText}>NO IMAGE</Text>
-                    </Pressable>
-                  )}
-                  <Text style={styles.nomineeName}>{nominee.name}</Text>
-                </View>
-              ))}
-            </View>
-          ) : (
-            <Text style={styles.noNomineeText}>No people listed.</Text>
-          )}
-        </View>
-      ))}
-    </ScrollView>
+            ))}
+          </View>
+        ) : (
+          <Text style={styles.noNomineeText}>No people listed.</Text>
+        )}
+      </View>
+    ),
+    [originTab, posterHeight, posterWidth, router],
+  );
+
+  return (
+    <FlatList
+      style={styles.container}
+      data={loading || error || emptyMessage ? [] : nominations}
+      keyExtractor={(item) => String(item.nominationId)}
+      renderItem={renderItem}
+      contentInsetAdjustmentBehavior={
+        Platform.OS === 'ios' ? 'automatic' : 'never'
+      }
+      automaticallyAdjustContentInsets={Platform.OS === 'ios'}
+      automaticallyAdjustsScrollIndicatorInsets={Platform.OS === 'ios'}
+      alwaysBounceVertical={true}
+      contentContainerStyle={[
+        styles.contentContainer,
+        (loading || error || emptyMessage) && styles.stateContentContainer,
+      ]}
+      ListEmptyComponent={
+        loading ? (
+          <ActivityIndicator size='large' color='#fff' />
+        ) : error ? (
+          <Text style={styles.stateText}>{error}</Text>
+        ) : emptyMessage ? (
+          <Text style={styles.stateText}>{emptyMessage}</Text>
+        ) : (
+          <View />
+        )
+      }
+    />
   );
 }
 
@@ -282,44 +284,13 @@ export default function Nominations() {
     id?: string;
     originTab?: string;
   }>();
-  const router = useRouter();
   const filmId = Number(Array.isArray(id) ? id[0] : id);
 
-  return (
-    <View style={styles.container}>
-      <Stack.Screen
-        options={{
-          headerTitle: 'Nominations',
-          headerBackButtonDisplayMode: 'minimal',
-          headerRight: () => (
-            <Pressable
-              onPress={() => {
-                if (originTab === 'search') {
-                  router.dismissTo('/(tabs)/search');
-                  return;
-                }
-
-                if (originTab === 'genres') {
-                  router.dismissTo('/(tabs)/genres');
-                  return;
-                }
-
-                router.dismissTo('/(tabs)/films');
-              }}
-              hitSlop={8}
-            >
-              <Ionicons name='close' size={22} color='#fff' />
-            </Pressable>
-          ),
-        }}
-      />
-      {Number.isFinite(filmId) ? (
-        <NominationsContent filmId={filmId} originTab={originTab} />
-      ) : (
-        <View style={styles.centeredState}>
-          <Text style={styles.stateText}>Invalid film ID.</Text>
-        </View>
-      )}
+  return Number.isFinite(filmId) ? (
+    <NominationsContent filmId={filmId} originTab={originTab} />
+  ) : (
+    <View style={styles.centeredState}>
+      <Text style={styles.stateText}>Invalid film ID.</Text>
     </View>
   );
 }
@@ -333,6 +304,11 @@ const styles = StyleSheet.create({
     paddingHorizontal: 16,
     paddingVertical: 12,
     backgroundColor: '#25292e',
+  },
+  stateContentContainer: {
+    flexGrow: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   section: {
     borderBottomWidth: 1,

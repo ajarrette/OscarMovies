@@ -3,7 +3,7 @@ import Constants from 'expo-constants';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { requireOptionalNativeModule } from 'expo-modules-core';
-import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { Stack, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useMemo, useState } from 'react';
 import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
@@ -29,6 +29,11 @@ type Props = {
   film: Film;
   directorPersonId?: number | null;
   castPeople?: FilmCastPerson[];
+  nominationsPath?:
+    | '/film-nominations/[id]'
+    | '/film-details/[id]/nominations'
+    | '/genre-films/films/[id]/nominations'
+    | '/(tabs)/genres/films/[id]/nominations';
 };
 
 const { width } = Dimensions.get('window');
@@ -178,6 +183,7 @@ export default function FilmDetail({
   film,
   directorPersonId = null,
   castPeople = [],
+  nominationsPath = '/film-nominations/[id]',
 }: Props) {
   const db = useSQLiteContext();
   const router = useRouter();
@@ -339,12 +345,12 @@ export default function FilmDetail({
 
   const onShowNominations = () => {
     router.push({
-      pathname: '/film-details/[id]/nominations',
+      pathname: nominationsPath,
       params: {
         id: String(film.id),
         originTab,
       },
-    });
+    } as Href);
   };
 
   const onShowDirector = () => {

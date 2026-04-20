@@ -6,6 +6,11 @@ import FilmDetail from './filmDetail';
 
 type Props = {
   id: number;
+  nominationsPath?:
+    | '/film-nominations/[id]'
+    | '/film-details/[id]/nominations'
+    | '/genre-films/films/[id]/nominations'
+    | '/(tabs)/genres/films/[id]/nominations';
 };
 
 type PersonMatch = {
@@ -25,7 +30,7 @@ type FilmGenreRow = {
   name: string;
 };
 
-export default function LoadFilmDetail({ id }: Props) {
+export default function LoadFilmDetail({ id, nominationsPath }: Props) {
   const db = useSQLiteContext();
   const [loading, setLoading] = useState(true);
   const [film, setFilm] = useState<Film | null>(null);
@@ -118,6 +123,7 @@ export default function LoadFilmDetail({ id }: Props) {
           film={film}
           directorPersonId={directorPersonId}
           castPeople={castPeople}
+          nominationsPath={nominationsPath}
         />
       ) : (
         <View

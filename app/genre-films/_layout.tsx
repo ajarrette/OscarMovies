@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { Platform } from 'react-native';
+import NominationsHeaderCloseButton from '@/app/components/nominationsHeaderCloseButton';
 
 export default function GenreFilmsStackLayout() {
   const isIOS = Platform.OS === 'ios';
@@ -44,6 +45,23 @@ export default function GenreFilmsStackLayout() {
           headerTransparent: true,
           headerTitle: '',
           headerBackButtonDisplayMode: 'minimal',
+          headerShown: true,
+        }}
+      />
+      <Stack.Screen
+        name='films/[id]/nominations'
+        options={{
+          title: 'Nominations',
+          headerTitle: 'Nominations',
+          headerLargeTitle: true,
+          headerTransparent: false,
+          headerBlurEffect: undefined,
+          headerStyle: { backgroundColor: '#25292e' },
+          headerTitleStyle: { color: '#fff' },
+          headerLargeTitleStyle: { color: '#fff' },
+          headerLargeStyle: { backgroundColor: '#25292e' },
+          headerBackButtonDisplayMode: 'minimal',
+          headerRight: () => <NominationsHeaderCloseButton />,
           headerShown: true,
         }}
       />

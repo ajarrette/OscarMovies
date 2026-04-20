@@ -1,5 +1,6 @@
 import { Stack } from 'expo-router';
 import { View } from 'react-native';
+import NominationsHeaderCloseButton from '@/app/components/nominationsHeaderCloseButton';
 
 export default function StackLayout() {
   return (
@@ -33,7 +34,20 @@ export default function StackLayout() {
       />
       <Stack.Screen
         name='[id]/nominations'
-        options={{ headerTitle: 'Nominations 2' }}
+        options={{
+          title: 'Nominations',
+          headerTitle: 'Nominations',
+          headerLargeTitle: true,
+          headerTransparent: false,
+          headerBlurEffect: undefined,
+          headerStyle: { backgroundColor: '#25292e' },
+          headerTitleStyle: { color: '#fff' },
+          headerLargeTitleStyle: { color: '#fff' },
+          headerLargeStyle: { backgroundColor: '#25292e' },
+          headerBackButtonDisplayMode: 'minimal',
+          headerRight: () => <NominationsHeaderCloseButton />,
+          headerShown: true,
+        }}
       />
     </Stack>
   );

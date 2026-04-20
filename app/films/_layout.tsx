@@ -1,4 +1,5 @@
 import { Stack } from 'expo-router';
+import NominationsHeaderCloseButton from '@/app/components/nominationsHeaderCloseButton';
 
 export default function FilmsLayout() {
   return (
@@ -22,8 +23,17 @@ export default function FilmsLayout() {
       <Stack.Screen
         name='[id]/nominations'
         options={{
+          title: 'Nominations',
           headerTitle: 'Nominations',
+          headerLargeTitle: true,
+          headerTransparent: false,
+          headerBlurEffect: undefined,
+          headerStyle: { backgroundColor: '#25292e' },
+          headerTitleStyle: { color: '#fff' },
+          headerLargeTitleStyle: { color: '#fff' },
+          headerLargeStyle: { backgroundColor: '#25292e' },
           headerBackButtonDisplayMode: 'minimal',
+          headerRight: () => <NominationsHeaderCloseButton />,
           headerShown: true,
         }}
       />

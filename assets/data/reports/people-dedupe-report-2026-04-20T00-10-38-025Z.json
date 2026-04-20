@@ -1,0 +1,2741 @@
+{
+  "timestamp": "2026-04-20T00:10:38.025Z",
+  "mode": "apply",
+  "options": {
+    "dbPath": "/Users/aaron/Dev/learning/expo/OscarMovies/assets/data/oscar-movies.db",
+    "aliasFile": "/Users/aaron/Dev/learning/expo/OscarMovies/assets/data/people-aliases.json",
+    "reportDir": "/Users/aaron/Dev/learning/expo/OscarMovies/assets/data/reports",
+    "limit": null,
+    "personId": null,
+    "allowAwardedTargets": false
+  },
+  "aliasWarnings": [],
+  "discoveredReferenceTables": [
+    "movie_cast",
+    "nomination_people"
+  ],
+  "summary": {
+    "sourceCandidates": 451,
+    "targetCandidates": 111503,
+    "plannedMerges": 0,
+    "ambiguous": 0,
+    "unmatched": 451
+  },
+  "plannedMerges": [],
+  "ambiguous": [],
+  "unmatched": [
+    {
+      "source_id": 46,
+      "source_name": "Elliott Clawson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 82,
+      "source_name": "John Tribby",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 97,
+      "source_name": "Howard Eastbrook",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 107,
+      "source_name": "Harry d'Arrast",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 108,
+      "source_name": "Douglas Doty",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 123,
+      "source_name": "Paramount Publix Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 124,
+      "source_name": "MGM Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 125,
+      "source_name": "RKO Radio Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 126,
+      "source_name": "Samuel Goldwyn-United Artists Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 141,
+      "source_name": "Walt Disney Productions",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 142,
+      "source_name": "Warner Bros. First National Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 152,
+      "source_name": "Scott Beal",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 159,
+      "source_name": "Orville O. Dull,",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 162,
+      "source_name": "Edward Killy,",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 165,
+      "source_name": "Frank Shaw,",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 176,
+      "source_name": "Frederic Hope",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 187,
+      "source_name": "W. S. Van Dyke",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 192,
+      "source_name": "Maur Grashin",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 200,
+      "source_name": "John Livadary",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 202,
+      "source_name": "Franklin B. Hansen",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 237,
+      "source_name": "Gregory Rogers (Darryl F. Zanuck)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 241,
+      "source_name": "Robert J. Kern",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 246,
+      "source_name": "Republic Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 248,
+      "source_name": "E.H. Hansen",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 275,
+      "source_name": "Morris Ryskind",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 284,
+      "source_name": "George Folsey",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 293,
+      "source_name": "A Star is Born",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 300,
+      "source_name": "H. B. Warner",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 305,
+      "source_name": "Dame May Whitty",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 309,
+      "source_name": "William Wellman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 311,
+      "source_name": "C. C. Coleman Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 330,
+      "source_name": "William Horning",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 331,
+      "source_name": "Wiard Ihnen",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 334,
+      "source_name": "Lyle Wheeler",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 342,
+      "source_name": "Thomas Moulton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 343,
+      "source_name": "A.E. Kaye",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 345,
+      "source_name": "You Can't Take It With You",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 360,
+      "source_name": "W. P. Lipscomb",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 361,
+      "source_name": "Lenore Coffee",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 389,
+      "source_name": "Carl J. Weyl",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 400,
+      "source_name": "Peverell Marley",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 402,
+      "source_name": "Harry Wild",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 405,
+      "source_name": "Oliver Marsh",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 406,
+      "source_name": "Allen Davey",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 410,
+      "source_name": "Assistants",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 434,
+      "source_name": "R.C. Sheriff",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 450,
+      "source_name": "George E. Stoll",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 451,
+      "source_name": "Lou Forbes",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 460,
+      "source_name": "Arthur Charles Miller",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 465,
+      "source_name": "Hal Rosson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 473,
+      "source_name": "E. H. Hansen",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 476,
+      "source_name": "Fred Albin",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 479,
+      "source_name": "Edwin C. Hahn",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 480,
+      "source_name": "Loren Ryder",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 508,
+      "source_name": "Norman Burnside",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 510,
+      "source_name": "John Toldy",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 513,
+      "source_name": "Samuel Spewack",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 518,
+      "source_name": "Werner Heymann",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 523,
+      "source_name": "Georgie Stoll",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 535,
+      "source_name": "Gaetano Gaudio",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 536,
+      "source_name": "Charles B. Lang Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 552,
+      "source_name": "Howard J. Lydecker",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 554,
+      "source_name": "Ellis J. Thackery",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 556,
+      "source_name": "Elmer A. Raguse",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 558,
+      "source_name": "John O. Aalberg",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 599,
+      "source_name": "Nathan H. Juran",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 601,
+      "source_name": "Samuel M. Comer",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 607,
+      "source_name": "Fred MacLean",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 615,
+      "source_name": "Stephen A. Seymour",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 617,
+      "source_name": "Wilfred M. Cline",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 621,
+      "source_name": "William Holms",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 626,
+      "source_name": "Louis Mesenko",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 628,
+      "source_name": "William H. Wilmarth",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 629,
+      "source_name": "Charles Lootens",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 641,
+      "source_name": "George Froeschl",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 649,
+      "source_name": "Ring Lardner Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 650,
+      "source_name": "W. R. Burnett",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 656,
+      "source_name": "Sidney Harman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 658,
+      "source_name": "Frederick Hollander",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 661,
+      "source_name": "Hans Salter",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 670,
+      "source_name": "Edward Ray Robinson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 672,
+      "source_name": "Ira S. Webb",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 676,
+      "source_name": "John Mescall",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 680,
+      "source_name": "Walter A. Thompson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 690,
+      "source_name": "Sam Slyfield",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 691,
+      "source_name": "Daniel Bloomberg",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 694,
+      "source_name": "Madam Curie",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 721,
+      "source_name": "Philip Boutelje",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 728,
+      "source_name": "Frederic E. Rich",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 731,
+      "source_name": "Bertram Granger",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 733,
+      "source_name": "Carl Weyl",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 734,
+      "source_name": "George J. Hopkins",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 736,
+      "source_name": "Daniel Cathcart",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 766,
+      "source_name": "Betty Reinhardt",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 778,
+      "source_name": "H. J. Salter",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 782,
+      "source_name": "Frederic Efrem Rich",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 788,
+      "source_name": "Ferde Grofe",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 799,
+      "source_name": "Claude Carpenter",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 841,
+      "source_name": "Albert Malts",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 844,
+      "source_name": "Milton Homes",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 855,
+      "source_name": "Dale Butts",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 859,
+      "source_name": "Alexandre Tansman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 876,
+      "source_name": "R. A. MacDonald",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 881,
+      "source_name": "Gordon E. Sawyer",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 882,
+      "source_name": "Frederic March",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 917,
+      "source_name": "Harold Kress",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 920,
+      "source_name": "William McGann",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 939,
+      "source_name": "C. G. Viola",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 951,
+      "source_name": "Alfred Newman Captain",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 954,
+      "source_name": "Shoe-Shine",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 960,
+      "source_name": "Charles Lang Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 963,
+      "source_name": "Francos Lyon",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 991,
+      "source_name": "Frances Flaherty",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 995,
+      "source_name": "Roger K Furse",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 996,
+      "source_name": "William O. Wallace",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 999,
+      "source_name": "Edwin Casey Roberts",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1003,
+      "source_name": "Winton Hoch",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1013,
+      "source_name": "Nathan O. Levinson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1055,
+      "source_name": "Richard A. Pefferle",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1058,
+      "source_name": "Lyle Reifsnider",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1069,
+      "source_name": "RKO Productions",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1070,
+      "source_name": "Walter Wagner Pictures",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1075,
+      "source_name": "William Travilla",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1091,
+      "source_name": "Michael Blankfort (Albert Maltz)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1101,
+      "source_name": "Leonard Spiegelglass",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1110,
+      "source_name": "Milton R. Krasner",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1114,
+      "source_name": "George Pal Productions",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1115,
+      "source_name": "Cecil B. Demille Productions",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1116,
+      "source_name": "Cyril Crowhurst",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1123,
+      "source_name": "Valles",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1157,
+      "source_name": "D'Eaubonne",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1161,
+      "source_name": "Keogh Gleason",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1163,
+      "source_name": "Edward Carfagno",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1170,
+      "source_name": "Chester Schaeffer",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1171,
+      "source_name": "Paramount Studio",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1196,
+      "source_name": "T.E.B. Clarke",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1199,
+      "source_name": "Frederic M. Frank",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1205,
+      "source_name": "Gian-Carlo Menotti",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1207,
+      "source_name": "So Matsuyama",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1208,
+      "source_name": "H. Matsumoto",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1218,
+      "source_name": "F. A. Young",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1222,
+      "source_name": "Metro Goldwyn Mayer Studio",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1223,
+      "source_name": "London Films Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1224,
+      "source_name": "Pinewood Studios Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1236,
+      "source_name": "Brandon deWilde",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1246,
+      "source_name": "John Dighton (Dalton Trumbo)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1247,
+      "source_name": "A. B. Guthrie Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1254,
+      "source_name": "Ian McLellan Hunter (Dalton Trumbo)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1263,
+      "source_name": "Stuart Reiss",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1271,
+      "source_name": "Irvine (Cotton) Warburton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1276,
+      "source_name": "Renie Conley",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1308,
+      "source_name": "Malcolm Bert",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1313,
+      "source_name": "Walt Disney Studios",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1314,
+      "source_name": "20th Century Fox Studio",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1315,
+      "source_name": "Warner Bros. Studio",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1322,
+      "source_name": "Love is a Many-Splendored Thing",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1367,
+      "source_name": "Hugh B. Hunt",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1369,
+      "source_name": "Walter Simonds",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1375,
+      "source_name": "Joseph McMillan Johnson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1381,
+      "source_name": "Associated British Picture Corporation",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1382,
+      "source_name": "Ltd.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1383,
+      "source_name": "20th Century-Fox Studio",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1386,
+      "source_name": "Watson Jones",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1410,
+      "source_name": "Robert Rich (Dalton Trumbo)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1416,
+      "source_name": "Malcolm F. Brown",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1422,
+      "source_name": "William R. Kiernan",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1427,
+      "source_name": "Ross J. Dowd",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1436,
+      "source_name": "Buddy Meyers",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1458,
+      "source_name": "Pierre Boulle (Michael Wilson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1459,
+      "source_name": "Carl Foreman)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1472,
+      "source_name": "William A Horning",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1481,
+      "source_name": "Louis Lichtenfeld",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1498,
+      "source_name": "Nathan E. Douglas (Nedrick Young)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1504,
+      "source_name": "G. Rozhdestvensky",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1506,
+      "source_name": "Frank McKelvy",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1540,
+      "source_name": "Frank DeVol",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1546,
+      "source_name": "Scot Slimon",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1584,
+      "source_name": "Earle H. Hagen",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1585,
+      "source_name": "Alexander Trauner",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1607,
+      "source_name": "A.J. Lohman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1610,
+      "source_name": "Marik Vos",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1612,
+      "source_name": "Arlington Valles",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1613,
+      "source_name": "Irene Lentz",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1629,
+      "source_name": "Tullio Pinelli. Ennio Flaiano",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1649,
+      "source_name": "William H. Reynolds",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1652,
+      "source_name": "Vivian C. Greenham",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1675,
+      "source_name": "Robert Bolt (and Michael Wilson)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1691,
+      "source_name": "Dick Pefferle",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1700,
+      "source_name": "Robert L. Surtees",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1706,
+      "source_name": "Joseph D. Kelly",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1707,
+      "source_name": "Norman Koch",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1708,
+      "source_name": "Don Feld",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1710,
+      "source_name": "Denny Vachlioti",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1742,
+      "source_name": "Hilyard Brown",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1743,
+      "source_name": "Herman Blumenthal",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1759,
+      "source_name": "Frank Milton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1762,
+      "source_name": "Robert Bratton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1778,
+      "source_name": "Michael Cacoyannis",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1804,
+      "source_name": "Vassilis Fotopoulos",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1814,
+      "source_name": "Joseph Biroc",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1825,
+      "source_name": "William J. Tuttle",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1863,
+      "source_name": "William Creber",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1865,
+      "source_name": "Ruby Levitt",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1871,
+      "source_name": "The Russians Are Coming, The Russians Are Coming",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1899,
+      "source_name": "Luis Enriquez Bacalov",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1901,
+      "source_name": "A Herb Alpert and the Tijuana Brass Double Feature",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1905,
+      "source_name": "Willy Holf",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1970,
+      "source_name": "L.B. Abbot",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1971,
+      "source_name": "Howard A. Johnson Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1973,
+      "source_name": "Samuel Goldwyn Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1974,
+      "source_name": "Warner Bros.-Seven Arts Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1975,
+      "source_name": "Metro-Goldwyn-Mayer Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1976,
+      "source_name": "20th Century-Fox Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 1977,
+      "source_name": "Universal City Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2002,
+      "source_name": "Francos Solinas",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2004,
+      "source_name": "Lenny Hayton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2010,
+      "source_name": "Vladimir Uvarov",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2013,
+      "source_name": "Ernie Archer",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2018,
+      "source_name": "Fred Feitshans",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2023,
+      "source_name": "Shepperton Studios Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2024,
+      "source_name": "Columbia Studio Sound Department",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2041,
+      "source_name": "Costas-Gavras",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2065,
+      "source_name": "George Hopkins",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2082,
+      "source_name": "Les Frescholtz",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2103,
+      "source_name": "Robert Woodruff Anderson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2116,
+      "source_name": "The Beatles",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2118,
+      "source_name": "Tylwyth Kymry",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2131,
+      "source_name": "Bob Cartwright",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2133,
+      "source_name": "Taizhou Kawashima",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2140,
+      "source_name": "Inoue Chikaya",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2144,
+      "source_name": "Don Bassman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2147,
+      "source_name": "Gordon McCallum",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2184,
+      "source_name": "The Garden of the Finzi Continis",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2187,
+      "source_name": "William Tuntke",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2203,
+      "source_name": "Al Overton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2233,
+      "source_name": "Raymond Rasch",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2239,
+      "source_name": "Jürgen Kiebach",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2252,
+      "source_name": "Pete Zinner",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2254,
+      "source_name": "Robert Knudson",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2256,
+      "source_name": "Gene Cantamessa",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2287,
+      "source_name": "the House on Chelouche Street",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2288,
+      "source_name": "Harry Bumstead",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2294,
+      "source_name": "Philip Jefferies",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2301,
+      "source_name": "Bud Smith",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2302,
+      "source_name": "Evan Lottman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2308,
+      "source_name": "Robert R. Bertrand",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2317,
+      "source_name": "Valentine Cortese",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2335,
+      "source_name": "Angelo Graham",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2343,
+      "source_name": "Philip Lathrop",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2347,
+      "source_name": "Danford Greene",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2350,
+      "source_name": "Melvin Metcalfe Sr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2369,
+      "source_name": "Laurence Hauben",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2392,
+      "source_name": "Roger Heman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2400,
+      "source_name": "John A. Bolger Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2405,
+      "source_name": "William McCaughey",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2435,
+      "source_name": "Jack Collis",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2436,
+      "source_name": "Arthur Jeph",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2445,
+      "source_name": "L. B. Abbott",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2482,
+      "source_name": "Dan Lomino",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2486,
+      "source_name": "Fred. J. Koenekamp",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2509,
+      "source_name": "Benjamin Burtt Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2537,
+      "source_name": "George Gaine",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2547,
+      "source_name": "Robert E. Swink",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2551,
+      "source_name": "Denys Coop",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2555,
+      "source_name": "Darin Knight",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2566,
+      "source_name": "All that Jazz",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2589,
+      "source_name": "Gary Bring",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2597,
+      "source_name": "Les Dilley",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2606,
+      "source_name": "C. Timothy O'Meara",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2613,
+      "source_name": "A. D. Flowers",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2620,
+      "source_name": "Nat Boxer",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2644,
+      "source_name": "Tom Rickman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2648,
+      "source_name": "W. D. Richter",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2663,
+      "source_name": "Alan Tompkins",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2664,
+      "source_name": "Michael D. Ford",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2669,
+      "source_name": "David Blewitt",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2687,
+      "source_name": "Howard E. Rollins Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2705,
+      "source_name": "Jim Berkey",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2710,
+      "source_name": "Michael Seaton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2765,
+      "source_name": "Kenneth F. Smith",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2778,
+      "source_name": "Mike Le-Mare",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2818,
+      "source_name": "Don Peterman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2826,
+      "source_name": "Edward Abroms",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2852,
+      "source_name": "Noriyuki Pat Morita",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2857,
+      "source_name": "P.H. Vazak (Robert Towne)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2858,
+      "source_name": "Michel Austin",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2878,
+      "source_name": "Nene Danevic",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2926,
+      "source_name": "Earl Wallace",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2959,
+      "source_name": "Pembroke Herring",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2978,
+      "source_name": "Robert Rutledge",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 2981,
+      "source_name": "Frederick Brown",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3047,
+      "source_name": "Michael George Westmore",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3049,
+      "source_name": "Peter Robb King",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3079,
+      "source_name": "Cong Su",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3081,
+      "source_name": "Eyes on the Prize",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3106,
+      "source_name": "Bob Laden",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3109,
+      "source_name": "Marilyn Vance-Straker",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3143,
+      "source_name": "Frank Urioste",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3148,
+      "source_name": "Al DiSarro",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3152,
+      "source_name": "Willie Burton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3161,
+      "source_name": "Louis Edemann",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3165,
+      "source_name": "Steve La Porte",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3167,
+      "source_name": "Tom Burman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3193,
+      "source_name": "Anne Julian",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3202,
+      "source_name": "Steve Rosenblum",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3211,
+      "source_name": "Russell Williams",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3219,
+      "source_name": "Milton Burrow",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3220,
+      "source_name": "William Manger",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3231,
+      "source_name": "Joe Tompkins",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3244,
+      "source_name": "Steve Zaillian",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3250,
+      "source_name": "David Grusin",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3309,
+      "source_name": "Conrad Buff",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3320,
+      "source_name": "Gloria Borders",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3326,
+      "source_name": "Michael M. Mills",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3332,
+      "source_name": "Howard's End",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3351,
+      "source_name": "David Peoples",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3412,
+      "source_name": "Anne Coates",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3422,
+      "source_name": "Ariel Velasco Shaw",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3434,
+      "source_name": "Matthew Mungle",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3436,
+      "source_name": "Anna Biedrzycka Sheppard",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3462,
+      "source_name": "89mm od Europy",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3464,
+      "source_name": "Susan Bode",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3465,
+      "source_name": "Rick Cater",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3483,
+      "source_name": "Steve 'Spaz' Williams",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3485,
+      "source_name": "John Farhat",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3486,
+      "source_name": "Dennis S. Sands",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3492,
+      "source_name": "Daniel Striepeke",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3554,
+      "source_name": "Richard Francis-Brice",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3564,
+      "source_name": "Petur Hiddal",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3572,
+      "source_name": "Bpb Laden",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3612,
+      "source_name": "Roderick Jaynes (Joel Coen",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3613,
+      "source_name": "Ethan Coen)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3617,
+      "source_name": "Joseph Viskocil",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3669,
+      "source_name": "Mark Lasoff",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3672,
+      "source_name": "Tom Johnson Dennis S. Sands",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3676,
+      "source_name": "Mark Stoeckinger",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3678,
+      "source_name": "Veronica Brebner",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3682,
+      "source_name": "Deborah Lynn Scott",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3708,
+      "source_name": "Lisa Dean Kavanagh",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3709,
+      "source_name": "Conrad L. Hall",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3724,
+      "source_name": "Paul Brincat",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3725,
+      "source_name": "David McMoyler",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3752,
+      "source_name": "Beth Rubino",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3776,
+      "source_name": "Dane Davis",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3795,
+      "source_name": "Kuo Jung Tsai",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3804,
+      "source_name": "Timmy Yip",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3822,
+      "source_name": "Edouard F. Henriques",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3826,
+      "source_name": "Tim Yip",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3847,
+      "source_name": "Roger S. H. Schulman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3867,
+      "source_name": "Donald M. McAlpine",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3868,
+      "source_name": "Dan Hanley",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3875,
+      "source_name": "Ed Hirsch",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3905,
+      "source_name": "Donald Kaufman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3918,
+      "source_name": "Pawel Edelman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3971,
+      "source_name": "Dan Sudick",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 3975,
+      "source_name": "Terry Frazee",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4015,
+      "source_name": "Petur Liddel",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4090,
+      "source_name": "Alejandro Gonzalez Inarritu",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4114,
+      "source_name": "Cheryl A. Carasik",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4134,
+      "source_name": "Kazuhiro Tsuji",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4174,
+      "source_name": "Christopher Scarabosio",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4195,
+      "source_name": "Peter Docter",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4196,
+      "source_name": "A. R. Rahman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4221,
+      "source_name": "Richard Pryke Resul Pookutty",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4222,
+      "source_name": "Mike Salem",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4227,
+      "source_name": "Frank Eulner",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4230,
+      "source_name": "Thom Floutz",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4287,
+      "source_name": "Joe Harlow",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4291,
+      "source_name": "The Kids are Alright",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4320,
+      "source_name": "Doug Mowat",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4338,
+      "source_name": "Stephan Trojanski",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4347,
+      "source_name": "Gregory Funk",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4369,
+      "source_name": "J. C. Chandor",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4380,
+      "source_name": "Rob Legato",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4396,
+      "source_name": "Dave Giammarco",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4426,
+      "source_name": "Erik-Jan de Boer",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4427,
+      "source_name": "Donald R. Elliott",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4440,
+      "source_name": "John Reitz",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4443,
+      "source_name": "D. M. Hemphill",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4445,
+      "source_name": "Ronald Judkins",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4477,
+      "source_name": "K. K. Barrett",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4485,
+      "source_name": "John Mac McMurphy",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4496,
+      "source_name": "Christopher Benstead",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4500,
+      "source_name": "Peter F. Kurland",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4513,
+      "source_name": "Gloria Pasqua-Casny",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4515,
+      "source_name": "William Chang Suk Ping",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4516,
+      "source_name": "Birdman or: (The Unexpected Virtue of Ignorance)",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4532,
+      "source_name": "Alexander Dinelaris Jr.",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4542,
+      "source_name": "Charlotte Watts",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4544,
+      "source_name": "Lukasz Zal",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4563,
+      "source_name": "Gary A. Rizzo",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4615,
+      "source_name": "Mark Ardington",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4623,
+      "source_name": "Rich McBride",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4624,
+      "source_name": "Matthew Shumway",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4637,
+      "source_name": "Robert Pandini",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4660,
+      "source_name": "Hauschka",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4689,
+      "source_name": "Steve A. Morrow",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4692,
+      "source_name": "Mildred Iatrou Morgan",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4705,
+      "source_name": "Leslie Manville",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4719,
+      "source_name": "Paul Denham Austerberry",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4733,
+      "source_name": "Mike Meinardus",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4736,
+      "source_name": "Dooug Hemphill",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4748,
+      "source_name": "David Malinowksi",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4751,
+      "source_name": "Lou Sheppard",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4754,
+      "source_name": "BlackKklansman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4764,
+      "source_name": "Pawel Pawlikowski",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4785,
+      "source_name": "Lukas Zal",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4791,
+      "source_name": "J. D. Schwalm",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4793,
+      "source_name": "Michael Eames",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4798,
+      "source_name": "Neil Scanlan",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4808,
+      "source_name": "Dean Zupancic",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4810,
+      "source_name": "Steve Morrow",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4818,
+      "source_name": "Litte Women",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4829,
+      "source_name": "Hildur Gudnadottir",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4842,
+      "source_name": "Matt Aitkem",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4845,
+      "source_name": "Nelson Sepulveda",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4847,
+      "source_name": "Tod Maitland",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4889,
+      "source_name": "Kenny Lucas",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4895,
+      "source_name": "Peter Feancis",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4898,
+      "source_name": "Diana Sroughton",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4905,
+      "source_name": "Mikkel E. G. Nielsen",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4907,
+      "source_name": "Frederic Thorval",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4910,
+      "source_name": "Genevieve Camailleri",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4913,
+      "source_name": "Matthew Kasmir",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4914,
+      "source_name": "Christopher Lawren",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4917,
+      "source_name": "Sean Faden",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4919,
+      "source_name": "Steven Ingram",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4920,
+      "source_name": "Greg Fiher",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4927,
+      "source_name": "Philip Bladh",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4933,
+      "source_name": "Coya Elliot",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4940,
+      "source_name": "Eryn Krueger Mekash",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4941,
+      "source_name": "Kimberly Piteri",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4957,
+      "source_name": "Aunjanue Ellis",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4974,
+      "source_name": "Tristen Myles",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 4998,
+      "source_name": "Anna Carin Lock",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5019,
+      "source_name": "Daniel Schienert",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5025,
+      "source_name": "Son Lux",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5034,
+      "source_name": "Bev Dunn",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5051,
+      "source_name": "James H. Mather",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5060,
+      "source_name": "William Files",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5065,
+      "source_name": "Anne Marie Bradley",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5071,
+      "source_name": "Cahterine Martin",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5119,
+      "source_name": "Karen Hartley Thomas",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5126,
+      "source_name": "Dave Crossman",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5148,
+      "source_name": "co- Alex David",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5178,
+      "source_name": "Pierre-Olivier Persin",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5183,
+      "source_name": "Julia Floch Carbonel",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5203,
+      "source_name": "David Shirk",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5248,
+      "source_name": "Glen Griffin",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5249,
+      "source_name": "Bjoern Rehbein",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    },
+    {
+      "source_id": 5262,
+      "source_name": "Stephen Aplin",
+      "reason": "no-alias-match",
+      "alias_target_name": null
+    }
+  ],
+  "applyResults": {
+    "merged": [],
+    "transferredWins": 0,
+    "transferredNominations": 0,
+    "foreignKeyViolations": 0,
+    "foreignKeyViolationRows": []
+  }
+}

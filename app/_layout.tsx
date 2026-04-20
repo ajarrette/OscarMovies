@@ -26,6 +26,12 @@ export default function RootLayout() {
           }}
         />
         <Stack.Screen
+          name='film-nominations'
+          options={{
+            animation: 'slide_from_right',
+          }}
+        />
+        <Stack.Screen
           name='people'
           options={{
             animation: 'slide_from_right',
