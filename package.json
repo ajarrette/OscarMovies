@@ -20,6 +20,8 @@
     "import-popular-movies": "node ./assets/data/import-popular-movies.js",
     "import-popular-people": "node ./assets/data/import-popular-people.js",
     "import-movie-cast": "node ./assets/data/import-movie-cast.js",
+    "purge-movies": "node ./assets/data/purge-movies.js",
+    "purge-movies:apply": "node ./assets/data/purge-movies.js --apply",
     "prune-people": "node ./assets/data/prune-people.js",
     "dedup-people": "node ./assets/data/dedup-people.js",
     "dedup-people:apply": "node ./assets/data/dedup-people.js --apply"

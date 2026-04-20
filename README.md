@@ -90,9 +90,48 @@ npm run lint
 - `npm run import-popular-movies` imports additional movie popularity data
 - `npm run import-popular-people` imports additional people popularity data
 - `npm run import-movie-cast` imports movie cast relationships
+- `npm run purge-movies` runs a dry-run blacklist-based movie purge report
+- `npm run purge-movies:apply` deletes blacklist-matched movies that are not Oscar-linked
 - `npm run prune-people` deletes low-value people rows not linked in `nomination_people` and vacuums the database
 - `npm run dedup-people` runs a dry-run person deduplication pass (no writes)
 - `npm run dedup-people:apply` applies dedupe merges and rewires person references
+
+## Movie Purge Workflow
+
+Use the movie purge script to remove blacklist-matched popular movies safely. The script is dry-run by default and writes a JSON report to `assets/data/reports` each time it runs.
+
+```bash
+npm run purge-movies
+```
+
+Apply mode deletes only blacklist-matched movies that are not linked to Oscar nominations or wins.
+
+```bash
+npm run purge-movies:apply
+```
+
+### Blacklist Format
+
+Edit `assets/data/movie-purge-blacklist.json` and add TMDB ids for movies you want to remove.
+
+```json
+{
+  "movies": [
+    {
+      "tmdbId": 12345,
+      "title": "Example Movie",
+      "reason": "Manual moderation decision"
+    }
+  ]
+}
+```
+
+### Safety Rules
+
+- Dry-run is the default mode and performs no writes.
+- Movies are matched by `tmdb_id` from the blacklist.
+- In apply mode, a blacklisted movie is skipped if it has Oscar nomination links or existing `wins` or `nominations` values.
+- The script writes a report with purgeable matches, protected matches, and blacklist entries not found in the database.
 
 ## People Dedup Workflow
 
