@@ -43,6 +43,7 @@ export default function GenreFilmsScreen() {
   const originTab = params.originTab;
 
   const genreId = Number(params.genreId ?? '0');
+  const isAllFilms = genreId === 0;
   const [genreName, setGenreName] = useState(
     params.genreName?.trim() || 'Genre',
   );
@@ -64,7 +65,7 @@ export default function GenreFilmsScreen() {
 
   const loadMovies = useCallback(
     async (offset: number, isLoadMore: boolean) => {
-      if (!Number.isInteger(genreId) || genreId <= 0) {
+      if (!Number.isInteger(genreId) || genreId < 0) {
         setError('Invalid genre selected.');
         setLoading(false);
         return;
@@ -278,7 +279,9 @@ export default function GenreFilmsScreen() {
             ) : error ? (
               <Text style={styles.errorText}>{error}</Text>
             ) : (
-              <Text style={styles.emptyText}>No movies for this genre.</Text>
+              <Text style={styles.emptyText}>
+                {isAllFilms ? 'No movies found.' : 'No movies for this genre.'}
+              </Text>
             )}
           </View>
         }

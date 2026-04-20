@@ -71,21 +71,36 @@ export async function getGenreMoviesByPopularity(
   limit: number,
   offset: number,
 ): Promise<GenreMovieItem[]> {
-  const rows = await db.getAllAsync<GenreMovieRow>(
-    `SELECT m.id,
-            m.title,
-            m.poster_path,
-            m.popularity,
-            COALESCE(m.wins, 0) AS wins,
-            COALESCE(m.nominations, 0) AS nominations
-     FROM movie_tmdb_genres mg
-     INNER JOIN movies m ON m.id = mg.movie_id
-     WHERE mg.genre_id = ?
-     ORDER BY COALESCE(m.popularity, 0) DESC,
-              m.title COLLATE NOCASE ASC
-     LIMIT ? OFFSET ?`,
-    [genreId, limit, offset],
-  );
+  const rows =
+    genreId > 0
+      ? await db.getAllAsync<GenreMovieRow>(
+          `SELECT m.id,
+                  m.title,
+                  m.poster_path,
+                  m.popularity,
+                  COALESCE(m.wins, 0) AS wins,
+                  COALESCE(m.nominations, 0) AS nominations
+           FROM movie_tmdb_genres mg
+           INNER JOIN movies m ON m.id = mg.movie_id
+           WHERE mg.genre_id = ?
+           ORDER BY COALESCE(m.popularity, 0) DESC,
+                    m.title COLLATE NOCASE ASC
+           LIMIT ? OFFSET ?`,
+          [genreId, limit, offset],
+        )
+      : await db.getAllAsync<GenreMovieRow>(
+          `SELECT m.id,
+                  m.title,
+                  m.poster_path,
+                  m.popularity,
+                  COALESCE(m.wins, 0) AS wins,
+                  COALESCE(m.nominations, 0) AS nominations
+           FROM movies m
+           ORDER BY COALESCE(m.popularity, 0) DESC,
+                    m.title COLLATE NOCASE ASC
+           LIMIT ? OFFSET ?`,
+          [limit, offset],
+        );
 
   return rows.map((row) => ({
     id: row.id,
@@ -114,40 +129,74 @@ export async function getGenreAdjacentMovieIds(
   genreId: number,
   movieId: number,
 ): Promise<GenreAdjacentMovieIds | null> {
-  const row = await db.getFirstAsync<GenreAdjacentRow>(
-    `WITH ordered_movies AS (
-      SELECT
-        m.id,
-        ROW_NUMBER() OVER (
-          ORDER BY
-            COALESCE(m.popularity, 0) DESC,
-            m.title COLLATE NOCASE ASC,
-            m.id ASC
-        ) AS row_num
-      FROM movie_tmdb_genres mg
-      INNER JOIN movies m ON m.id = mg.movie_id
-      WHERE mg.genre_id = ?
-    ),
-    current_movie AS (
-      SELECT row_num
-      FROM ordered_movies
-      WHERE id = ?
-      LIMIT 1
-    )
-    SELECT
-      (
-        SELECT id
-        FROM ordered_movies
-        WHERE row_num = current_movie.row_num - 1
-      ) AS previousId,
-      (
-        SELECT id
-        FROM ordered_movies
-        WHERE row_num = current_movie.row_num + 1
-      ) AS nextId
-    FROM current_movie`,
-    [genreId, movieId],
-  );
+  const row =
+    genreId > 0
+      ? await db.getFirstAsync<GenreAdjacentRow>(
+          `WITH ordered_movies AS (
+            SELECT
+              m.id,
+              ROW_NUMBER() OVER (
+                ORDER BY
+                  COALESCE(m.popularity, 0) DESC,
+                  m.title COLLATE NOCASE ASC,
+                  m.id ASC
+              ) AS row_num
+            FROM movie_tmdb_genres mg
+            INNER JOIN movies m ON m.id = mg.movie_id
+            WHERE mg.genre_id = ?
+          ),
+          current_movie AS (
+            SELECT row_num
+            FROM ordered_movies
+            WHERE id = ?
+            LIMIT 1
+          )
+          SELECT
+            (
+              SELECT id
+              FROM ordered_movies
+              WHERE row_num = current_movie.row_num - 1
+            ) AS previousId,
+            (
+              SELECT id
+              FROM ordered_movies
+              WHERE row_num = current_movie.row_num + 1
+            ) AS nextId
+          FROM current_movie`,
+          [genreId, movieId],
+        )
+      : await db.getFirstAsync<GenreAdjacentRow>(
+          `WITH ordered_movies AS (
+            SELECT
+              m.id,
+              ROW_NUMBER() OVER (
+                ORDER BY
+                  COALESCE(m.popularity, 0) DESC,
+                  m.title COLLATE NOCASE ASC,
+                  m.id ASC
+              ) AS row_num
+            FROM movies m
+          ),
+          current_movie AS (
+            SELECT row_num
+            FROM ordered_movies
+            WHERE id = ?
+            LIMIT 1
+          )
+          SELECT
+            (
+              SELECT id
+              FROM ordered_movies
+              WHERE row_num = current_movie.row_num - 1
+            ) AS previousId,
+            (
+              SELECT id
+              FROM ordered_movies
+              WHERE row_num = current_movie.row_num + 1
+            ) AS nextId
+          FROM current_movie`,
+          [movieId],
+        );
 
   if (!row) {
     return null;

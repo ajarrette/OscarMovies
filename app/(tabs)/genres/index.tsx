@@ -12,6 +12,13 @@ import {
 } from 'react-native';
 import { GenreListItem, getGenresWithMovieCounts } from '@/app/services/genres';
 
+type AllMoviesCountRow = {
+  movie_count: number;
+};
+
+const ALL_FILMS_GENRE_ID = 0;
+const ALL_FILMS_LABEL = 'All Films';
+
 export default function GenresIndexScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
@@ -26,13 +33,24 @@ export default function GenresIndexScreen() {
       try {
         setError(null);
         setLoading(true);
-        const rows = await getGenresWithMovieCounts(db);
+        const [rows, allMoviesCountRow] = await Promise.all([
+          getGenresWithMovieCounts(db),
+          db.getFirstAsync<AllMoviesCountRow>(
+            'SELECT COUNT(*) AS movie_count FROM movies',
+          ),
+        ]);
 
         if (cancelled) {
           return;
         }
 
-        setGenres(rows);
+        const allFilmsItem: GenreListItem = {
+          id: ALL_FILMS_GENRE_ID,
+          name: ALL_FILMS_LABEL,
+          movieCount: allMoviesCountRow?.movie_count ?? 0,
+        };
+
+        setGenres([allFilmsItem, ...rows]);
       } catch (err) {
         if (!cancelled) {
           setError(
@@ -85,24 +103,36 @@ export default function GenresIndexScreen() {
             )}
           </View>
         }
-        renderItem={({ item }) => (
-          <Pressable
-            style={styles.row}
-            onPress={() =>
-              router.push({
-                pathname: '/genre-films/[genreId]',
-                params: {
-                  genreId: String(item.id),
-                  genreName: item.name,
-                  originTab: 'genres',
-                },
-              })
-            }
-          >
-            <Text style={styles.genreName}>{item.name}</Text>
-            <Text style={styles.genreMeta}>{item.movieCount} movies</Text>
-          </Pressable>
-        )}
+        renderItem={({ item }) => {
+          const isAllFilms = item.id === ALL_FILMS_GENRE_ID;
+
+          return (
+            <Pressable
+              style={[styles.row, isAllFilms && styles.allFilmsRow]}
+              onPress={() =>
+                router.push({
+                  pathname: '/genre-films/[genreId]',
+                  params: {
+                    genreId: String(item.id),
+                    genreName: item.name,
+                    originTab: 'genres',
+                  },
+                })
+              }
+            >
+              <Text
+                style={[styles.genreName, isAllFilms && styles.allFilmsName]}
+              >
+                {item.name}
+              </Text>
+              <Text
+                style={[styles.genreMeta, isAllFilms && styles.allFilmsMeta]}
+              >
+                {item.movieCount} movies
+              </Text>
+            </Pressable>
+          );
+        }}
       />
     </>
   );
@@ -127,15 +157,26 @@ const styles = StyleSheet.create({
     paddingHorizontal: 14,
     paddingVertical: 14,
   },
+  allFilmsRow: {
+    borderColor: '#5f7d99',
+    backgroundColor: '#263544',
+  },
   genreName: {
     color: '#fff',
     fontSize: 18,
     fontWeight: '600',
   },
+  allFilmsName: {
+    color: '#cfe4f7',
+    fontWeight: '700',
+  },
   genreMeta: {
     color: '#aeb4bf',
     marginTop: 4,
     fontSize: 13,
+  },
+  allFilmsMeta: {
+    color: '#9fb6cb',
   },
   centered: {
     alignItems: 'center',

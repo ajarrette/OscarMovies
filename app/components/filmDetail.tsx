@@ -1,12 +1,20 @@
 import Film from '@/types/film';
 import Constants from 'expo-constants';
+import * as Haptics from 'expo-haptics';
 import Ionicons from '@expo/vector-icons/Ionicons';
 import { LinearGradient } from 'expo-linear-gradient';
 import { requireOptionalNativeModule } from 'expo-modules-core';
 import { Stack, useLocalSearchParams, useRouter, type Href } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
-import { Dimensions, Pressable, StyleSheet, Text, View } from 'react-native';
+import {
+  Dimensions,
+  Pressable,
+  StyleSheet,
+  Text,
+  Vibration,
+  View,
+} from 'react-native';
 import { Gesture, GestureDetector } from 'react-native-gesture-handler';
 import Animated, {
   Extrapolation,
@@ -206,7 +214,7 @@ export default function FilmDetail({
   const detailPathParam = firstParam(params.detailPath);
   const genreId = Number(genreIdParam ?? '0');
   const isGenreSwipeEnabled =
-    fromGenreListParam === '1' && Number.isInteger(genreId) && genreId > 0;
+    fromGenreListParam === '1' && Number.isInteger(genreId) && genreId >= 0;
   const detailPath =
     detailPathParam === '/genre-films/films/[id]' ||
     detailPathParam === '/film-details/[id]'
@@ -220,6 +228,7 @@ export default function FilmDetail({
     nextId: null,
   });
   const isSwipeNavigatingRef = useRef(false);
+  const lastBoundaryHapticAtRef = useRef(0);
   const scrollRef = useAnimatedRef<Animated.ScrollView>();
   const scrollOffset = useScrollViewOffset(scrollRef);
   const title = film.title ?? 'Unknown Title';
@@ -410,6 +419,18 @@ export default function FilmDetail({
     [detailPath, genreId, isGenreSwipeEnabled, originTab, router],
   );
 
+  const onBoundarySwipeAttempt = useCallback(() => {
+    const now = Date.now();
+    if (now - lastBoundaryHapticAtRef.current < 250) {
+      return;
+    }
+
+    lastBoundaryHapticAtRef.current = now;
+    void Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {
+      Vibration.vibrate(8);
+    });
+  }, []);
+
   const onShowDirector = () => {
     if (directorPersonId === null) {
       return;
@@ -579,6 +600,8 @@ export default function FilmDetail({
                 adjacentGenreMovieIds.nextId,
                 'next',
               );
+            } else {
+              runOnJS(onBoundarySwipeAttempt)();
             }
             return;
           }
@@ -589,6 +612,8 @@ export default function FilmDetail({
                 adjacentGenreMovieIds.previousId,
                 'previous',
               );
+            } else {
+              runOnJS(onBoundarySwipeAttempt)();
             }
           }
         }),
@@ -596,6 +621,7 @@ export default function FilmDetail({
       adjacentGenreMovieIds.nextId,
       adjacentGenreMovieIds.previousId,
       isGenreSwipeEnabled,
+      onBoundarySwipeAttempt,
       onOpenGenreSwipeNeighbor,
     ],
   );
@@ -620,6 +646,7 @@ export default function FilmDetail({
           options={{
             headerTransparent: true,
             headerShown: true,
+            gestureEnabled: !isGenreSwipeEnabled,
             headerLeft: () => (
               <Pressable onPress={() => router.back()} hitSlop={8}>
                 <Ionicons name='chevron-back' size={28} color='#fff' />
