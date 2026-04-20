@@ -4,18 +4,17 @@ Oscar Movies is an Expo-based mobile application for exploring Oscar-nominated f
 
 ## Overview
 
-Oscar Movies is designed as a lightweight, offline-friendly reference app for Academy Awards exploration. Users can browse nominees by ceremony year, search across films and people, open detailed profile screens, and review nomination history without depending on a live backend for core app functionality.
-
-The experience is built around quick navigation, clear presentation, and locally bundled data, with TMDB artwork used to enrich film and person detail views.
+Oscar Movies is designed as a lightweight, offline-friendly reference app for Academy Awards exploration. Users can browse nominees by ceremony year or genre, explore year and genre posterwalls for visual discovery, search across films and people with an elegant collapsing header interface, and open detailed profile screens with easy navigation controls. All core app functionality works offline with a locally bundled SQLite database, with TMDB artwork used to enrich film and person detail views.
 
 ## Core Features
 
-- Browse Oscar nomination categories by year
-- Explore nominated films across Academy Award categories
-- Search films by title and people by name
-- Open detailed film pages with artwork, credits, and nomination summaries
+- Browse Oscar nomination categories by year with visual year posterwall
+- Explore films by genre with visual genre browsing
+- Search films by title and people by name with collapsing header effect
+- Open detailed film pages with artwork, credits, nomination summaries, and Oscar trophy badges
 - Open person pages with biography details, related films, and nomination totals
 - Review nomination history for both films and people
+- Improved navigation with close buttons on all detail views for seamless multi-view exploration
 - Use a bundled local SQLite database for a fast, offline-friendly experience
 
 ## Technology Stack
@@ -38,7 +37,7 @@ The experience is built around quick navigation, clear presentation, and locally
   <img src="assets/images/app/Person%20Detail.jpeg" width="24%" alt="Person Detail — biography, films, and awards summary" />
   <img src="assets/images/app/Film%20Detail%202.jpeg" width="24%" alt="Ballerina Detail — biography, films, and awards summary" />
   <img src="assets/images/app/Person%20Search.jpeg" width="24%" alt="Person Search — biography, films, and awards summary" />
-  <img src="assets/images/app/About.jpeg" width="24%" alt="About — app summary and technology stack" />
+  <img src="assets/images/app/Poster Wall.jpeg" width="24%" alt="Movies by Genre - poster wall of films" />
 </p>
 
 ## Getting Started
