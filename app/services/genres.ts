@@ -147,6 +147,7 @@ export async function getGenreAdjacentMovieIds(
               ROW_NUMBER() OVER (
                 ORDER BY
                   COALESCE(mpc.popularity, 0) DESC,
+                  COALESCE(m.nominations, 0) DESC,
                   m.title COLLATE NOCASE ASC,
                   m.id ASC
               ) AS row_num
@@ -182,6 +183,7 @@ export async function getGenreAdjacentMovieIds(
               ROW_NUMBER() OVER (
                 ORDER BY
                   COALESCE(mpc.popularity, 0) DESC,
+                  COALESCE(m.nominations, 0) DESC,
                   m.title COLLATE NOCASE ASC,
                   m.id ASC
               ) AS row_num
