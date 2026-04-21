@@ -27,7 +27,7 @@ if (!SUPABASE_SERVICE_ROLE_KEY) {
 const TARGET_COUNT = 1000;
 const REQUEST_DELAY_MS = 50;
 const UPSERT_BATCH_SIZE = 50;
-const COOLDOWN_MS = 24 * 60 * 60 * 1000;
+const COOLDOWN_MS = 20 * 60 * 60 * 1000;
 const GENERAL_TABLE_NAME = 'people_popularity';
 
 function getRestBaseUrl(url) {
@@ -53,12 +53,24 @@ async function fetchJson(url, label, options = {}) {
   return res.json();
 }
 
+async function fetchVoid(url, label, options = {}) {
+  const res = await fetch(url, options);
+  if (!res.ok) {
+    const body = await res.text().catch(() => '');
+    throw new Error(`${label} ${res.status}${body ? ` ${body}` : ''}`);
+  }
+}
+
 function delay(ms) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
 function nullableNumber(value) {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function normalizeId(value) {
+  return value == null ? '' : String(value);
 }
 
 function formatRemaining(ms) {
@@ -161,6 +173,52 @@ async function setGeneralLastModified(tableName, isoTimestamp) {
   });
 }
 
+async function resetTrending() {
+  const params = new URLSearchParams({ tmdb_id: 'gte.0' });
+  const url = `${SUPABASE_REST_BASE_URL}/people_popularity?${params.toString()}`;
+  await fetchVoid(url, 'Supabase reset trending people_popularity', {
+    method: 'PATCH',
+    headers: {
+      ...getSupabaseHeaders(),
+      'Content-Type': 'application/json',
+      Prefer: 'return=minimal',
+    },
+    body: JSON.stringify({ trending: 0 }),
+  });
+  console.log('Reset all trending values to 0 in people_popularity.');
+}
+
+async function fetchStoredPopularities(tmdbIds) {
+  const popularityMap = new Map();
+
+  for (let i = 0; i < tmdbIds.length; i += UPSERT_BATCH_SIZE) {
+    const batch = tmdbIds.slice(i, i + UPSERT_BATCH_SIZE);
+    const params = new URLSearchParams({
+      select: 'tmdb_id,popularity',
+      tmdb_id: `in.(${batch.join(',')})`,
+    });
+    const url = `${SUPABASE_REST_BASE_URL}/people_popularity?${params.toString()}`;
+    const rows = await fetchJson(
+      url,
+      'Supabase fetch people_popularity popularities',
+      {
+        headers: getSupabaseHeaders(),
+      },
+    );
+    for (const row of rows) {
+      popularityMap.set(
+        normalizeId(row.tmdb_id),
+        typeof row.popularity === 'number'
+          ? row.popularity
+          : Number(row.popularity),
+      );
+    }
+    await delay(REQUEST_DELAY_MS);
+  }
+
+  return popularityMap;
+}
+
 async function fetchPopularPeople(page) {
   const params = new URLSearchParams({
     api_key: TMDB_API_KEY,
@@ -196,8 +254,6 @@ async function collectTopPeople(targetCount) {
       rows.push({
         tmdb_id: tmdbId,
         popularity: nullableNumber(person?.popularity),
-        // TODO: On future runs, compute difference from prior stored popularity.
-        difference: 0,
       });
       seen.add(tmdbId);
 
@@ -251,6 +307,9 @@ async function run() {
   let fetchedCount = 0;
   let upsertedCount = 0;
   let failedCount = 0;
+  let matchedExistingCount = 0;
+  let newlySeenCount = 0;
+  let negativeTrendingCount = 0;
 
   try {
     console.log(`Checking populate cooldown for ${GENERAL_TABLE_NAME}...`);
@@ -262,6 +321,32 @@ async function run() {
     console.log(`Fetching top ${TARGET_COUNT} TMDB people...`);
     const rows = await collectTopPeople(TARGET_COUNT);
     fetchedCount = rows.length;
+
+    console.log('Resetting all trending values to 0...');
+    await resetTrending();
+
+    console.log('Fetching current popularities from DB to compute trending...');
+    const tmdbIds = rows.map((r) => r.tmdb_id);
+    const storedPopularities = await fetchStoredPopularities(tmdbIds);
+    const minNewPopularity = rows.reduce(
+      (min, r) => Math.min(min, r.popularity ?? 0),
+      Infinity,
+    );
+
+    for (const row of rows) {
+      const oldPopularity = storedPopularities.get(normalizeId(row.tmdb_id));
+      if (oldPopularity != null) {
+        matchedExistingCount += 1;
+        row.trending = Math.round((row.popularity ?? 0) - oldPopularity);
+      } else {
+        newlySeenCount += 1;
+        row.trending = Math.round((row.popularity ?? 0) - minNewPopularity);
+      }
+
+      if ((row.trending ?? 0) < 0) {
+        negativeTrendingCount += 1;
+      }
+    }
 
     console.log(
       `Upserting ${rows.length} rows into people_popularity via Supabase REST...`,
@@ -281,6 +366,9 @@ async function run() {
     console.log(`  Fetched: ${fetchedCount}`);
     console.log(`  Upserted: ${upsertedCount}`);
     console.log(`  Failed: ${failedCount}`);
+    console.log(`  Matched Existing: ${matchedExistingCount}`);
+    console.log(`  Treated As New: ${newlySeenCount}`);
+    console.log(`  Negative Trending: ${negativeTrendingCount}`);
   }
 }
 
