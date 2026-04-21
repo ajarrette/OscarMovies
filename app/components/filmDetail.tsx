@@ -9,6 +9,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   Dimensions,
+  Platform,
   Pressable,
   StyleSheet,
   Text,
@@ -217,6 +218,7 @@ export default function FilmDetail({
   const yearParam = firstParam(params.year);
   const fromYearListParam = firstParam(params.fromYearList);
   const detailPathParam = firstParam(params.detailPath);
+  const swipeDirectionParam = firstParam(params.swipeDirection);
   const genreId = Number(genreIdParam ?? '0');
   const year = Number(yearParam ?? '0');
   const isGenreSwipeEnabled =
@@ -393,6 +395,9 @@ export default function FilmDetail({
     [contrastOverlayOpacity],
   );
 
+  const showCustomTopControls = Platform.OS === 'ios' && isListSwipeEnabled;
+  const topControlInset = Math.max(10, Constants.statusBarHeight + 4);
+
   const onShowNominations = () => {
     router.push({
       pathname: nominationsPath,
@@ -402,6 +407,25 @@ export default function FilmDetail({
       },
     } as Href);
   };
+
+  const onDismissFilmDetail = useCallback(() => {
+    if (originTab === 'search') {
+      router.dismissTo('/(tabs)/search');
+      return;
+    }
+
+    if (originTab === 'genres') {
+      router.dismissTo('/(tabs)/genres');
+      return;
+    }
+
+    if (originTab === 'films') {
+      router.dismissTo('/(tabs)/films');
+      return;
+    }
+
+    router.dismissAll();
+  }, [originTab, router]);
 
   const onOpenListSwipeNeighbor = useCallback(
     (targetFilmId: number, direction: 'next' | 'previous') => {
@@ -671,41 +695,66 @@ export default function FilmDetail({
         />
         <Stack.Screen
           options={{
-            headerTransparent: true,
-            headerShown: true,
+            headerShown: !showCustomTopControls,
+            headerTransparent: !showCustomTopControls,
+            headerTitle: '',
+            headerBackButtonDisplayMode: 'minimal',
+            headerLargeTitle: false,
+            headerSearchBarOptions: undefined,
+            headerBlurEffect: undefined,
+            headerShadowVisible: false,
+            headerStyle: {
+              backgroundColor: 'transparent',
+            },
+            headerTintColor: '#fff',
+            animation:
+              swipeDirectionParam === 'from-left'
+                ? 'slide_from_left'
+                : 'slide_from_right',
             gestureEnabled: !isListSwipeEnabled,
-            headerLeft: () => (
-              <Pressable onPress={() => router.back()} hitSlop={8}>
-                <Ionicons name='chevron-back' size={28} color='#fff' />
-              </Pressable>
-            ),
-            headerRight: () => (
-              <Pressable
-                onPress={() => {
-                  if (originTab === 'search') {
-                    router.dismissTo('/(tabs)/search');
-                    return;
-                  }
-
-                  if (originTab === 'genres') {
-                    router.dismissTo('/(tabs)/genres');
-                    return;
-                  }
-
-                  if (originTab === 'films') {
-                    router.dismissTo('/(tabs)/films');
-                    return;
-                  }
-
-                  router.dismissAll();
-                }}
-                hitSlop={8}
-              >
-                <Ionicons name='close' size={24} color='#fff' />
-              </Pressable>
-            ),
+            headerLeft: !showCustomTopControls
+              ? () => (
+                  <Pressable onPress={() => router.back()} hitSlop={8}>
+                    <Ionicons name='chevron-back' size={28} color='#fff' />
+                  </Pressable>
+                )
+              : undefined,
+            headerRight: !showCustomTopControls
+              ? () => (
+                  <Pressable onPress={onDismissFilmDetail} hitSlop={8}>
+                    <Ionicons name='close' size={24} color='#fff' />
+                  </Pressable>
+                )
+              : undefined,
           }}
         />
+        {showCustomTopControls && (
+          <View
+            pointerEvents='box-none'
+            style={[styles.topControlsRow, { top: topControlInset }]}
+          >
+            <Pressable
+              onPress={() => router.back()}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.topControlButton,
+                pressed && styles.topControlButtonPressed,
+              ]}
+            >
+              <Ionicons name='chevron-back' size={24} color='#fff' />
+            </Pressable>
+            <Pressable
+              onPress={onDismissFilmDetail}
+              hitSlop={8}
+              style={({ pressed }) => [
+                styles.topControlButton,
+                pressed && styles.topControlButtonPressed,
+              ]}
+            >
+              <Ionicons name='close' size={20} color='#fff' />
+            </Pressable>
+          </View>
+        )}
         <Animated.ScrollView ref={scrollRef} scrollEventThrottle={16}>
           <View>
             <Animated.Image
@@ -1033,6 +1082,34 @@ const styles = StyleSheet.create({
     right: 0,
     height: 120,
     zIndex: 10,
+  },
+  topControlsRow: {
+    position: 'absolute',
+    left: 12,
+    right: 12,
+    zIndex: 30,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+  },
+  topControlButton: {
+    width: 36,
+    height: 36,
+    borderRadius: 18,
+    backgroundColor: 'rgba(17, 20, 24, 0.46)',
+    borderWidth: StyleSheet.hairlineWidth,
+    borderColor: 'rgba(255, 255, 255, 0.34)',
+    shadowColor: '#000',
+    shadowOpacity: 0.24,
+    shadowRadius: 6,
+    shadowOffset: { width: 0, height: 2 },
+    elevation: 3,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  topControlButtonPressed: {
+    opacity: 0.8,
+    transform: [{ scale: 0.96 }],
   },
   yearAndRating: {
     fontSize: 14,

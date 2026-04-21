@@ -8,16 +8,13 @@ export default function FilmsLayout() {
         headerStyle: { backgroundColor: '#25292e' },
         headerShadowVisible: false,
         headerTintColor: 'white',
+        headerLargeTitle: false,
       }}
     >
       <Stack.Screen
         name='[id]'
         options={({ route }) => ({
-          headerStyle: { backgroundColor: 'transparent' },
-          headerTransparent: true,
-          headerTitle: '',
-          headerBackButtonDisplayMode: 'minimal',
-          headerShown: true,
+          headerShown: false,
           animationTypeForReplace: 'push',
           animation:
             route.params?.swipeDirection === 'from-left'

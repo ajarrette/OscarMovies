@@ -4,6 +4,7 @@ import { ensureAllPopularityCachesFresh } from '@/app/services/popularity';
 import { FlashList } from '@shopify/flash-list';
 import { router, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
+import { useIsFocused } from '@react-navigation/native';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
@@ -155,7 +156,9 @@ function getJobTitleFromDepartment(department: string): string {
 function SearchContent() {
   const db = useSQLiteContext();
   const { width } = useWindowDimensions();
+  const isFocused = useIsFocused();
   const usesNativeHeaderSearch = Platform.OS === 'ios';
+  const shouldUseNativeHeaderSearch = usesNativeHeaderSearch && isFocused;
   const [mode, setMode] = useState<SearchMode>('films');
   const [query, setQuery] = useState('');
   const [debouncedQuery, setDebouncedQuery] = useState('');
@@ -522,16 +525,16 @@ function SearchContent() {
       <Stack.Screen
         options={{
           headerTitle: 'Search',
-          headerLargeTitle: usesNativeHeaderSearch,
-          headerTransparent: usesNativeHeaderSearch,
-          headerBlurEffect: usesNativeHeaderSearch
+          headerLargeTitle: shouldUseNativeHeaderSearch,
+          headerTransparent: shouldUseNativeHeaderSearch,
+          headerBlurEffect: shouldUseNativeHeaderSearch
             ? 'systemUltraThinMaterialDark'
             : undefined,
-          headerLargeStyle: usesNativeHeaderSearch
+          headerLargeStyle: shouldUseNativeHeaderSearch
             ? { backgroundColor: 'transparent' }
             : undefined,
           headerLargeTitleStyle: { color: '#fff' },
-          headerSearchBarOptions: usesNativeHeaderSearch
+          headerSearchBarOptions: shouldUseNativeHeaderSearch
             ? {
                 placeholder:
                   mode === 'films' ? 'Search films' : 'Search people',

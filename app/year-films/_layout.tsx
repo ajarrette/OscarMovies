@@ -40,11 +40,7 @@ export default function YearFilmsStackLayout() {
       <Stack.Screen
         name='films/[id]'
         options={({ route }) => ({
-          headerStyle: { backgroundColor: 'transparent' },
-          headerTransparent: true,
-          headerTitle: '',
-          headerBackButtonDisplayMode: 'minimal',
-          headerShown: true,
+          headerShown: false,
           gestureEnabled: false,
           animationTypeForReplace: 'push',
           animation:

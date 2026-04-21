@@ -36,11 +36,7 @@ export default function SearchStackLayout() {
       <Stack.Screen
         name='films/[id]'
         options={{
-          headerStyle: { backgroundColor: 'transparent' },
-          headerTransparent: true,
-          headerTitle: '',
-          headerBackButtonDisplayMode: 'minimal',
-          headerShown: true,
+          headerShown: false,
         }}
       />
       <Stack.Screen
