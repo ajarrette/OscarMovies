@@ -2,6 +2,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import Film from '@/types/film';
+import { ensureAllPopularityCachesFresh } from '@/app/services/popularity';
 import FilmDetail from './filmDetail';
 
 type Props = {
@@ -39,8 +40,14 @@ export default function LoadFilmDetail({ id, nominationsPath }: Props) {
 
   useEffect(() => {
     const loadFilm = async () => {
+      await ensureAllPopularityCachesFresh(db);
+
       const foundFilmRecord = await db.getFirstAsync<Film | null>(
-        'SELECT * FROM movies WHERE id = ?',
+        `SELECT m.*,
+                COALESCE(mpc.popularity, 0) AS popularity
+         FROM movies m
+         LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
+         WHERE m.id = ?`,
         [id],
       );
 
@@ -76,14 +83,15 @@ export default function LoadFilmDetail({ id, nominationsPath }: Props) {
               p.id,
               p.name,
               p.profile_path,
-              p.popularity,
+                COALESCE(ppc.popularity, 0) AS popularity,
               p.known_for_department
           FROM movie_cast mc
           INNER JOIN people p ON p.id = mc.person_id
+            LEFT JOIN people_popularity_cache ppc ON ppc.tmdb_id = p.tmdb_id
           WHERE mc.movie_id = ? 
             AND mc.department = 'Acting'
           ORDER BY mc.cast_order ASC,
-                  COALESCE(p.popularity, 0) DESC,
+              COALESCE(ppc.popularity, 0) DESC,
                   p.name ASC
           LIMIT 12`,
           [id],

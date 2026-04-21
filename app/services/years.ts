@@ -1,4 +1,5 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
+import { ensurePopularityCacheFresh } from './popularity';
 
 export type YearMovieItem = {
   id: number;
@@ -34,16 +35,20 @@ export async function getYearMoviesByPopularity(
   limit: number,
   offset: number,
 ): Promise<YearMovieItem[]> {
+  await ensurePopularityCacheFresh(db, 'movie');
+
   const rows = await db.getAllAsync<YearMovieRow>(
     `SELECT m.id,
             m.title,
             m.poster_path,
-            m.popularity,
+            COALESCE(mpc.popularity, 0) AS popularity,
             COALESCE(m.wins, 0) AS wins,
             COALESCE(m.nominations, 0) AS nominations
      FROM movies m
+     LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
      WHERE CAST(strftime('%Y', m.release_date) AS INTEGER) = ?
-     ORDER BY COALESCE(m.popularity, 0) DESC,
+     ORDER BY COALESCE(mpc.popularity, 0) DESC,
+              COALESCE(m.nominations, 0) DESC,
               m.title COLLATE NOCASE ASC
      LIMIT ? OFFSET ?`,
     [year, limit, offset],
@@ -64,17 +69,21 @@ export async function getYearAdjacentMovieIds(
   year: number,
   movieId: number,
 ): Promise<YearAdjacentMovieIds | null> {
+  await ensurePopularityCacheFresh(db, 'movie');
+
   const row = await db.getFirstAsync<YearAdjacentRow>(
     `WITH ordered_movies AS (
       SELECT
         m.id,
         ROW_NUMBER() OVER (
           ORDER BY
-            COALESCE(m.popularity, 0) DESC,
+            COALESCE(mpc.popularity, 0) DESC,
+            COALESCE(m.nominations, 0) DESC,
             m.title COLLATE NOCASE ASC,
             m.id ASC
         ) AS row_num
       FROM movies m
+      LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
       WHERE CAST(strftime('%Y', m.release_date) AS INTEGER) = ?
     ),
     current_movie AS (

@@ -2,6 +2,7 @@ import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
 import { Button, StyleSheet, Text, View } from 'react-native';
 import Person from '@/types/person';
+import { ensureAllPopularityCachesFresh } from '@/app/services/popularity';
 import PersonDetail from './personDetail';
 
 type Props = {
@@ -45,6 +46,8 @@ export default function LoadPersonDetail({ id }: Props) {
 
   useEffect(() => {
     const loadPerson = async () => {
+      await ensureAllPopularityCachesFresh(db);
+
       const foundPerson = await db.getFirstAsync<Person | null>(
         `SELECT p.id,
                 p.name,
@@ -56,11 +59,12 @@ export default function LoadPersonDetail({ id }: Props) {
                 p.gender,
                 p.known_for_department,
                 p.place_of_birth,
-                p.popularity,
+                COALESCE(ppc.popularity, 0) AS popularity,
                 p.profile_path,
                 COALESCE(p.nominations, 0) AS nominations,
                 COALESCE(p.wins, 0) AS wins
          FROM people p
+         LEFT JOIN people_popularity_cache ppc ON ppc.tmdb_id = p.tmdb_id
          WHERE p.id = ?`,
         [id],
       );
@@ -93,15 +97,17 @@ export default function LoadPersonDetail({ id }: Props) {
         SELECT m.id,
               m.title,
               m.poster_path,
-              m.popularity,
+            COALESCE(mpc.popularity, 0) AS popularity,
               COALESCE(m.wins, 0) AS wins,
               COALESCE(m.nominations, 0) AS nominations,
               -- SQLite uses GROUP_CONCAT to merge rows
               GROUP_CONCAT(DISTINCT pm.raw_role) AS roles_csv
         FROM person_movies pm
         INNER JOIN movies m ON m.id = pm.movie_id
-        GROUP BY m.id, m.title, m.poster_path, m.popularity
-        ORDER BY COALESCE(m.popularity, 0) DESC,
+          LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
+          GROUP BY m.id, m.title, m.poster_path, COALESCE(mpc.popularity, 0)
+          ORDER BY COALESCE(mpc.popularity, 0) DESC,
+                COALESCE(m.nominations, 0) DESC,
                 m.title ASC`,
           [id, id, id],
         );

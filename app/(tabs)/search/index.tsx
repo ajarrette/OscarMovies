@@ -1,5 +1,6 @@
 import MoviePoster from '@/app/components/moviePoster';
 import ImageSizing from '@/app/services/imageSizing';
+import { ensureAllPopularityCachesFresh } from '@/app/services/popularity';
 import { router, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
@@ -31,7 +32,8 @@ const PEOPLE_FIELDS = `
 
 const PEOPLE_ORDER_BY_RELEVANCE = `
   ORDER BY
-    COALESCE(p.popularity, 0) DESC,
+    COALESCE(ppc.popularity, 0) DESC,
+    COALESCE(p.nominations, 0) DESC,
     p.name ASC
 ` as const;
 
@@ -178,6 +180,7 @@ function SearchContent() {
     const loadResults = async () => {
       try {
         setLoading(true);
+        await ensureAllPopularityCachesFresh(db);
 
         if (mode === 'films') {
           const rows =
@@ -192,7 +195,8 @@ function SearchContent() {
                           wins,
                           nominations
                    FROM movies
-                   ORDER BY popularity DESC, wins DESC, title ASC
+                             LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = movies.tmdb_id
+                             ORDER BY COALESCE(mpc.popularity, 0) DESC, COALESCE(nominations, 0) DESC, title ASC
                    LIMIT ${DEFAULT_RESULTS_LIMIT}`,
                 )
               : await db.getAllAsync<FilmSearchRow>(
@@ -205,6 +209,7 @@ function SearchContent() {
                           wins,
                           nominations
                    FROM movies
+                       LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = movies.tmdb_id
                    WHERE title LIKE '%' || ? || '%' COLLATE NOCASE
                       OR original_title LIKE '%' || ? || '%' COLLATE NOCASE
                    ORDER BY
@@ -213,7 +218,8 @@ function SearchContent() {
                        WHEN original_title LIKE ? || '%' COLLATE NOCASE THEN 1
                        ELSE 2
                      END,
-                     popularity DESC,
+                    COALESCE(mpc.popularity, 0) DESC,
+                    COALESCE(nominations, 0) DESC,
                      title ASC`,
                   [
                     debouncedQuery,
@@ -257,21 +263,23 @@ function SearchContent() {
                       COUNT(DISTINCT mc.movie_id) AS recent_movie_count
                FROM movie_cast mc
                INNER JOIN movies m ON m.id = mc.movie_id
+               LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
                WHERE m.release_date IS NOT NULL
                  AND DATE(m.release_date) >= DATE('now', '-3 years')
-                 AND COALESCE(m.popularity, 0) > 20
+                 AND COALESCE(mpc.popularity, 0) > 20
                GROUP BY mc.person_id
              )
              SELECT ${PEOPLE_FIELDS}
              FROM people p
+             LEFT JOIN people_popularity_cache ppc ON ppc.tmdb_id = p.tmdb_id
              LEFT JOIN recent_movie_counts rmc ON rmc.person_id = p.id
              WHERE p.known_for_department = 'Acting'
              ORDER BY
                (
-                 COALESCE(p.popularity, 0) *
+                 COALESCE(ppc.popularity, 0) *
                  COALESCE(rmc.recent_movie_count * 0.2, 0)
                ) DESC,
-               COALESCE(p.popularity, 0) DESC,
+               COALESCE(ppc.popularity, 0) DESC,
                p.name ASC
              LIMIT ${DEFAULT_RESULTS_LIMIT}`,
           );
@@ -282,6 +290,7 @@ function SearchContent() {
           const prefixRows = await db.getAllAsync<PersonSearchRow>(
             `SELECT ${PEOPLE_FIELDS}
              FROM people p
+             LEFT JOIN people_popularity_cache ppc ON ppc.tmdb_id = p.tmdb_id
              WHERE p.name LIKE ? || '%' COLLATE NOCASE
                 OR p.name LIKE '% ' || ? || '%' COLLATE NOCASE
              ${PEOPLE_ORDER_BY_RELEVANCE}
@@ -303,6 +312,7 @@ function SearchContent() {
             const containsRows = await db.getAllAsync<PersonSearchRow>(
               `SELECT ${PEOPLE_FIELDS}
                FROM people p
+               LEFT JOIN people_popularity_cache ppc ON ppc.tmdb_id = p.tmdb_id
                WHERE p.name LIKE '%' || ? || '%' COLLATE NOCASE
                  AND p.name NOT LIKE ? || '%' COLLATE NOCASE
                  AND p.name NOT LIKE '% ' || ? || '%' COLLATE NOCASE

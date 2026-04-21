@@ -1,4 +1,5 @@
 import type { SQLiteDatabase } from 'expo-sqlite';
+import { ensurePopularityCacheFresh } from './popularity';
 
 export type GenreListItem = {
   id: number;
@@ -71,19 +72,23 @@ export async function getGenreMoviesByPopularity(
   limit: number,
   offset: number,
 ): Promise<GenreMovieItem[]> {
+  await ensurePopularityCacheFresh(db, 'movie');
+
   const rows =
     genreId > 0
       ? await db.getAllAsync<GenreMovieRow>(
           `SELECT m.id,
                   m.title,
                   m.poster_path,
-                  m.popularity,
+                  COALESCE(mpc.popularity, 0) AS popularity,
                   COALESCE(m.wins, 0) AS wins,
                   COALESCE(m.nominations, 0) AS nominations
            FROM movie_tmdb_genres mg
            INNER JOIN movies m ON m.id = mg.movie_id
+           LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
            WHERE mg.genre_id = ?
-           ORDER BY COALESCE(m.popularity, 0) DESC,
+           ORDER BY COALESCE(mpc.popularity, 0) DESC,
+                    COALESCE(m.nominations, 0) DESC,
                     m.title COLLATE NOCASE ASC
            LIMIT ? OFFSET ?`,
           [genreId, limit, offset],
@@ -92,11 +97,13 @@ export async function getGenreMoviesByPopularity(
           `SELECT m.id,
                   m.title,
                   m.poster_path,
-                  m.popularity,
+                  COALESCE(mpc.popularity, 0) AS popularity,
                   COALESCE(m.wins, 0) AS wins,
                   COALESCE(m.nominations, 0) AS nominations
            FROM movies m
-           ORDER BY COALESCE(m.popularity, 0) DESC,
+           LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
+           ORDER BY COALESCE(mpc.popularity, 0) DESC,
+                    COALESCE(m.nominations, 0) DESC,
                     m.title COLLATE NOCASE ASC
            LIMIT ? OFFSET ?`,
           [limit, offset],
@@ -129,6 +136,8 @@ export async function getGenreAdjacentMovieIds(
   genreId: number,
   movieId: number,
 ): Promise<GenreAdjacentMovieIds | null> {
+  await ensurePopularityCacheFresh(db, 'movie');
+
   const row =
     genreId > 0
       ? await db.getFirstAsync<GenreAdjacentRow>(
@@ -137,12 +146,13 @@ export async function getGenreAdjacentMovieIds(
               m.id,
               ROW_NUMBER() OVER (
                 ORDER BY
-                  COALESCE(m.popularity, 0) DESC,
+                  COALESCE(mpc.popularity, 0) DESC,
                   m.title COLLATE NOCASE ASC,
                   m.id ASC
               ) AS row_num
             FROM movie_tmdb_genres mg
             INNER JOIN movies m ON m.id = mg.movie_id
+            LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
             WHERE mg.genre_id = ?
           ),
           current_movie AS (
@@ -171,11 +181,12 @@ export async function getGenreAdjacentMovieIds(
               m.id,
               ROW_NUMBER() OVER (
                 ORDER BY
-                  COALESCE(m.popularity, 0) DESC,
+                  COALESCE(mpc.popularity, 0) DESC,
                   m.title COLLATE NOCASE ASC,
                   m.id ASC
               ) AS row_num
             FROM movies m
+            LEFT JOIN movie_popularity_cache mpc ON mpc.tmdb_id = m.tmdb_id
           ),
           current_movie AS (
             SELECT row_num

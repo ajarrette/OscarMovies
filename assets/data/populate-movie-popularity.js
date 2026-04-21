@@ -24,7 +24,7 @@ if (!SUPABASE_SERVICE_ROLE_KEY) {
   process.exit(1);
 }
 
-const TARGET_COUNT = 100;
+const TARGET_COUNT = 1000;
 const REQUEST_DELAY_MS = 50;
 const UPSERT_BATCH_SIZE = 50;
 const COOLDOWN_MS = 24 * 60 * 60 * 1000;
