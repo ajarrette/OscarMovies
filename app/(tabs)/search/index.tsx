@@ -1,12 +1,12 @@
 import MoviePoster from '@/app/components/moviePoster';
 import ImageSizing from '@/app/services/imageSizing';
 import { ensureAllPopularityCachesFresh } from '@/app/services/popularity';
+import { FlashList } from '@shopify/flash-list';
 import { router, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
-  FlatList,
   Keyboard,
   Platform,
   Pressable,
@@ -540,7 +540,7 @@ function SearchContent() {
             : undefined,
         }}
       />
-      <FlatList
+      <FlashList
         data={listData}
         keyExtractor={keyExtractor}
         ListHeaderComponent={listHeaderComponent}
@@ -553,13 +553,9 @@ function SearchContent() {
         style={styles.container}
         contentInsetAdjustmentBehavior='automatic'
         automaticallyAdjustContentInsets
-        initialNumToRender={12}
-        maxToRenderPerBatch={10}
         removeClippedSubviews
         keyboardDismissMode='on-drag'
         keyboardShouldPersistTaps='handled'
-        updateCellsBatchingPeriod={50}
-        windowSize={8}
         renderItem={renderItem}
       />
       {isPeopleLoading ? (
