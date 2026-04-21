@@ -1,13 +1,13 @@
 import MoviePoster from '@/app/components/moviePoster';
 import ImageSizing from '@/app/services/imageSizing';
 import { ensureAllPopularityCachesFresh } from '@/app/services/popularity';
-import { FlashList } from '@shopify/flash-list';
 import { router, Stack } from 'expo-router';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useIsFocused } from '@react-navigation/native';
 import { memo, useCallback, useEffect, useMemo, useState } from 'react';
 import {
   ActivityIndicator,
+  FlatList,
   Keyboard,
   Platform,
   Pressable,
@@ -543,7 +543,7 @@ function SearchContent() {
             : undefined,
         }}
       />
-      <FlashList
+      <FlatList
         data={listData}
         keyExtractor={keyExtractor}
         ListHeaderComponent={listHeaderComponent}
@@ -578,10 +578,6 @@ export default function SearchScreen() {
 }
 
 const styles = StyleSheet.create({
-  screen: {
-    backgroundColor: '#25292e',
-    flex: 1,
-  },
   container: {
     backgroundColor: '#25292e',
     flex: 1,
