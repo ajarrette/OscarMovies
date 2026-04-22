@@ -1,6 +1,6 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import { ActivityIndicator, Button, StyleSheet, Text, View } from 'react-native';
 import Film from '@/types/film';
 import { ensureAllPopularityCachesFresh } from '@/app/services/popularity';
 import FilmDetail from './filmDetail';
@@ -125,7 +125,9 @@ export default function LoadFilmDetail({ id, nominationsPath }: Props) {
   return (
     <>
       {loading ? (
-        <></>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size='small' color='#fff' />
+        </View>
       ) : film ? (
         <FilmDetail
           film={film}
@@ -146,6 +148,12 @@ export default function LoadFilmDetail({ id, nominationsPath }: Props) {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#25292e',
+  },
   text: {
     color: '#fff',
   },

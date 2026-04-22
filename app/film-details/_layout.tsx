@@ -9,12 +9,14 @@ export default function FilmsLayout() {
         headerShadowVisible: false,
         headerTintColor: 'white',
         headerLargeTitle: false,
+        contentStyle: { backgroundColor: '#25292e' },
       }}
     >
       <Stack.Screen
         name='[id]'
         options={({ route }) => ({
           headerShown: false,
+          contentStyle: { backgroundColor: '#25292e' },
           animationTypeForReplace: 'push',
           animation:
             route.params?.swipeDirection === 'from-left'

@@ -4,7 +4,7 @@ import FilmsDbProvider from './components/filmsDbProvider';
 
 export default function RootLayout() {
   return (
-    <GestureHandlerRootView style={{ flex: 1 }}>
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: '#25292e' }}>
       <FilmsDbProvider>
         <Stack
           initialRouteName='(tabs)'
@@ -26,6 +26,7 @@ export default function RootLayout() {
             name='film-details'
             options={{
               animation: 'slide_from_right',
+              contentStyle: { backgroundColor: '#25292e' },
             }}
           />
           <Stack.Screen
