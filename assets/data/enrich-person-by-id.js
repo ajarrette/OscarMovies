@@ -80,7 +80,7 @@ const updatePersonById = db.prepare(`
     known_for_department = ?7,
     place_of_birth       = ?8,
     profile_path         = ?9,
-    last_modified        = (strftime('%s','now') * 1000)
+    last_modified        = (datetime('now'))
   WHERE id = ?10
     AND (
       tmdb_id IS NOT ?1

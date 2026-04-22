@@ -81,7 +81,7 @@ const updateTmdbId = db.prepare(`
   UPDATE people
   SET
     tmdb_id = ?,
-    last_modified = (strftime('%s','now') * 1000)
+    last_modified = (datetime('now'))
   WHERE id = ? AND tmdb_id IS NULL
 `);
 
@@ -111,7 +111,7 @@ const updateDetails = db.prepare(`
     known_for_department = COALESCE(known_for_department, ?6),
     place_of_birth       = COALESCE(place_of_birth, ?7),
     profile_path         = COALESCE(profile_path, ?8),
-    last_modified        = (strftime('%s','now') * 1000)
+    last_modified        = (datetime('now'))
   WHERE id = ?9
     AND (
       COALESCE(imdb_id, ?1) IS NOT imdb_id

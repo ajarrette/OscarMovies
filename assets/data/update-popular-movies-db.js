@@ -133,7 +133,7 @@ function ensureMovieCastTable() {
       person_id   INTEGER NOT NULL,
       cast_order  INTEGER,
       character   TEXT,
-      last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+      last_modified TEXT NOT NULL DEFAULT (datetime('now')),
       department  TEXT,
       PRIMARY KEY (movie_id, person_id),
       FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
@@ -153,7 +153,7 @@ function ensureMovieCastTable() {
 
   if (!movieCastColumns.includes('last_modified')) {
     db.prepare(
-      "ALTER TABLE movie_cast ADD COLUMN last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)",
+      "ALTER TABLE movie_cast ADD COLUMN last_modified TEXT NOT NULL DEFAULT (datetime('now'))",
     ).run();
   }
 }
@@ -182,7 +182,7 @@ const insertMovie = db.prepare(`
     tagline,
     director,
     last_modified
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (strftime('%s','now') * 1000))
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (datetime('now')))
 `);
 
 const updateMovie = db.prepare(`
@@ -199,7 +199,7 @@ const updateMovie = db.prepare(`
     runtime = COALESCE(?9, runtime),
     tagline = COALESCE(?10, tagline),
     director = COALESCE(?11, director),
-    last_modified = (strftime('%s','now') * 1000)
+    last_modified = (datetime('now'))
   WHERE id = ?12
     AND (
       COALESCE(?1, title) IS NOT title
@@ -227,7 +227,7 @@ const insertPerson = db.prepare(`
     profile_path,
     known_for_department,
     last_modified
-  ) VALUES (?, ?, ?, ?, (strftime('%s','now') * 1000))
+  ) VALUES (?, ?, ?, ?, (datetime('now')))
 `);
 
 const updatePerson = db.prepare(`
@@ -236,7 +236,7 @@ const updatePerson = db.prepare(`
     name = COALESCE(?1, name),
     profile_path = COALESCE(?2, profile_path),
     known_for_department = COALESCE(?3, known_for_department),
-    last_modified = (strftime('%s','now') * 1000)
+    last_modified = (datetime('now'))
   WHERE id = ?4
     AND (
       COALESCE(?1, name) IS NOT name
@@ -254,12 +254,12 @@ const insertMovieCast = db.prepare(`
     character,
     department,
     last_modified
-  ) VALUES (?, ?, ?, ?, ?, (strftime('%s','now') * 1000))
+  ) VALUES (?, ?, ?, ?, ?, (datetime('now')))
   ON CONFLICT(movie_id, person_id) DO UPDATE SET
     cast_order = excluded.cast_order,
     character = excluded.character,
     department = excluded.department,
-    last_modified = (strftime('%s','now') * 1000)
+    last_modified = (datetime('now'))
   WHERE movie_cast.cast_order IS NOT excluded.cast_order
     OR movie_cast.character IS NOT excluded.character
     OR movie_cast.department IS NOT excluded.department
