@@ -64,6 +64,7 @@ function ensureMovieCastTable() {
       person_id   INTEGER NOT NULL,
       cast_order  INTEGER,
       character   TEXT,
+      last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
       department  TEXT,
       PRIMARY KEY (movie_id, person_id),
       FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
@@ -75,6 +76,17 @@ function ensureMovieCastTable() {
     CREATE INDEX IF NOT EXISTS idx_movie_cast_person_castorder_movie
       ON movie_cast(person_id, cast_order, movie_id);
   `);
+
+  const movieCastColumns = db
+    .prepare('PRAGMA table_info(movie_cast)')
+    .all()
+    .map((column) => column.name);
+
+  if (!movieCastColumns.includes('last_modified')) {
+    db.prepare(
+      "ALTER TABLE movie_cast ADD COLUMN last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)",
+    ).run();
+  }
 }
 
 const findPersonByTmdbId = db.prepare(
@@ -86,17 +98,24 @@ const insertPerson = db.prepare(`
     name,
     tmdb_id,
     profile_path,
-    known_for_department
-  ) VALUES (?, ?, ?, ?)
+    known_for_department,
+    last_modified
+  ) VALUES (?, ?, ?, ?, (strftime('%s','now') * 1000))
 `);
 
 const updatePerson = db.prepare(`
   UPDATE people
   SET
-    name = COALESCE(?, name),
-    profile_path = COALESCE(?, profile_path),
-    known_for_department = COALESCE(?, known_for_department)
-  WHERE id = ?
+    name = COALESCE(?1, name),
+    profile_path = COALESCE(?2, profile_path),
+    known_for_department = COALESCE(?3, known_for_department),
+    last_modified = (strftime('%s','now') * 1000)
+  WHERE id = ?4
+    AND (
+      COALESCE(?1, name) IS NOT name
+      OR COALESCE(?2, profile_path) IS NOT profile_path
+      OR COALESCE(?3, known_for_department) IS NOT known_for_department
+    )
 `);
 
 async function fetchMovieCredits(tmdbId) {
@@ -147,13 +166,22 @@ async function run() {
   ensureMovieCastTable();
 
   const insertMovieCast = db.prepare(`
-    INSERT OR REPLACE INTO movie_cast (
+    INSERT INTO movie_cast (
       movie_id,
       person_id,
       cast_order,
       character,
-      department
-    ) VALUES (?, ?, ?, ?, ?)
+      department,
+      last_modified
+    ) VALUES (?, ?, ?, ?, ?, (strftime('%s','now') * 1000))
+    ON CONFLICT(movie_id, person_id) DO UPDATE SET
+      cast_order = excluded.cast_order,
+      character = excluded.character,
+      department = excluded.department,
+      last_modified = (strftime('%s','now') * 1000)
+    WHERE movie_cast.cast_order IS NOT excluded.cast_order
+      OR movie_cast.character IS NOT excluded.character
+      OR movie_cast.department IS NOT excluded.department
   `);
 
   const selectMoviesWithoutCast = db.prepare(`

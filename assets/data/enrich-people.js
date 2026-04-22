@@ -78,7 +78,11 @@ const selectWithoutTmdbId = db.prepare(`
 `);
 
 const updateTmdbId = db.prepare(`
-  UPDATE people SET tmdb_id = ? WHERE id = ? AND tmdb_id IS NULL
+  UPDATE people
+  SET
+    tmdb_id = ?,
+    last_modified = (strftime('%s','now') * 1000)
+  WHERE id = ? AND tmdb_id IS NULL
 `);
 
 const selectWithoutDetails = db.prepare(`
@@ -99,15 +103,26 @@ const selectWithoutDetails = db.prepare(`
 
 const updateDetails = db.prepare(`
   UPDATE people SET
-    imdb_id              = COALESCE(imdb_id, ?),
-    biography            = COALESCE(biography, ?),
-    birthday             = COALESCE(birthday, ?),
-    deathday             = COALESCE(deathday, ?),
-    gender               = COALESCE(gender, ?),
-    known_for_department = COALESCE(known_for_department, ?),
-    place_of_birth       = COALESCE(place_of_birth, ?),
-    profile_path         = COALESCE(profile_path, ?)
-  WHERE id = ?
+    imdb_id              = COALESCE(imdb_id, ?1),
+    biography            = COALESCE(biography, ?2),
+    birthday             = COALESCE(birthday, ?3),
+    deathday             = COALESCE(deathday, ?4),
+    gender               = COALESCE(gender, ?5),
+    known_for_department = COALESCE(known_for_department, ?6),
+    place_of_birth       = COALESCE(place_of_birth, ?7),
+    profile_path         = COALESCE(profile_path, ?8),
+    last_modified        = (strftime('%s','now') * 1000)
+  WHERE id = ?9
+    AND (
+      COALESCE(imdb_id, ?1) IS NOT imdb_id
+      OR COALESCE(biography, ?2) IS NOT biography
+      OR COALESCE(birthday, ?3) IS NOT birthday
+      OR COALESCE(deathday, ?4) IS NOT deathday
+      OR COALESCE(gender, ?5) IS NOT gender
+      OR COALESCE(known_for_department, ?6) IS NOT known_for_department
+      OR COALESCE(place_of_birth, ?7) IS NOT place_of_birth
+      OR COALESCE(profile_path, ?8) IS NOT profile_path
+    )
 `);
 
 // ── TMDB helpers ──────────────────────────────────────────────────────────────

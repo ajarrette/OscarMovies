@@ -114,6 +114,7 @@ function ensureMovieCastTable() {
       person_id   INTEGER NOT NULL,
       cast_order  INTEGER,
       character   TEXT,
+      last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
       department  TEXT,
       PRIMARY KEY (movie_id, person_id),
       FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
@@ -125,6 +126,17 @@ function ensureMovieCastTable() {
     CREATE INDEX IF NOT EXISTS idx_movie_cast_person_castorder_movie
       ON movie_cast(person_id, cast_order, movie_id);
   `);
+
+  const movieCastColumns = db
+    .prepare('PRAGMA table_info(movie_cast)')
+    .all()
+    .map((column) => column.name);
+
+  if (!movieCastColumns.includes('last_modified')) {
+    db.prepare(
+      "ALTER TABLE movie_cast ADD COLUMN last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000)",
+    ).run();
+  }
 }
 
 const selectPeople = db.prepare(`
@@ -151,34 +163,57 @@ const insertPerson = db.prepare(`
     gender,
     known_for_department,
     place_of_birth,
-    profile_path
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+    profile_path,
+    last_modified
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (strftime('%s','now') * 1000))
 `);
 
 const updatePerson = db.prepare(`
   UPDATE people
   SET
-    name = COALESCE(?, name),
-    tmdb_id = COALESCE(tmdb_id, ?),
-    imdb_id = COALESCE(?, imdb_id),
-    biography = COALESCE(?, biography),
-    birthday = COALESCE(?, birthday),
-    deathday = COALESCE(?, deathday),
-    gender = COALESCE(?, gender),
-    known_for_department = COALESCE(?, known_for_department),
-    place_of_birth = COALESCE(?, place_of_birth),
-    profile_path = COALESCE(?, profile_path)
-  WHERE id = ?
+    name = COALESCE(?1, name),
+    tmdb_id = COALESCE(tmdb_id, ?2),
+    imdb_id = COALESCE(?3, imdb_id),
+    biography = COALESCE(?4, biography),
+    birthday = COALESCE(?5, birthday),
+    deathday = COALESCE(?6, deathday),
+    gender = COALESCE(?7, gender),
+    known_for_department = COALESCE(?8, known_for_department),
+    place_of_birth = COALESCE(?9, place_of_birth),
+    profile_path = COALESCE(?10, profile_path),
+    last_modified = (strftime('%s','now') * 1000)
+  WHERE id = ?11
+    AND (
+      COALESCE(?1, name) IS NOT name
+      OR COALESCE(tmdb_id, ?2) IS NOT tmdb_id
+      OR COALESCE(?3, imdb_id) IS NOT imdb_id
+      OR COALESCE(?4, biography) IS NOT biography
+      OR COALESCE(?5, birthday) IS NOT birthday
+      OR COALESCE(?6, deathday) IS NOT deathday
+      OR COALESCE(?7, gender) IS NOT gender
+      OR COALESCE(?8, known_for_department) IS NOT known_for_department
+      OR COALESCE(?9, place_of_birth) IS NOT place_of_birth
+      OR COALESCE(?10, profile_path) IS NOT profile_path
+    )
 `);
 
 const insertMovieCast = db.prepare(`
-  INSERT OR REPLACE INTO movie_cast (
+  INSERT INTO movie_cast (
     movie_id,
     person_id,
     cast_order,
     character,
-    department
-  ) VALUES (?, ?, ?, ?, ?)
+    department,
+    last_modified
+  ) VALUES (?, ?, ?, ?, ?, (strftime('%s','now') * 1000))
+  ON CONFLICT(movie_id, person_id) DO UPDATE SET
+    cast_order = excluded.cast_order,
+    character = excluded.character,
+    department = excluded.department,
+    last_modified = (strftime('%s','now') * 1000)
+  WHERE movie_cast.cast_order IS NOT excluded.cast_order
+    OR movie_cast.character IS NOT excluded.character
+    OR movie_cast.department IS NOT excluded.department
 `);
 
 function buildPeopleNameIndex(rows) {

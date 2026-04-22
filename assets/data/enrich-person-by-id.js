@@ -71,16 +71,28 @@ const selectPersonById = db.prepare('SELECT id, name FROM people WHERE id = ?');
 const updatePersonById = db.prepare(`
   UPDATE people
   SET
-    tmdb_id              = ?,
-    imdb_id              = ?,
-    biography            = ?,
-    birthday             = ?,
-    deathday             = ?,
-    gender               = ?,
-    known_for_department = ?,
-    place_of_birth       = ?,
-    profile_path         = ?
-  WHERE id = ?
+    tmdb_id              = ?1,
+    imdb_id              = ?2,
+    biography            = ?3,
+    birthday             = ?4,
+    deathday             = ?5,
+    gender               = ?6,
+    known_for_department = ?7,
+    place_of_birth       = ?8,
+    profile_path         = ?9,
+    last_modified        = (strftime('%s','now') * 1000)
+  WHERE id = ?10
+    AND (
+      tmdb_id IS NOT ?1
+      OR imdb_id IS NOT ?2
+      OR biography IS NOT ?3
+      OR birthday IS NOT ?4
+      OR deathday IS NOT ?5
+      OR gender IS NOT ?6
+      OR known_for_department IS NOT ?7
+      OR place_of_birth IS NOT ?8
+      OR profile_path IS NOT ?9
+    )
 `);
 
 async function run() {

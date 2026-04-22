@@ -107,16 +107,27 @@ const selectCastPeopleWithNullBiography = db.prepare(`
 const updatePersonDetails = db.prepare(`
   UPDATE people
   SET
-    imdb_id              = ?,
-    biography            = ?,
-    birthday             = ?,
-    deathday             = ?,
-    gender               = ?,
-    known_for_department = ?,
-    place_of_birth       = ?,
-    profile_path         = ?
-  WHERE id = ?
+    imdb_id              = ?1,
+    biography            = ?2,
+    birthday             = ?3,
+    deathday             = ?4,
+    gender               = ?5,
+    known_for_department = ?6,
+    place_of_birth       = ?7,
+    profile_path         = ?8,
+    last_modified        = (strftime('%s','now') * 1000)
+  WHERE id = ?9
     AND biography IS NULL
+    AND (
+      imdb_id IS NOT ?1
+      OR biography IS NOT ?2
+      OR birthday IS NOT ?3
+      OR deathday IS NOT ?4
+      OR gender IS NOT ?5
+      OR known_for_department IS NOT ?6
+      OR place_of_birth IS NOT ?7
+      OR profile_path IS NOT ?8
+    )
 `);
 
 async function run() {

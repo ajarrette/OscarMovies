@@ -200,9 +200,15 @@ function migrateTableReferences(db, tableName, sourceId, targetId) {
     };
   }
 
-  const updateByRowid = db.prepare(
-    `UPDATE "${tableName}" SET person_id = ? WHERE rowid = ?`,
+  const tableColumns = db.prepare(`PRAGMA table_info("${tableName}")`).all();
+  const hasLastModified = tableColumns.some(
+    (column) => column.name === 'last_modified',
   );
+  const updateByRowid = hasLastModified
+    ? db.prepare(
+        `UPDATE "${tableName}" SET person_id = ?, last_modified = (strftime('%s','now') * 1000) WHERE rowid = ?`,
+      )
+    : db.prepare(`UPDATE "${tableName}" SET person_id = ? WHERE rowid = ?`);
   const deleteByRowid = db.prepare(
     `DELETE FROM "${tableName}" WHERE rowid = ?`,
   );
@@ -509,7 +515,12 @@ function run() {
         UPDATE people
         SET
           wins = ?,
-          nominations = ?
+          nominations = ?,
+          last_modified = CASE
+            WHEN wins IS NOT ?1 OR nominations IS NOT ?2
+            THEN (strftime('%s','now') * 1000)
+            ELSE last_modified
+          END
         WHERE id = ?
           AND tmdb_id IS NOT NULL
       `,

@@ -20,13 +20,17 @@ db.pragma('foreign_keys = ON');
 // ── Schema ────────────────────────────────────────────────────────────────────
 db.exec(`
   CREATE TABLE IF NOT EXISTS ceremonies (
-    id         INTEGER PRIMARY KEY,
-    year_label TEXT    NOT NULL UNIQUE
+    id            INTEGER PRIMARY KEY,
+    year_label    TEXT    NOT NULL UNIQUE,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1))
   );
 
   CREATE TABLE IF NOT EXISTS categories (
-    id   INTEGER PRIMARY KEY,
-    name TEXT    NOT NULL UNIQUE
+    id            INTEGER PRIMARY KEY,
+    name          TEXT    NOT NULL UNIQUE,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1))
   );
 
   CREATE TABLE IF NOT EXISTS movies (
@@ -48,14 +52,18 @@ db.exec(`
     letterbox_rating_last_fetched TEXT,
     director      TEXT,
     wins          INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0),
-    nominations   INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)
+    nominations   INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0),
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1))
   );
 
   CREATE TABLE IF NOT EXISTS people (
     id   INTEGER PRIMARY KEY,
     name TEXT    NOT NULL UNIQUE,
-    wins INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0),
-    nominations INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)
+    wins          INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0),
+    nominations   INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0),
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1))
   );
 
   CREATE TABLE IF NOT EXISTS nominations (
@@ -63,7 +71,9 @@ db.exec(`
     ceremony_id  INTEGER NOT NULL,
     category_id  INTEGER NOT NULL,
     won          INTEGER NOT NULL CHECK (won IN (0, 1)),
-    source_order INTEGER,
+    source_order  INTEGER,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1)),
     FOREIGN KEY (ceremony_id) REFERENCES ceremonies(id),
     FOREIGN KEY (category_id) REFERENCES categories(id)
   );
@@ -72,6 +82,8 @@ db.exec(`
     nomination_id INTEGER NOT NULL,
     movie_id      INTEGER NOT NULL,
     ordinal       INTEGER NOT NULL DEFAULT 1,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1)),
     PRIMARY KEY (nomination_id, movie_id),
     FOREIGN KEY (nomination_id) REFERENCES nominations(id) ON DELETE CASCADE,
     FOREIGN KEY (movie_id)      REFERENCES movies(id)      ON DELETE CASCADE
@@ -81,6 +93,8 @@ db.exec(`
     nomination_id INTEGER NOT NULL,
     person_id     INTEGER NOT NULL,
     ordinal       INTEGER NOT NULL DEFAULT 1,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1)),
     PRIMARY KEY (nomination_id, person_id),
     FOREIGN KEY (nomination_id) REFERENCES nominations(id) ON DELETE CASCADE,
     FOREIGN KEY (person_id)     REFERENCES people(id)      ON DELETE CASCADE
@@ -93,17 +107,23 @@ db.exec(`
     nominee_kind  TEXT    NOT NULL DEFAULT 'unknown'
       CHECK (nominee_kind IN ('person','movie','song','other','unknown')),
     ordinal       INTEGER NOT NULL,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1)),
     FOREIGN KEY (nomination_id) REFERENCES nominations(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS tmdb_genres (
-    id   INTEGER PRIMARY KEY,
-    name TEXT    NOT NULL UNIQUE
+    id            INTEGER PRIMARY KEY,
+    name          TEXT    NOT NULL UNIQUE,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1))
   );
 
   CREATE TABLE IF NOT EXISTS movie_tmdb_genres (
     movie_id INTEGER NOT NULL,
     genre_id INTEGER NOT NULL,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1)),
     PRIMARY KEY (movie_id, genre_id),
     FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
     FOREIGN KEY (genre_id) REFERENCES tmdb_genres(id) ON DELETE CASCADE
@@ -113,26 +133,34 @@ db.exec(`
     id             INTEGER PRIMARY KEY,
     name           TEXT    NOT NULL,
     logo_path      TEXT,
-    origin_country TEXT
+    origin_country TEXT,
+    last_modified  INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted     INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1))
   );
 
   CREATE TABLE IF NOT EXISTS movie_tmdb_production_companies (
     movie_id   INTEGER NOT NULL,
     company_id INTEGER NOT NULL,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1)),
     PRIMARY KEY (movie_id, company_id),
     FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
     FOREIGN KEY (company_id) REFERENCES tmdb_production_companies(id) ON DELETE CASCADE
   );
 
   CREATE TABLE IF NOT EXISTS tmdb_spoken_languages (
-    iso_639_1    TEXT PRIMARY KEY,
-    english_name TEXT,
-    name         TEXT
+    iso_639_1     TEXT PRIMARY KEY,
+    english_name  TEXT,
+    name          TEXT,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1))
   );
 
   CREATE TABLE IF NOT EXISTS movie_tmdb_spoken_languages (
     movie_id      INTEGER NOT NULL,
     language_code TEXT    NOT NULL,
+    last_modified INTEGER NOT NULL DEFAULT (strftime('%s','now') * 1000),
+    is_deleted    INTEGER NOT NULL DEFAULT 0 CHECK (is_deleted IN (0, 1)),
     PRIMARY KEY (movie_id, language_code),
     FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
     FOREIGN KEY (language_code) REFERENCES tmdb_spoken_languages(iso_639_1) ON DELETE CASCADE
@@ -212,12 +240,12 @@ if (existingPeopleColumns.includes('known_for_department')) {
 // ── Prepared statements ───────────────────────────────────────────────────────
 const stmts = {
   insertCeremony: db.prepare(
-    'INSERT OR IGNORE INTO ceremonies (year_label) VALUES (?)',
+    "INSERT OR IGNORE INTO ceremonies (year_label, last_modified) VALUES (?, (strftime('%s','now') * 1000))",
   ),
   getCeremony: db.prepare('SELECT id FROM ceremonies WHERE year_label = ?'),
 
   insertCategory: db.prepare(
-    'INSERT OR IGNORE INTO categories (name) VALUES (?)',
+    "INSERT OR IGNORE INTO categories (name, last_modified) VALUES (?, (strftime('%s','now') * 1000))",
   ),
   getCategory: db.prepare('SELECT id FROM categories WHERE name = ?'),
 
@@ -233,8 +261,9 @@ const stmts = {
       release_date,
       runtime,
       tagline,
-      director
-      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      director,
+      last_modified
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (strftime('%s','now') * 1000))
   `),
   getMovieByTmdb: db.prepare('SELECT id FROM movies WHERE tmdb_id = ?'),
   getMovieByImdb: db.prepare('SELECT id FROM movies WHERE imdb_id = ?'),
@@ -242,28 +271,30 @@ const stmts = {
     'SELECT id FROM movies WHERE title = ? AND tmdb_id IS NULL AND imdb_id IS NULL',
   ),
 
-  insertPerson: db.prepare('INSERT OR IGNORE INTO people (name) VALUES (?)'),
+  insertPerson: db.prepare(
+    "INSERT OR IGNORE INTO people (name, last_modified) VALUES (?, (strftime('%s','now') * 1000))",
+  ),
   getPerson: db.prepare('SELECT id FROM people WHERE name = ?'),
 
   insertNomination: db.prepare(`
-    INSERT INTO nominations (ceremony_id, category_id, won, source_order)
-    VALUES (?, ?, ?, ?)
+    INSERT INTO nominations (ceremony_id, category_id, won, source_order, last_modified)
+    VALUES (?, ?, ?, ?, (strftime('%s','now') * 1000))
   `),
   getNominationBySourceOrder: db.prepare(
     'SELECT id FROM nominations WHERE source_order = ?',
   ),
 
   insertNomMovie: db.prepare(`
-    INSERT OR IGNORE INTO nomination_movies (nomination_id, movie_id, ordinal)
-    VALUES (?, ?, ?)
+    INSERT OR IGNORE INTO nomination_movies (nomination_id, movie_id, ordinal, last_modified)
+    VALUES (?, ?, ?, (strftime('%s','now') * 1000))
   `),
   insertNomPerson: db.prepare(`
-    INSERT OR IGNORE INTO nomination_people (nomination_id, person_id, ordinal)
-    VALUES (?, ?, ?)
+    INSERT OR IGNORE INTO nomination_people (nomination_id, person_id, ordinal, last_modified)
+    VALUES (?, ?, ?, (strftime('%s','now') * 1000))
   `),
   insertNomNominee: db.prepare(`
-    INSERT OR IGNORE INTO nomination_nominees (nomination_id, nominee_text, nominee_kind, ordinal)
-    VALUES (?, ?, ?, ?)
+    INSERT OR IGNORE INTO nomination_nominees (nomination_id, nominee_text, nominee_kind, ordinal, last_modified)
+    VALUES (?, ?, ?, ?, (strftime('%s','now') * 1000))
   `),
   selectPeople: db.prepare('SELECT id, name FROM people'),
 };
@@ -406,7 +437,23 @@ db.exec(`
       JOIN nominations n ON n.id = nm.nomination_id
       WHERE nm.movie_id = movies.id
         AND n.won = 1
-    );
+    ),
+    last_modified = CASE
+      WHEN nominations IS NOT (
+        SELECT COUNT(DISTINCT nm.nomination_id)
+        FROM nomination_movies nm
+        WHERE nm.movie_id = movies.id
+      )
+      OR wins IS NOT (
+        SELECT COUNT(DISTINCT nm.nomination_id)
+        FROM nomination_movies nm
+        JOIN nominations n ON n.id = nm.nomination_id
+        WHERE nm.movie_id = movies.id
+          AND n.won = 1
+      )
+      THEN (strftime('%s','now') * 1000)
+      ELSE last_modified
+    END;
 
   UPDATE people
   SET
@@ -421,7 +468,23 @@ db.exec(`
       JOIN nominations n ON n.id = np.nomination_id
       WHERE np.person_id = people.id
         AND n.won = 1
-    );
+    ),
+    last_modified = CASE
+      WHEN nominations IS NOT (
+        SELECT COUNT(*)
+        FROM nomination_people np
+        WHERE np.person_id = people.id
+      )
+      OR wins IS NOT (
+        SELECT COUNT(*)
+        FROM nomination_people np
+        JOIN nominations n ON n.id = np.nomination_id
+        WHERE np.person_id = people.id
+          AND n.won = 1
+      )
+      THEN (strftime('%s','now') * 1000)
+      ELSE last_modified
+    END;
 `);
 
 // ── Summary ───────────────────────────────────────────────────────────────────

@@ -29,22 +29,35 @@ const selectMovies = db.prepare(`
 
 const updateMovie = db.prepare(`
   UPDATE movies SET
-    backdrop_path  = ?,
-    original_title = ?,
-    overview       = ?,
-    poster_path    = ?,
-    release_date   = ?,
-    runtime        = ?,
-    tagline        = ?,
-    director       = ?
-  WHERE id = ?
+    backdrop_path  = ?1,
+    original_title = ?2,
+    overview       = ?3,
+    poster_path    = ?4,
+    release_date   = ?5,
+    runtime        = ?6,
+    tagline        = ?7,
+    director       = ?8,
+    last_modified  = (strftime('%s','now') * 1000)
+  WHERE id = ?9
+    AND (
+      backdrop_path IS NOT ?1
+      OR original_title IS NOT ?2
+      OR overview IS NOT ?3
+      OR poster_path IS NOT ?4
+      OR release_date IS NOT ?5
+      OR runtime IS NOT ?6
+      OR tagline IS NOT ?7
+      OR director IS NOT ?8
+    )
 `);
 
 const upsertGenre = db.prepare(`
-  INSERT INTO tmdb_genres (id, name)
-  VALUES (?, ?)
+  INSERT INTO tmdb_genres (id, name, last_modified)
+  VALUES (?, ?, (strftime('%s','now') * 1000))
   ON CONFLICT(id) DO UPDATE SET
-    name = excluded.name
+    name = excluded.name,
+    last_modified = (strftime('%s','now') * 1000)
+  WHERE tmdb_genres.name IS NOT excluded.name
 `);
 
 const clearMovieGenres = db.prepare(
@@ -52,17 +65,21 @@ const clearMovieGenres = db.prepare(
 );
 
 const linkMovieGenre = db.prepare(`
-  INSERT OR IGNORE INTO movie_tmdb_genres (movie_id, genre_id)
-  VALUES (?, ?)
+  INSERT OR IGNORE INTO movie_tmdb_genres (movie_id, genre_id, last_modified)
+  VALUES (?, ?, (strftime('%s','now') * 1000))
 `);
 
 const upsertProductionCompany = db.prepare(`
-  INSERT INTO tmdb_production_companies (id, name, logo_path, origin_country)
-  VALUES (?, ?, ?, ?)
+  INSERT INTO tmdb_production_companies (id, name, logo_path, origin_country, last_modified)
+  VALUES (?, ?, ?, ?, (strftime('%s','now') * 1000))
   ON CONFLICT(id) DO UPDATE SET
     name = excluded.name,
     logo_path = excluded.logo_path,
-    origin_country = excluded.origin_country
+    origin_country = excluded.origin_country,
+    last_modified = (strftime('%s','now') * 1000)
+  WHERE tmdb_production_companies.name IS NOT excluded.name
+    OR tmdb_production_companies.logo_path IS NOT excluded.logo_path
+    OR tmdb_production_companies.origin_country IS NOT excluded.origin_country
 `);
 
 const clearMovieProductionCompanies = db.prepare(
@@ -70,16 +87,19 @@ const clearMovieProductionCompanies = db.prepare(
 );
 
 const linkMovieProductionCompany = db.prepare(`
-  INSERT OR IGNORE INTO movie_tmdb_production_companies (movie_id, company_id)
-  VALUES (?, ?)
+  INSERT OR IGNORE INTO movie_tmdb_production_companies (movie_id, company_id, last_modified)
+  VALUES (?, ?, (strftime('%s','now') * 1000))
 `);
 
 const upsertSpokenLanguage = db.prepare(`
-  INSERT INTO tmdb_spoken_languages (iso_639_1, english_name, name)
-  VALUES (?, ?, ?)
+  INSERT INTO tmdb_spoken_languages (iso_639_1, english_name, name, last_modified)
+  VALUES (?, ?, ?, (strftime('%s','now') * 1000))
   ON CONFLICT(iso_639_1) DO UPDATE SET
     english_name = excluded.english_name,
-    name = excluded.name
+    name = excluded.name,
+    last_modified = (strftime('%s','now') * 1000)
+  WHERE tmdb_spoken_languages.english_name IS NOT excluded.english_name
+    OR tmdb_spoken_languages.name IS NOT excluded.name
 `);
 
 const clearMovieSpokenLanguages = db.prepare(
@@ -87,8 +107,8 @@ const clearMovieSpokenLanguages = db.prepare(
 );
 
 const linkMovieSpokenLanguage = db.prepare(`
-  INSERT OR IGNORE INTO movie_tmdb_spoken_languages (movie_id, language_code)
-  VALUES (?, ?)
+  INSERT OR IGNORE INTO movie_tmdb_spoken_languages (movie_id, language_code, last_modified)
+  VALUES (?, ?, (strftime('%s','now') * 1000))
 `);
 
 const enrichMovie = db.transaction((movieId, data, director) => {
