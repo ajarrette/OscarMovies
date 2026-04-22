@@ -41,7 +41,6 @@ function ensurePeopleColumns() {
     'gender INTEGER',
     'known_for_department TEXT',
     'place_of_birth TEXT',
-    'popularity REAL',
     'profile_path TEXT',
     'wins INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0)',
     'nominations INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)',
@@ -115,7 +114,6 @@ const updatePersonDetails = db.prepare(`
     gender               = ?,
     known_for_department = ?,
     place_of_birth       = ?,
-    popularity           = ?,
     profile_path         = ?
   WHERE id = ?
     AND biography IS NULL
@@ -143,7 +141,6 @@ async function run() {
         nullableNumber(data.gender),
         nullableText(data.known_for_department),
         nullableText(data.place_of_birth),
-        nullableNumber(data.popularity),
         nullableText(data.profile_path),
         person.id,
       );

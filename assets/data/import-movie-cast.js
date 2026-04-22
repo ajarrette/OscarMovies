@@ -29,7 +29,6 @@ function ensurePeopleColumns() {
 
   const requiredColumns = [
     'tmdb_id INTEGER',
-    'popularity REAL',
     'profile_path TEXT',
     'known_for_department TEXT',
     'wins INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0)',
@@ -86,17 +85,15 @@ const insertPerson = db.prepare(`
   INSERT OR IGNORE INTO people (
     name,
     tmdb_id,
-    popularity,
     profile_path,
     known_for_department
-  ) VALUES (?, ?, ?, ?, ?)
+  ) VALUES (?, ?, ?, ?)
 `);
 
 const updatePerson = db.prepare(`
   UPDATE people
   SET
     name = COALESCE(?, name),
-    popularity = COALESCE(?, popularity),
     profile_path = COALESCE(?, profile_path),
     known_for_department = COALESCE(?, known_for_department)
   WHERE id = ?
@@ -194,7 +191,6 @@ async function run() {
 
       creditByTmdbPersonId.set(tmdbPersonId, {
         name: nullableText(castPerson.name) ?? 'Unknown Person',
-        popularity: nullableNumber(castPerson.popularity),
         profilePath: nullableText(castPerson.profile_path),
         department: normalizeDepartment(castPerson),
         castOrder: nullableNumber(castPerson.order),
@@ -210,7 +206,6 @@ async function run() {
 
       creditByTmdbPersonId.set(tmdbPersonId, {
         name: nullableText(crewPerson.name) ?? 'Unknown Person',
-        popularity: nullableNumber(crewPerson.popularity),
         profilePath: nullableText(crewPerson.profile_path),
         department: normalizeCrewDepartment(crewPerson),
         castOrder: null,
@@ -224,7 +219,6 @@ async function run() {
         insertPerson.run(
           credit.name,
           tmdbPersonId,
-          credit.popularity,
           credit.profilePath,
           credit.department,
         );
@@ -237,7 +231,6 @@ async function run() {
 
       updatePerson.run(
         credit.name,
-        credit.popularity,
         credit.profilePath,
         credit.department,
         personId,

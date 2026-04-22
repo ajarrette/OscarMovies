@@ -34,7 +34,6 @@ const newColumns = [
   'gender              INTEGER',
   'known_for_department TEXT',
   'place_of_birth      TEXT',
-  'popularity          REAL',
   'profile_path        TEXT',
   'wins                INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0)',
   'nominations         INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)',
@@ -93,10 +92,9 @@ const selectWithoutDetails = db.prepare(`
       OR gender IS NULL
       OR known_for_department IS NULL
       OR place_of_birth IS NULL
-      OR popularity IS NULL
       OR profile_path IS NULL
     )
-  ORDER BY popularity DESC
+  ORDER BY id ASC
 `);
 
 const updateDetails = db.prepare(`
@@ -108,7 +106,6 @@ const updateDetails = db.prepare(`
     gender               = COALESCE(gender, ?),
     known_for_department = COALESCE(known_for_department, ?),
     place_of_birth       = COALESCE(place_of_birth, ?),
-    popularity           = COALESCE(popularity, ?),
     profile_path         = COALESCE(profile_path, ?)
   WHERE id = ?
 `);
@@ -186,7 +183,6 @@ async function enrichDetails() {
         data.gender ?? null,
         data.known_for_department ?? null,
         data.place_of_birth ?? null,
-        data.popularity ?? null,
         data.profile_path ?? null,
         person.id,
       );

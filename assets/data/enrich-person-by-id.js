@@ -79,7 +79,6 @@ const updatePersonById = db.prepare(`
     gender               = ?,
     known_for_department = ?,
     place_of_birth       = ?,
-    popularity           = ?,
     profile_path         = ?
   WHERE id = ?
 `);
@@ -124,7 +123,6 @@ async function run() {
     nullableNumber(data.gender),
     nullableText(data.known_for_department),
     nullableText(data.place_of_birth),
-    nullableNumber(data.popularity),
     nullableText(data.profile_path),
     peopleId,
   );

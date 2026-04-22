@@ -37,7 +37,6 @@ db.exec(`
     backdrop_path TEXT,
     original_title TEXT,
     overview      TEXT,
-    popularity    REAL,
     poster_path   TEXT,
     release_date  TEXT,
     runtime       INTEGER,
@@ -230,13 +229,12 @@ const stmts = {
       backdrop_path,
       original_title,
       overview,
-      popularity,
       poster_path,
       release_date,
       runtime,
       tagline,
       director
-    ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+      ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
   `),
   getMovieByTmdb: db.prepare('SELECT id FROM movies WHERE tmdb_id = ?'),
   getMovieByImdb: db.prepare('SELECT id FROM movies WHERE imdb_id = ?'),
@@ -331,7 +329,6 @@ const seed = db.transaction(() => {
         m.backdrop_path ?? null,
         m.original_title ?? null,
         m.overview ?? null,
-        m.popularity ?? null,
         m.poster_path ?? null,
         m.release_date ?? null,
         m.runtime ?? null,

@@ -86,7 +86,6 @@ function ensurePeopleColumns() {
     'gender INTEGER',
     'known_for_department TEXT',
     'place_of_birth TEXT',
-    'popularity REAL',
     'profile_path TEXT',
     'wins INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0)',
     'nominations INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)',
@@ -152,9 +151,8 @@ const insertPerson = db.prepare(`
     gender,
     known_for_department,
     place_of_birth,
-    popularity,
     profile_path
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 const updatePerson = db.prepare(`
@@ -169,7 +167,6 @@ const updatePerson = db.prepare(`
     gender = COALESCE(?, gender),
     known_for_department = COALESCE(?, known_for_department),
     place_of_birth = COALESCE(?, place_of_birth),
-    popularity = COALESCE(?, popularity),
     profile_path = COALESCE(?, profile_path)
   WHERE id = ?
 `);
@@ -242,7 +239,6 @@ function upsertPersonRecord(detail, listPerson, peopleByNormalizedName) {
       nullableNumber(detail.gender),
       nullableText(detail.known_for_department),
       nullableText(detail.place_of_birth),
-      nullableNumber(detail.popularity ?? listPerson.popularity),
       nullableText(detail.profile_path),
     );
 
@@ -262,7 +258,6 @@ function upsertPersonRecord(detail, listPerson, peopleByNormalizedName) {
     nullableNumber(detail.gender),
     nullableText(detail.known_for_department),
     nullableText(detail.place_of_birth),
-    nullableNumber(detail.popularity ?? listPerson.popularity),
     nullableText(detail.profile_path),
     personId,
   );

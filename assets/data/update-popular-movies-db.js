@@ -104,7 +104,6 @@ function ensurePeopleColumns() {
 
   const requiredColumns = [
     'tmdb_id INTEGER',
-    'popularity REAL',
     'profile_path TEXT',
     'known_for_department TEXT',
     'wins INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0)',
@@ -165,13 +164,12 @@ const insertMovie = db.prepare(`
     backdrop_path,
     original_title,
     overview,
-    popularity,
     poster_path,
     release_date,
     runtime,
     tagline,
     director
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
 `);
 
 const updateMovie = db.prepare(`
@@ -183,7 +181,6 @@ const updateMovie = db.prepare(`
     backdrop_path = COALESCE(?, backdrop_path),
     original_title = COALESCE(?, original_title),
     overview = COALESCE(?, overview),
-    popularity = COALESCE(?, popularity),
     poster_path = COALESCE(?, poster_path),
     release_date = COALESCE(?, release_date),
     runtime = COALESCE(?, runtime),
@@ -200,17 +197,15 @@ const insertPerson = db.prepare(`
   INSERT OR IGNORE INTO people (
     name,
     tmdb_id,
-    popularity,
     profile_path,
     known_for_department
-  ) VALUES (?, ?, ?, ?, ?)
+  ) VALUES (?, ?, ?, ?)
 `);
 
 const updatePerson = db.prepare(`
   UPDATE people
   SET
     name = COALESCE(?, name),
-    popularity = COALESCE(?, popularity),
     profile_path = COALESCE(?, profile_path),
     known_for_department = COALESCE(?, known_for_department)
   WHERE id = ?
@@ -273,7 +268,6 @@ function upsertMovieAndCast(detail, discoverMovie) {
       nullableText(detail.backdrop_path),
       nullableText(detail.original_title),
       nullableText(detail.overview),
-      nullableNumber(detail.popularity),
       nullableText(detail.poster_path),
       nullableText(detail.release_date),
       nullableNumber(detail.runtime),
@@ -291,7 +285,6 @@ function upsertMovieAndCast(detail, discoverMovie) {
     nullableText(detail.backdrop_path),
     nullableText(detail.original_title),
     nullableText(detail.overview),
-    nullableNumber(detail.popularity),
     nullableText(detail.poster_path),
     nullableText(detail.release_date),
     nullableNumber(detail.runtime),
@@ -317,7 +310,6 @@ function upsertMovieCast(movieId, credits) {
 
     creditByTmdbPersonId.set(tmdbPersonId, {
       name: nullableText(castPerson.name) ?? 'Unknown Person',
-      popularity: nullableNumber(castPerson.popularity),
       profilePath: nullableText(castPerson.profile_path),
       department: normalizeDepartment(castPerson),
       castOrder: nullableNumber(castPerson.order),
@@ -333,7 +325,6 @@ function upsertMovieCast(movieId, credits) {
 
     creditByTmdbPersonId.set(tmdbPersonId, {
       name: nullableText(crewPerson.name) ?? 'Unknown Person',
-      popularity: nullableNumber(crewPerson.popularity),
       profilePath: nullableText(crewPerson.profile_path),
       department: normalizeCrewDepartment(crewPerson),
       castOrder: null,
@@ -351,7 +342,6 @@ function upsertMovieCast(movieId, credits) {
       insertPerson.run(
         credit.name,
         tmdbPersonId,
-        credit.popularity,
         credit.profilePath,
         credit.department,
       );
@@ -364,7 +354,6 @@ function upsertMovieCast(movieId, credits) {
 
     updatePerson.run(
       credit.name,
-      credit.popularity,
       credit.profilePath,
       credit.department,
       personId,
