@@ -1,6 +1,7 @@
 import { FlashList } from '@shopify/flash-list';
 import { Ionicons } from '@expo/vector-icons';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
+import { useIsFocused } from '@react-navigation/native';
 import { useSQLiteContext } from 'expo-sqlite';
 import { useCallback, useEffect, useMemo, useState } from 'react';
 import {
@@ -34,6 +35,7 @@ function getPosterUri(path: string | null): string | undefined {
 export default function GenreFilmsScreen() {
   const db = useSQLiteContext();
   const router = useRouter();
+  const isFocused = useIsFocused();
   const { width } = useWindowDimensions();
   const params = useLocalSearchParams<{
     genreId?: string;
@@ -227,35 +229,39 @@ export default function GenreFilmsScreen() {
           headerTransparent: Platform.OS === 'ios',
           headerBlurEffect:
             Platform.OS === 'ios' ? 'systemUltraThinMaterialDark' : undefined,
-          headerLeft: () => (
-            <Pressable
-              onPress={() => router.back()}
-              hitSlop={8}
-              style={styles.headerBackButton}
-            >
-              <Ionicons name='chevron-back' size={24} color='#fff' />
-            </Pressable>
-          ),
-          headerRight: () => (
-            <Pressable
-              onPress={() => {
-                if (originTab === 'search') {
-                  router.dismissTo('/(tabs)/search');
-                  return;
-                }
+          headerLeft: isFocused
+            ? () => (
+                <Pressable
+                  onPress={() => router.back()}
+                  hitSlop={8}
+                  style={styles.headerBackButton}
+                >
+                  <Ionicons name='chevron-back' size={24} color='#fff' />
+                </Pressable>
+              )
+            : () => null,
+          headerRight: isFocused
+            ? () => (
+                <Pressable
+                  onPress={() => {
+                    if (originTab === 'search') {
+                      router.dismissTo('/(tabs)/search');
+                      return;
+                    }
 
-                if (originTab === 'films') {
-                  router.dismissTo('/(tabs)/films');
-                  return;
-                }
+                    if (originTab === 'films') {
+                      router.dismissTo('/(tabs)/films');
+                      return;
+                    }
 
-                router.dismissTo('/(tabs)/genres');
-              }}
-              hitSlop={8}
-            >
-              <Ionicons name='close' size={22} color='#fff' />
-            </Pressable>
-          ),
+                    router.dismissTo('/(tabs)/genres');
+                  }}
+                  hitSlop={8}
+                >
+                  <Ionicons name='close' size={22} color='#fff' />
+                </Pressable>
+              )
+            : () => null,
         }}
       />
 
