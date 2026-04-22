@@ -45,6 +45,7 @@ export default function RootLayout() {
             name='people'
             options={{
               animation: 'slide_from_right',
+              contentStyle: { backgroundColor: '#25292e' },
             }}
           />
           <Stack.Screen name='+not-found' options={{ headerShown: true }} />

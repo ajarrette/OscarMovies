@@ -1,6 +1,12 @@
 import { useSQLiteContext } from 'expo-sqlite';
 import { useEffect, useState } from 'react';
-import { Button, StyleSheet, Text, View } from 'react-native';
+import {
+  ActivityIndicator,
+  Button,
+  StyleSheet,
+  Text,
+  View,
+} from 'react-native';
 import Person from '@/types/person';
 import { ensureAllPopularityCachesFresh } from '@/app/services/popularity';
 import PersonDetail from './personDetail';
@@ -148,7 +154,9 @@ export default function LoadPersonDetail({ id }: Props) {
   return (
     <>
       {loading ? (
-        <></>
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator size='small' color='#fff' />
+        </View>
       ) : person ? (
         <PersonDetail person={person} movies={movies} />
       ) : (
@@ -164,6 +172,12 @@ export default function LoadPersonDetail({ id }: Props) {
 }
 
 const styles = StyleSheet.create({
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
+    backgroundColor: '#25292e',
+  },
   text: {
     color: '#fff',
   },

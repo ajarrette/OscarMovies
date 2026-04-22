@@ -7,6 +7,7 @@ export default function PeopleLayout() {
         headerStyle: { backgroundColor: '#25292e' },
         headerShadowVisible: false,
         headerTintColor: 'white',
+        contentStyle: { backgroundColor: '#25292e' },
       }}
     >
       <Stack.Screen
