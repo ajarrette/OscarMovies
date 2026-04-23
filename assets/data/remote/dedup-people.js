@@ -5,11 +5,12 @@
 const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
-const { normalizeNameForComparison } = require('./name-normalization');
+const { normalizeNameForComparison } = require('../name-normalization');
 
-const DEFAULT_DB_PATH = path.join(__dirname, 'oscar-movies.db');
-const DEFAULT_ALIAS_PATH = path.join(__dirname, 'people-aliases.json');
-const DEFAULT_REPORT_DIR = path.join(__dirname, 'reports');
+const DATA_DIR = path.join(__dirname, '..');
+const DEFAULT_DB_PATH = path.join(DATA_DIR, 'oscar-movies.db');
+const DEFAULT_ALIAS_PATH = path.join(DATA_DIR, 'people-aliases.json');
+const DEFAULT_REPORT_DIR = path.join(DATA_DIR, 'reports');
 
 function parseArgs(argv) {
   const args = {

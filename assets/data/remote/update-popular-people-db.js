@@ -3,28 +3,48 @@
 'use strict';
 
 const path = require('path');
-const Database = require('better-sqlite3');
-const { normalizeNameForComparison } = require('./name-normalization');
+const { normalizeNameForComparison } = require('../name-normalization');
 
-const ROOT_DIR = process.cwd();
+const ROOT_DIR = path.join(__dirname, '..', '..', '..');
 
 require('dotenv').config({ path: path.join(ROOT_DIR, '.env') });
 
 const API_KEY = process.env.TMDB_API_KEY;
+const SUPABASE_SERVICE_ROLE_KEY = process.env.SUPABASE_SERVICE_ROLE_KEY;
+const SUPABASE_URL =
+  process.env.SUPABASE_URL ?? process.env.EXPO_PUBLIC_SUPABASE_URL;
+
 if (!API_KEY) {
   console.error('Missing TMDB_API_KEY in .env');
   process.exit(1);
 }
 
-const DB_PATH = path.join(ROOT_DIR, 'assets', 'data', 'oscar-movies.db');
+if (!SUPABASE_URL) {
+  console.error('Missing SUPABASE_URL in .env');
+  process.exit(1);
+}
+
+if (!SUPABASE_SERVICE_ROLE_KEY) {
+  console.error('Missing SUPABASE_SERVICE_ROLE_KEY in .env');
+  process.exit(1);
+}
+
 const PAGE_SIZE = 20;
-const TARGET_PEOPLE_COUNT = 100;
+const TARGET_PEOPLE_COUNT = 1;
 const PAGE_COUNT = Math.ceil(TARGET_PEOPLE_COUNT / PAGE_SIZE);
 const REQUEST_DELAY_MS = 25;
+const SUPABASE_PAGE_SIZE = 1000;
 
-const db = new Database(DB_PATH);
-db.pragma('journal_mode = WAL');
-db.pragma('foreign_keys = ON');
+const SUPABASE_REST_BASE = buildSupabaseRestBase(SUPABASE_URL);
+
+function buildSupabaseRestBase(url) {
+  const trimmed = String(url).trim().replace(/\/+$/, '');
+  if (trimmed.endsWith('/rest/v1')) {
+    return trimmed;
+  }
+
+  return `${trimmed}/rest/v1`;
+}
 
 function nullableText(value) {
   if (value == null) return null;
@@ -34,6 +54,18 @@ function nullableText(value) {
 
 function nullableNumber(value) {
   return typeof value === 'number' && Number.isFinite(value) ? value : null;
+}
+
+function compactPayload(payload) {
+  const result = {};
+
+  for (const [key, value] of Object.entries(payload)) {
+    if (value !== null && value !== undefined) {
+      result[key] = value;
+    }
+  }
+
+  return result;
 }
 
 async function fetchJson(url, label) {
@@ -71,150 +103,116 @@ async function fetchPersonDetails(tmdbId) {
   );
 }
 
-function ensurePeopleColumns() {
-  const existingColumns = db
-    .prepare('PRAGMA table_info(people)')
-    .all()
-    .map((column) => column.name);
+async function supabaseRequest(method, table, { query, payload, prefer } = {}) {
+  const params = new URLSearchParams();
 
-  const requiredColumns = [
-    'tmdb_id INTEGER',
-    'imdb_id TEXT',
-    'biography TEXT',
-    'birthday TEXT',
-    'deathday TEXT',
-    'gender INTEGER',
-    'known_for_department TEXT',
-    'place_of_birth TEXT',
-    'profile_path TEXT',
-    'wins INTEGER NOT NULL DEFAULT 0 CHECK (wins >= 0)',
-    'nominations INTEGER NOT NULL DEFAULT 0 CHECK (nominations >= 0)',
-  ];
-
-  for (const columnDef of requiredColumns) {
-    const columnName = columnDef.trim().split(/\s+/)[0];
-    if (!existingColumns.includes(columnName)) {
-      db.prepare(`ALTER TABLE people ADD COLUMN ${columnDef}`).run();
-      console.log(`Added column: people.${columnName}`);
+  for (const [key, value] of Object.entries(query ?? {})) {
+    if (value !== null && value !== undefined) {
+      params.set(key, String(value));
     }
   }
 
-  db.prepare(
-    'CREATE UNIQUE INDEX IF NOT EXISTS idx_people_tmdb_id ON people(tmdb_id)',
-  ).run();
-  db.prepare(
-    'CREATE INDEX IF NOT EXISTS idx_people_department_name_nocase ON people(known_for_department, name COLLATE NOCASE)',
-  ).run();
-}
+  const url = `${SUPABASE_REST_BASE}/${table}${
+    params.size > 0 ? `?${params.toString()}` : ''
+  }`;
 
-function ensureMovieCastTable() {
-  db.exec(`
-    CREATE TABLE IF NOT EXISTS movie_cast (
-      movie_id    INTEGER NOT NULL,
-      person_id   INTEGER NOT NULL,
-      cast_order  INTEGER,
-      character   TEXT,
-      last_modified TEXT NOT NULL DEFAULT (datetime('now')),
-      department  TEXT,
-      PRIMARY KEY (movie_id, person_id),
-      FOREIGN KEY (movie_id) REFERENCES movies(id) ON DELETE CASCADE,
-      FOREIGN KEY (person_id) REFERENCES people(id) ON DELETE CASCADE
-    );
+  const headers = {
+    apikey: SUPABASE_SERVICE_ROLE_KEY,
+    Authorization: `Bearer ${SUPABASE_SERVICE_ROLE_KEY}`,
+  };
 
-    CREATE INDEX IF NOT EXISTS idx_movie_cast_movie ON movie_cast(movie_id);
-    CREATE INDEX IF NOT EXISTS idx_movie_cast_person ON movie_cast(person_id);
-    CREATE INDEX IF NOT EXISTS idx_movie_cast_person_castorder_movie
-      ON movie_cast(person_id, cast_order, movie_id);
-  `);
-
-  const movieCastColumns = db
-    .prepare('PRAGMA table_info(movie_cast)')
-    .all()
-    .map((column) => column.name);
-
-  if (!movieCastColumns.includes('last_modified')) {
-    db.prepare(
-      "ALTER TABLE movie_cast ADD COLUMN last_modified TEXT NOT NULL DEFAULT (datetime('now'))",
-    ).run();
+  if (payload !== undefined) {
+    headers['Content-Type'] = 'application/json';
   }
+
+  if (prefer) {
+    headers.Prefer = prefer;
+  }
+
+  const response = await fetch(url, {
+    method,
+    headers,
+    body: payload !== undefined ? JSON.stringify(payload) : undefined,
+  });
+
+  if (!response.ok) {
+    const body = await response.text();
+    throw new Error(
+      `Supabase ${method} ${table} ${response.status}: ${body.slice(0, 240)}`,
+    );
+  }
+
+  const text = await response.text();
+  if (!text) {
+    return null;
+  }
+
+  return JSON.parse(text);
 }
 
-const selectPeople = db.prepare(`
-  SELECT id, name, tmdb_id
-  FROM people
-`);
+async function selectSingle(table, query) {
+  const rows = await supabaseRequest('GET', table, {
+    query: { ...query, limit: 1 },
+  });
 
-const findPersonByTmdbId = db.prepare(
-  'SELECT id FROM people WHERE tmdb_id = ? LIMIT 1',
-);
+  if (!Array.isArray(rows) || rows.length === 0) {
+    return null;
+  }
 
-const findMovieByTmdbId = db.prepare(
-  'SELECT id FROM movies WHERE tmdb_id = ? LIMIT 1',
-);
+  return rows[0];
+}
 
-const insertPerson = db.prepare(`
-  INSERT INTO people (
-    name,
-    tmdb_id,
-    imdb_id,
-    biography,
-    birthday,
-    deathday,
-    gender,
-    known_for_department,
-    place_of_birth,
-    profile_path,
-    last_modified
-  ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, (strftime('%s','now') * 1000))
-`);
+async function fetchAllRows(table, selectColumns) {
+  const rows = [];
 
-const updatePerson = db.prepare(`
-  UPDATE people
-  SET
-    name = COALESCE(?1, name),
-    tmdb_id = COALESCE(tmdb_id, ?2),
-    imdb_id = COALESCE(?3, imdb_id),
-    biography = COALESCE(?4, biography),
-    birthday = COALESCE(?5, birthday),
-    deathday = COALESCE(?6, deathday),
-    gender = COALESCE(?7, gender),
-    known_for_department = COALESCE(?8, known_for_department),
-    place_of_birth = COALESCE(?9, place_of_birth),
-    profile_path = COALESCE(?10, profile_path),
-    last_modified = (strftime('%s','now') * 1000)
-  WHERE id = ?11
-    AND (
-      COALESCE(?1, name) IS NOT name
-      OR COALESCE(tmdb_id, ?2) IS NOT tmdb_id
-      OR COALESCE(?3, imdb_id) IS NOT imdb_id
-      OR COALESCE(?4, biography) IS NOT biography
-      OR COALESCE(?5, birthday) IS NOT birthday
-      OR COALESCE(?6, deathday) IS NOT deathday
-      OR COALESCE(?7, gender) IS NOT gender
-      OR COALESCE(?8, known_for_department) IS NOT known_for_department
-      OR COALESCE(?9, place_of_birth) IS NOT place_of_birth
-      OR COALESCE(?10, profile_path) IS NOT profile_path
-    )
-`);
+  for (let offset = 0; ; offset += SUPABASE_PAGE_SIZE) {
+    const page = await supabaseRequest('GET', table, {
+      query: {
+        select: selectColumns,
+        limit: SUPABASE_PAGE_SIZE,
+        offset,
+      },
+    });
 
-const insertMovieCast = db.prepare(`
-  INSERT INTO movie_cast (
-    movie_id,
-    person_id,
-    cast_order,
-    character,
-    department,
-    last_modified
-  ) VALUES (?, ?, ?, ?, ?, (datetime('now')))
-  ON CONFLICT(movie_id, person_id) DO UPDATE SET
-    cast_order = excluded.cast_order,
-    character = excluded.character,
-    department = excluded.department,
-    last_modified = (datetime('now'))
-  WHERE movie_cast.cast_order IS NOT excluded.cast_order
-    OR movie_cast.character IS NOT excluded.character
-    OR movie_cast.department IS NOT excluded.department
-`);
+    if (!Array.isArray(page) || page.length === 0) {
+      break;
+    }
+
+    rows.push(...page);
+
+    if (page.length < SUPABASE_PAGE_SIZE) {
+      break;
+    }
+  }
+
+  return rows;
+}
+
+async function insertRow(table, payload) {
+  const rows = await supabaseRequest('POST', table, {
+    payload,
+    prefer: 'return=representation',
+  });
+
+  if (!Array.isArray(rows) || rows.length === 0) {
+    throw new Error(`Insert into ${table} returned no row`);
+  }
+
+  return rows[0];
+}
+
+async function updateById(table, id, payload) {
+  const compact = compactPayload(payload);
+  if (Object.keys(compact).length === 0) {
+    return;
+  }
+
+  await supabaseRequest('PATCH', table, {
+    query: { id: `eq.${id}` },
+    payload: compact,
+    prefer: 'return=minimal',
+  });
+}
 
 function buildPeopleNameIndex(rows) {
   const index = new Map();
@@ -231,17 +229,49 @@ function buildPeopleNameIndex(rows) {
   return index;
 }
 
-function resolveExistingPersonId(detail, listPerson, peopleByNormalizedName) {
+function buildPeopleTmdbIndex(rows) {
+  const index = new Map();
+
+  for (const row of rows) {
+    const tmdbId = nullableNumber(row.tmdb_id);
+    if (tmdbId == null || index.has(tmdbId)) {
+      continue;
+    }
+
+    index.set(tmdbId, row.id);
+  }
+
+  return index;
+}
+
+function buildMovieTmdbIndex(rows) {
+  const index = new Map();
+
+  for (const row of rows) {
+    const tmdbId = nullableNumber(row.tmdb_id);
+    if (tmdbId == null || index.has(tmdbId)) {
+      continue;
+    }
+
+    index.set(tmdbId, row.id);
+  }
+
+  return index;
+}
+
+function resolveExistingPersonId(
+  detail,
+  listPerson,
+  peopleByTmdbId,
+  peopleByNormalizedName,
+) {
   const tmdbId = nullableNumber(detail.id ?? listPerson.id);
   const normalizedName = normalizeNameForComparison(
     nullableText(detail.name) ?? nullableText(listPerson.name) ?? '',
   );
 
-  if (tmdbId != null) {
-    const person = findPersonByTmdbId.get(tmdbId);
-    if (person) {
-      return person.id;
-    }
+  if (tmdbId != null && peopleByTmdbId.has(tmdbId)) {
+    return peopleByTmdbId.get(tmdbId) ?? null;
   }
 
   if (normalizedName) {
@@ -251,10 +281,16 @@ function resolveExistingPersonId(detail, listPerson, peopleByNormalizedName) {
   return null;
 }
 
-function upsertPersonRecord(detail, listPerson, peopleByNormalizedName) {
+async function upsertPersonRecord(
+  detail,
+  listPerson,
+  peopleByTmdbId,
+  peopleByNormalizedName,
+) {
   const personId = resolveExistingPersonId(
     detail,
     listPerson,
+    peopleByTmdbId,
     peopleByNormalizedName,
   );
   const personName =
@@ -263,39 +299,47 @@ function upsertPersonRecord(detail, listPerson, peopleByNormalizedName) {
     'Unknown Person';
   const tmdbId = nullableNumber(detail.id ?? listPerson.id);
 
+  const payload = compactPayload({
+    name: personName,
+    tmdb_id: tmdbId,
+    imdb_id: nullableText(detail.imdb_id),
+    biography: nullableText(detail.biography),
+    birthday: nullableText(detail.birthday),
+    deathday: nullableText(detail.deathday),
+    gender: nullableNumber(detail.gender),
+    known_for_department: nullableText(detail.known_for_department),
+    place_of_birth: nullableText(detail.place_of_birth),
+    profile_path: nullableText(detail.profile_path),
+    last_modified: Date.now(),
+  });
+
   if (personId == null) {
-    const inserted = insertPerson.run(
-      personName,
-      tmdbId,
-      nullableText(detail.imdb_id),
-      nullableText(detail.biography),
-      nullableText(detail.birthday),
-      nullableText(detail.deathday),
-      nullableNumber(detail.gender),
-      nullableText(detail.known_for_department),
-      nullableText(detail.place_of_birth),
-      nullableText(detail.profile_path),
-    );
+    const inserted = await insertRow('people', payload);
+
+    const insertedId = inserted.id;
+    if (tmdbId != null) {
+      peopleByTmdbId.set(tmdbId, insertedId);
+    }
+
+    const normalizedInsertedName = normalizeNameForComparison(personName);
+    if (
+      normalizedInsertedName &&
+      !peopleByNormalizedName.has(normalizedInsertedName)
+    ) {
+      peopleByNormalizedName.set(normalizedInsertedName, insertedId);
+    }
 
     return {
-      id: Number(inserted.lastInsertRowid),
+      id: insertedId,
       inserted: true,
     };
   }
 
-  updatePerson.run(
-    personName,
-    tmdbId,
-    nullableText(detail.imdb_id),
-    nullableText(detail.biography),
-    nullableText(detail.birthday),
-    nullableText(detail.deathday),
-    nullableNumber(detail.gender),
-    nullableText(detail.known_for_department),
-    nullableText(detail.place_of_birth),
-    nullableText(detail.profile_path),
-    personId,
-  );
+  await updateById('people', personId, payload);
+
+  if (tmdbId != null && !peopleByTmdbId.has(tmdbId)) {
+    peopleByTmdbId.set(tmdbId, personId);
+  }
 
   return {
     id: personId,
@@ -346,23 +390,33 @@ function buildMovieCreditMap(combinedCredits) {
   return movieCreditsByTmdbId;
 }
 
-function backfillMovieCastForPerson(personId, combinedCredits) {
+async function backfillMovieCastForPerson(
+  personId,
+  combinedCredits,
+  moviesByTmdbId,
+) {
   const movieCreditsByTmdbId = buildMovieCreditMap(combinedCredits);
   let linkedRows = 0;
 
   for (const [tmdbMovieId, credit] of movieCreditsByTmdbId.entries()) {
-    const movieId = findMovieByTmdbId.get(tmdbMovieId)?.id ?? null;
+    const movieId = moviesByTmdbId.get(tmdbMovieId) ?? null;
     if (movieId == null) {
       continue;
     }
 
-    insertMovieCast.run(
-      movieId,
-      personId,
-      credit.castOrder,
-      credit.character,
-      credit.department,
-    );
+    await supabaseRequest('POST', 'movie_cast', {
+      query: { on_conflict: 'movie_id,person_id' },
+      payload: {
+        movie_id: movieId,
+        person_id: personId,
+        cast_order: credit.castOrder,
+        character: credit.character,
+        department: credit.department,
+        last_modified: new Date().toISOString(),
+      },
+      prefer: 'resolution=merge-duplicates,return=minimal',
+    });
+
     linkedRows++;
   }
 
@@ -372,11 +426,12 @@ function backfillMovieCastForPerson(personId, combinedCredits) {
 const delay = (ms) => new Promise((resolve) => setTimeout(resolve, ms));
 
 async function run() {
-  ensurePeopleColumns();
-  ensureMovieCastTable();
+  const peopleRows = await fetchAllRows('people', 'id,name,tmdb_id');
+  const moviesRows = await fetchAllRows('movies', 'id,tmdb_id');
 
-  const peopleRows = selectPeople.all();
   const peopleByNormalizedName = buildPeopleNameIndex(peopleRows);
+  const peopleByTmdbId = buildPeopleTmdbIndex(peopleRows);
+  const moviesByTmdbId = buildMovieTmdbIndex(moviesRows);
 
   console.log(
     `Syncing top ${TARGET_PEOPLE_COUNT} TMDB popular people across ${PAGE_COUNT} pages...`,
@@ -399,9 +454,10 @@ async function run() {
       for (const listPerson of people) {
         try {
           const detail = await fetchPersonDetails(listPerson.id);
-          const result = upsertPersonRecord(
+          const result = await upsertPersonRecord(
             detail,
             listPerson,
+            peopleByTmdbId,
             peopleByNormalizedName,
           );
 
@@ -418,9 +474,10 @@ async function run() {
             updated++;
           }
 
-          movieCastLinksUpserted += backfillMovieCastForPerson(
+          movieCastLinksUpserted += await backfillMovieCastForPerson(
             result.id,
             detail.combined_credits,
+            moviesByTmdbId,
           );
 
           processed++;
@@ -453,11 +510,7 @@ async function run() {
   console.log(`  Failed: ${failed}`);
 }
 
-run()
-  .catch((error) => {
-    console.error(error);
-    process.exitCode = 1;
-  })
-  .finally(() => {
-    db.close();
-  });
+run().catch((error) => {
+  console.error(error);
+  process.exitCode = 1;
+});

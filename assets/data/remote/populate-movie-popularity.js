@@ -3,7 +3,9 @@
 'use strict';
 
 const path = require('path');
-require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+require('dotenv').config({
+  path: path.join(__dirname, '..', '..', '..', '.env'),
+});
 
 const TMDB_API_KEY = process.env.TMDB_API_KEY;
 const SUPABASE_URL = process.env.SUPABASE_URL;
@@ -28,7 +30,7 @@ const TARGET_COUNT = 1000;
 const REQUEST_DELAY_MS = 50;
 const UPSERT_BATCH_SIZE = 50;
 const COOLDOWN_MS = 20 * 60 * 60 * 1000;
-const GENERAL_TABLE_NAME = 'people_popularity';
+const GENERAL_TABLE_NAME = 'movie_popularity';
 
 function getRestBaseUrl(url) {
   const trimmed = String(url).trim().replace(/\/$/, '');
@@ -175,8 +177,8 @@ async function setGeneralLastModified(tableName, isoTimestamp) {
 
 async function resetTrending() {
   const params = new URLSearchParams({ tmdb_id: 'gte.0' });
-  const url = `${SUPABASE_REST_BASE_URL}/people_popularity?${params.toString()}`;
-  await fetchVoid(url, 'Supabase reset trending people_popularity', {
+  const url = `${SUPABASE_REST_BASE_URL}/movie_popularity?${params.toString()}`;
+  await fetchVoid(url, 'Supabase reset trending movie_popularity', {
     method: 'PATCH',
     headers: {
       ...getSupabaseHeaders(),
@@ -185,7 +187,7 @@ async function resetTrending() {
     },
     body: JSON.stringify({ trending: 0 }),
   });
-  console.log('Reset all trending values to 0 in people_popularity.');
+  console.log('Reset all trending values to 0 in movie_popularity.');
 }
 
 async function fetchStoredPopularities(tmdbIds) {
@@ -197,10 +199,10 @@ async function fetchStoredPopularities(tmdbIds) {
       select: 'tmdb_id,popularity',
       tmdb_id: `in.(${batch.join(',')})`,
     });
-    const url = `${SUPABASE_REST_BASE_URL}/people_popularity?${params.toString()}`;
+    const url = `${SUPABASE_REST_BASE_URL}/movie_popularity?${params.toString()}`;
     const rows = await fetchJson(
       url,
-      'Supabase fetch people_popularity popularities',
+      'Supabase fetch movie_popularity popularities',
       {
         headers: getSupabaseHeaders(),
       },
@@ -219,41 +221,44 @@ async function fetchStoredPopularities(tmdbIds) {
   return popularityMap;
 }
 
-async function fetchPopularPeople(page) {
+async function discoverPopularMovies(page) {
   const params = new URLSearchParams({
     api_key: TMDB_API_KEY,
+    include_adult: 'false',
+    include_video: 'false',
     language: 'en-US',
     page: String(page),
+    sort_by: 'popularity.desc',
   });
 
   return fetchJson(
-    `https://api.themoviedb.org/3/person/popular?${params.toString()}`,
-    `TMDB person/popular page=${page}`,
+    `https://api.themoviedb.org/3/discover/movie?${params.toString()}`,
+    `TMDB discover/movie page=${page}`,
   );
 }
 
-async function collectTopPeople(targetCount) {
+async function collectTopMovies(targetCount) {
   const rows = [];
   const seen = new Set();
   let page = 1;
 
   while (rows.length < targetCount) {
-    const data = await fetchPopularPeople(page);
+    const data = await discoverPopularMovies(page);
     const results = data.results ?? [];
 
     if (results.length === 0) {
       break;
     }
 
-    for (const person of results) {
-      const tmdbId = person?.id;
+    for (const movie of results) {
+      const tmdbId = movie?.id;
       if (tmdbId == null || seen.has(tmdbId)) {
         continue;
       }
 
       rows.push({
         tmdb_id: tmdbId,
-        popularity: nullableNumber(person?.popularity),
+        popularity: nullableNumber(movie?.popularity),
       });
       seen.add(tmdbId);
 
@@ -271,21 +276,21 @@ async function collectTopPeople(targetCount) {
 
   if (rows.length < targetCount) {
     throw new Error(
-      `Could only collect ${rows.length} people from TMDB (target ${targetCount})`,
+      `Could only collect ${rows.length} movies from TMDB (target ${targetCount})`,
     );
   }
 
   return rows;
 }
 
-async function upsertPeople(rows) {
+async function upsertMovies(rows) {
   let upserted = 0;
 
   for (let i = 0; i < rows.length; i += UPSERT_BATCH_SIZE) {
     const batch = rows.slice(i, i + UPSERT_BATCH_SIZE);
-    const url = `${SUPABASE_REST_BASE_URL}/people_popularity?on_conflict=tmdb_id`;
+    const url = `${SUPABASE_REST_BASE_URL}/movie_popularity?on_conflict=tmdb_id`;
 
-    const data = await fetchJson(url, 'Supabase upsert people_popularity', {
+    const data = await fetchJson(url, 'Supabase upsert movie_popularity', {
       method: 'POST',
       headers: {
         ...getSupabaseHeaders(),
@@ -318,8 +323,8 @@ async function run() {
       return;
     }
 
-    console.log(`Fetching top ${TARGET_COUNT} TMDB people...`);
-    const rows = await collectTopPeople(TARGET_COUNT);
+    console.log(`Fetching top ${TARGET_COUNT} TMDB movies...`);
+    const rows = await collectTopMovies(TARGET_COUNT);
     fetchedCount = rows.length;
 
     console.log('Resetting all trending values to 0...');
@@ -349,9 +354,9 @@ async function run() {
     }
 
     console.log(
-      `Upserting ${rows.length} rows into people_popularity via Supabase REST...`,
+      `Upserting ${rows.length} rows into movie_popularity via Supabase REST...`,
     );
-    upsertedCount = await upsertPeople(rows);
+    upsertedCount = await upsertMovies(rows);
 
     const nowIso = new Date().toISOString();
     await setGeneralLastModified(GENERAL_TABLE_NAME, nowIso);

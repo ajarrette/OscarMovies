@@ -11,17 +11,17 @@
     "test": "jest --watchAll",
     "lint": "expo lint",
     "seed": "node ./assets/data/db-seed.js",
-    "enrich": "node ./assets/data/enrich-data.js",
-    "enrich-people": "node ./assets/data/enrich-people.js",
-    "enrich-person-by-id": "node ./assets/data/enrich-person-by-id.js",
-    "enrich-cast-people": "node ./assets/data/enrich-cast-people.js",
-    "update-popular-movies-db": "node ./assets/data/update-popular-movies-db.js",
-    "update-popular-people-db": "node ./assets/data/update-popular-people-db.js",
-    "import-movie-cast": "node ./assets/data/import-movie-cast.js",
-    "populate-people-popularity": "node ./assets/data/populate-people-popularity.js",
-    "populate-movie-popularity": "node ./assets/data/populate-movie-popularity.js",
-    "dedup-people": "node ./assets/data/dedup-people.js",
-    "dedup-people:apply": "node ./assets/data/dedup-people.js --apply"
+    "enrich": "node ./assets/data/local/enrich-data.js",
+    "enrich-people": "node ./assets/data/local/enrich-people.js",
+    "enrich-person-by-id": "node ./assets/data/local/enrich-person-by-id.js",
+    "enrich-cast-people": "node ./assets/data/local/enrich-cast-people.js",
+    "update-popular-movies-db": "node ./assets/data/remote/update-popular-movies-db.js",
+    "update-popular-people-db": "node ./assets/data/remote/update-popular-people-db.js",
+    "import-movie-cast": "node ./assets/data/local/import-movie-cast.js",
+    "populate-people-popularity": "node ./assets/data/remote/populate-people-popularity.js",
+    "populate-movie-popularity": "node ./assets/data/remote/populate-movie-popularity.js",
+    "dedup-people": "node ./assets/data/remote/dedup-people.js",
+    "dedup-people:apply": "node ./assets/data/remote/dedup-people.js --apply"
   },
   "jest": {
     "preset": "jest-expo"
