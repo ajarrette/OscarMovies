@@ -18,6 +18,8 @@
     "update-popular-movies-db": "node ./assets/data/remote/update-popular-movies-db.js",
     "update-popular-people-db": "node ./assets/data/remote/update-popular-people-db.js",
     "import-movie-cast": "node ./assets/data/local/import-movie-cast.js",
+    "import-top-popular-movies-and-cast": "node ./assets/data/local/import-top-popular-movies-and-cast.js",
+    "import-top-popular-people-and-cast": "node ./assets/data/local/import-top-popular-people-and-cast.js",
     "populate-people-popularity": "node ./assets/data/remote/populate-people-popularity.js",
     "populate-movie-popularity": "node ./assets/data/remote/populate-movie-popularity.js",
     "dedup-people": "node ./assets/data/remote/dedup-people.js",
