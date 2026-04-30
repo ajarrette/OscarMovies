@@ -20,6 +20,7 @@
     "import-movie-cast": "node ./assets/data/local/import-movie-cast.js",
     "import-top-popular-movies-and-cast": "node ./assets/data/local/import-top-popular-movies-and-cast.js",
     "import-top-popular-people-and-cast": "node ./assets/data/local/import-top-popular-people-and-cast.js",
+    "generate-migration": "node ./assets/data/local/generate-migration.js",
     "populate-people-popularity": "node ./assets/data/remote/populate-people-popularity.js",
     "populate-movie-popularity": "node ./assets/data/remote/populate-movie-popularity.js",
     "dedup-people": "node ./assets/data/remote/dedup-people.js",
