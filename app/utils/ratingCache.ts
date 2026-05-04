@@ -4,7 +4,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
  * Cache timeout: 1 week in milliseconds
  * Adjust this value to change the cache expiration time
  */
-export const RATING_CACHE_TTL = 7 * 24 * 60 * 60 * 1000; // 1 week
+export const RATING_CACHE_TTL = 1 * 24 * 60 * 60 * 1000; // 1 week
 
 interface CachedRating {
   value: string;

@@ -4,7 +4,9 @@
 
 const path = require('path');
 const Database = require('better-sqlite3');
-require('dotenv').config({ path: path.join(__dirname, '..', '..', '.env') });
+require('dotenv').config({
+  path: path.join(__dirname, '..', '..', '..', '.env'),
+});
 
 const API_KEY = process.env.TMDB_API_KEY;
 if (!API_KEY) {
@@ -14,6 +16,7 @@ if (!API_KEY) {
 
 const DB_PATH = path.join(
   __dirname,
+  '..',
   '..',
   '..',
   'assets',
@@ -107,26 +110,26 @@ const selectCastPeopleWithNullBiography = db.prepare(`
 const updatePersonDetails = db.prepare(`
   UPDATE people
   SET
-    imdb_id              = ?1,
-    biography            = ?2,
-    birthday             = ?3,
-    deathday             = ?4,
-    gender               = ?5,
-    known_for_department = ?6,
-    place_of_birth       = ?7,
-    profile_path         = ?8,
+    imdb_id              = ?,
+    biography            = ?,
+    birthday             = ?,
+    deathday             = ?,
+    gender               = ?,
+    known_for_department = ?,
+    place_of_birth       = ?,
+    profile_path         = ?,
     last_modified        = (strftime('%s','now') * 1000)
-  WHERE id = ?9
+  WHERE id = ?
     AND biography IS NULL
     AND (
-      imdb_id IS NOT ?1
-      OR biography IS NOT ?2
-      OR birthday IS NOT ?3
-      OR deathday IS NOT ?4
-      OR gender IS NOT ?5
-      OR known_for_department IS NOT ?6
-      OR place_of_birth IS NOT ?7
-      OR profile_path IS NOT ?8
+      imdb_id IS NOT ?
+      OR biography IS NOT ?
+      OR birthday IS NOT ?
+      OR deathday IS NOT ?
+      OR gender IS NOT ?
+      OR known_for_department IS NOT ?
+      OR place_of_birth IS NOT ?
+      OR profile_path IS NOT ?
     )
 `);
 
@@ -144,16 +147,33 @@ async function run() {
     try {
       const data = await fetchPersonDetails(person.tmdb_id);
 
+      const imdbId = nullableText(data.imdb_id);
+      const biography = nullableText(data.biography);
+      const birthday = nullableText(data.birthday);
+      const deathday = nullableText(data.deathday);
+      const gender = nullableNumber(data.gender);
+      const knownForDepartment = nullableText(data.known_for_department);
+      const placeOfBirth = nullableText(data.place_of_birth);
+      const profilePath = nullableText(data.profile_path);
+
       const result = updatePersonDetails.run(
-        nullableText(data.imdb_id),
-        nullableText(data.biography),
-        nullableText(data.birthday),
-        nullableText(data.deathday),
-        nullableNumber(data.gender),
-        nullableText(data.known_for_department),
-        nullableText(data.place_of_birth),
-        nullableText(data.profile_path),
+        imdbId,
+        biography,
+        birthday,
+        deathday,
+        gender,
+        knownForDepartment,
+        placeOfBirth,
+        profilePath,
         person.id,
+        imdbId,
+        biography,
+        birthday,
+        deathday,
+        gender,
+        knownForDepartment,
+        placeOfBirth,
+        profilePath,
       );
 
       if (result.changes > 0) {

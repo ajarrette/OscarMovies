@@ -2,6 +2,7 @@
 /* eslint-env node */
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
 
@@ -15,12 +16,42 @@ if (!API_KEY) {
 }
 
 const DB_PATH = path.join(ROOT, 'assets', 'data', 'oscar-movies.db');
+const MOVIE_BLACKLIST_PATH = path.join(
+  ROOT,
+  'assets',
+  'data',
+  'movie-purge-blacklist.json',
+);
 const REQUEST_DELAY_MS = 30;
 const TARGET_COUNT = 100;
+const MIN_NEW_PERSON_POPULARITY = 3;
 
 const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+
+function loadBlacklistedMovieTmdbIds() {
+  if (!fs.existsSync(MOVIE_BLACKLIST_PATH)) {
+    console.warn(`Movie blacklist not found: ${MOVIE_BLACKLIST_PATH}`);
+    return new Set();
+  }
+
+  const raw = fs.readFileSync(MOVIE_BLACKLIST_PATH, 'utf8');
+  const parsed = JSON.parse(raw);
+  const rows = Array.isArray(parsed?.movies) ? parsed.movies : [];
+
+  const blacklist = new Set();
+  for (const row of rows) {
+    const tmdbId = nullableNumber(row?.tmdbId);
+    if (tmdbId != null) {
+      blacklist.add(tmdbId);
+    }
+  }
+
+  return blacklist;
+}
+
+const BLACKLISTED_MOVIE_TMDB_IDS = loadBlacklistedMovieTmdbIds();
 
 function ensurePeopleColumns() {
   const existingColumns = db
@@ -147,7 +178,12 @@ async function collectTopPopularMovies(targetCount) {
 
     for (const movie of results) {
       const tmdbId = nullableNumber(movie?.id);
-      if (tmdbId == null || seen.has(tmdbId)) {
+      if (
+        tmdbId == null ||
+        seen.has(tmdbId) ||
+        BLACKLISTED_MOVIE_TMDB_IDS.has(tmdbId) ||
+        !movie?.backdrop_path
+      ) {
         continue;
       }
 
@@ -243,27 +279,27 @@ const insertPerson = db.prepare(`
 const updatePersonById = db.prepare(`
   UPDATE people
   SET
-    tmdb_id = COALESCE(tmdb_id, ?1),
-    imdb_id = COALESCE(imdb_id, ?2),
-    biography = COALESCE(biography, ?3),
-    birthday = COALESCE(birthday, ?4),
-    deathday = COALESCE(deathday, ?5),
-    gender = COALESCE(gender, ?6),
-    known_for_department = COALESCE(known_for_department, ?7),
-    place_of_birth = COALESCE(place_of_birth, ?8),
-    profile_path = COALESCE(profile_path, ?9),
+    tmdb_id = COALESCE(tmdb_id, ?),
+    imdb_id = COALESCE(imdb_id, ?),
+    biography = COALESCE(biography, ?),
+    birthday = COALESCE(birthday, ?),
+    deathday = COALESCE(deathday, ?),
+    gender = COALESCE(gender, ?),
+    known_for_department = COALESCE(known_for_department, ?),
+    place_of_birth = COALESCE(place_of_birth, ?),
+    profile_path = COALESCE(profile_path, ?),
     last_modified = (datetime('now'))
-  WHERE id = ?10
+  WHERE id = ?
     AND (
-      COALESCE(tmdb_id, ?1) IS NOT tmdb_id
-      OR COALESCE(imdb_id, ?2) IS NOT imdb_id
-      OR COALESCE(biography, ?3) IS NOT biography
-      OR COALESCE(birthday, ?4) IS NOT birthday
-      OR COALESCE(deathday, ?5) IS NOT deathday
-      OR COALESCE(gender, ?6) IS NOT gender
-      OR COALESCE(known_for_department, ?7) IS NOT known_for_department
-      OR COALESCE(place_of_birth, ?8) IS NOT place_of_birth
-      OR COALESCE(profile_path, ?9) IS NOT profile_path
+      COALESCE(tmdb_id, ?) IS NOT tmdb_id
+      OR COALESCE(imdb_id, ?) IS NOT imdb_id
+      OR COALESCE(biography, ?) IS NOT biography
+      OR COALESCE(birthday, ?) IS NOT birthday
+      OR COALESCE(deathday, ?) IS NOT deathday
+      OR COALESCE(gender, ?) IS NOT gender
+      OR COALESCE(known_for_department, ?) IS NOT known_for_department
+      OR COALESCE(place_of_birth, ?) IS NOT place_of_birth
+      OR COALESCE(profile_path, ?) IS NOT profile_path
     )
 `);
 
@@ -287,6 +323,7 @@ const upsertMovieCast = db.prepare(`
 `);
 
 const personIdCache = new Map();
+let skippedLowPopularityPeople = 0;
 
 async function ensurePersonId(castEntry) {
   const tmdbPersonId = nullableNumber(castEntry?.id);
@@ -314,21 +351,48 @@ async function ensurePersonId(castEntry) {
   const byName = findPersonByName.get(personName);
 
   if (byName?.id != null) {
+    const _tmdbId = tmdbPersonId;
+    const _imdbId = nullableText(personData?.imdb_id);
+    const _biography = nullableText(personData?.biography);
+    const _birthday = nullableText(personData?.birthday);
+    const _deathday = nullableText(personData?.deathday);
+    const _gender = nullableNumber(personData?.gender);
+    const _knownFor = nullableText(personData?.known_for_department);
+    const _placeOfBirth = nullableText(personData?.place_of_birth);
+    const _profilePath = nullableText(personData?.profile_path);
     updatePersonById.run(
-      tmdbPersonId,
-      nullableText(personData?.imdb_id),
-      nullableText(personData?.biography),
-      nullableText(personData?.birthday),
-      nullableText(personData?.deathday),
-      nullableNumber(personData?.gender),
-      nullableText(personData?.known_for_department),
-      nullableText(personData?.place_of_birth),
-      nullableText(personData?.profile_path),
+      // SET values
+      _tmdbId,
+      _imdbId,
+      _biography,
+      _birthday,
+      _deathday,
+      _gender,
+      _knownFor,
+      _placeOfBirth,
+      _profilePath,
+      // WHERE id =
       byName.id,
+      // WHERE COALESCE comparison values
+      _tmdbId,
+      _imdbId,
+      _biography,
+      _birthday,
+      _deathday,
+      _gender,
+      _knownFor,
+      _placeOfBirth,
+      _profilePath,
     );
 
     personIdCache.set(tmdbPersonId, byName.id);
     return byName.id;
+  }
+
+  const popularity = nullableNumber(personData?.popularity) ?? 0;
+  if (popularity < MIN_NEW_PERSON_POPULARITY) {
+    skippedLowPopularityPeople += 1;
+    return null;
   }
 
   insertPerson.run(
@@ -393,6 +457,9 @@ const insertMovieAndCast = db.transaction((movieData, castRows) => {
 async function run() {
   ensurePeopleColumns();
   ensureMovieCastTable();
+  console.log(
+    `Loaded movie blacklist with ${BLACKLISTED_MOVIE_TMDB_IDS.size} TMDB ids`,
+  );
 
   console.log(`Collecting top ${TARGET_COUNT} popular movies from TMDB...`);
   const topMovies = await collectTopPopularMovies(TARGET_COUNT);
@@ -407,7 +474,7 @@ async function run() {
 
   for (const topMovie of topMovies) {
     const tmdbMovieId = nullableNumber(topMovie?.id);
-    if (tmdbMovieId == null) {
+    if (tmdbMovieId == null || BLACKLISTED_MOVIE_TMDB_IDS.has(tmdbMovieId)) {
       continue;
     }
 
@@ -523,6 +590,9 @@ async function run() {
   console.log(`Unchanged existing movies: ${unchangedMovies}`);
   console.log(`Inserted/updated movie_cast links: ${insertedCastLinks}`);
   console.log(`Fetched/created missing people: ${fetchedPeople}`);
+  console.log(
+    `Skipped new people below popularity ${MIN_NEW_PERSON_POPULARITY}: ${skippedLowPopularityPeople}`,
+  );
   console.log(`Failed movies: ${failedMovies}`);
 }
 

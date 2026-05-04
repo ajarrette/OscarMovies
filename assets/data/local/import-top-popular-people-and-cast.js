@@ -2,6 +2,7 @@
 /* eslint-env node */
 'use strict';
 
+const fs = require('fs');
 const path = require('path');
 const Database = require('better-sqlite3');
 
@@ -15,12 +16,42 @@ if (!API_KEY) {
 }
 
 const DB_PATH = path.join(ROOT, 'assets', 'data', 'oscar-movies.db');
+const MOVIE_BLACKLIST_PATH = path.join(
+  ROOT,
+  'assets',
+  'data',
+  'movie-purge-blacklist.json',
+);
 const REQUEST_DELAY_MS = 30;
 const TARGET_COUNT = 100;
+const MIN_NEW_MOVIE_POPULARITY = 3;
 
 const db = new Database(DB_PATH);
 db.pragma('journal_mode = WAL');
 db.pragma('foreign_keys = ON');
+
+function loadBlacklistedMovieTmdbIds() {
+  if (!fs.existsSync(MOVIE_BLACKLIST_PATH)) {
+    console.warn(`Movie blacklist not found: ${MOVIE_BLACKLIST_PATH}`);
+    return new Set();
+  }
+
+  const raw = fs.readFileSync(MOVIE_BLACKLIST_PATH, 'utf8');
+  const parsed = JSON.parse(raw);
+  const rows = Array.isArray(parsed?.movies) ? parsed.movies : [];
+
+  const blacklist = new Set();
+  for (const row of rows) {
+    const tmdbId = nullableNumber(row?.tmdbId);
+    if (tmdbId != null) {
+      blacklist.add(tmdbId);
+    }
+  }
+
+  return blacklist;
+}
+
+const BLACKLISTED_MOVIE_TMDB_IDS = loadBlacklistedMovieTmdbIds();
 
 function ensurePeopleColumns() {
   const existingColumns = db
@@ -143,7 +174,7 @@ async function collectTopPopularPeople(targetCount) {
 
     for (const person of results) {
       const tmdbId = nullableNumber(person?.id);
-      if (tmdbId == null || seen.has(tmdbId)) {
+      if (tmdbId == null || seen.has(tmdbId) || !person?.profile_path) {
         continue;
       }
 
@@ -259,6 +290,8 @@ const upsertMovieCast = db.prepare(`
     OR movie_cast.department IS NOT excluded.department
 `);
 
+let skippedLowPopularityMovies = 0;
+
 const processPerson = db.transaction(
   (personRow, personDetails, movieCastRows) => {
     const name =
@@ -344,12 +377,18 @@ const processPerson = db.transaction(
 
     for (const castMovie of movieCastRows) {
       const movieTmdbId = nullableNumber(castMovie?.id);
-      if (movieTmdbId == null) {
+      if (movieTmdbId == null || BLACKLISTED_MOVIE_TMDB_IDS.has(movieTmdbId)) {
         continue;
       }
 
       let movieId = findMovieByTmdbId.get(movieTmdbId)?.id ?? null;
       if (movieId == null) {
+        const moviePopularity = nullableNumber(castMovie?.popularity) ?? 0;
+        if (moviePopularity < MIN_NEW_MOVIE_POPULARITY) {
+          skippedLowPopularityMovies += 1;
+          continue;
+        }
+
         insertMovie.run(
           nullableText(castMovie?.title) ?? 'Unknown Title',
           movieTmdbId,
@@ -391,6 +430,9 @@ const processPerson = db.transaction(
 async function run() {
   ensurePeopleColumns();
   ensureMovieCastTable();
+  console.log(
+    `Loaded movie blacklist with ${BLACKLISTED_MOVIE_TMDB_IDS.size} TMDB ids`,
+  );
 
   console.log(`Collecting top ${TARGET_COUNT} popular people from TMDB...`);
   const topPeople = await collectTopPopularPeople(TARGET_COUNT);
@@ -419,7 +461,11 @@ async function run() {
       const uniqueCastByMovieId = new Map();
       for (const castMovie of castRows) {
         const castMovieId = nullableNumber(castMovie?.id);
-        if (castMovieId == null || uniqueCastByMovieId.has(castMovieId)) {
+        if (
+          castMovieId == null ||
+          uniqueCastByMovieId.has(castMovieId) ||
+          BLACKLISTED_MOVIE_TMDB_IDS.has(castMovieId)
+        ) {
           continue;
         }
         uniqueCastByMovieId.set(castMovieId, castMovie);
@@ -470,6 +516,9 @@ async function run() {
   console.log(`Updated people: ${updatedPeople}`);
   console.log(`Unchanged people: ${unchangedPeople}`);
   console.log(`Inserted movies from credits: ${insertedMovies}`);
+  console.log(
+    `Skipped new movies below popularity ${MIN_NEW_MOVIE_POPULARITY}: ${skippedLowPopularityMovies}`,
+  );
   console.log(`Inserted/updated movie_cast links: ${upsertedCastLinks}`);
   console.log(`Failed people: ${failedPeople}`);
 }
