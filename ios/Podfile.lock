@@ -1,7 +1,7 @@
 PODS:
   - EXConstants (55.0.15):
     - ExpoModulesCore
-  - Expo (55.0.18):
+  - Expo (55.0.19):
     - ExpoModulesCore
     - hermes-engine
     - RCTRequired
@@ -47,7 +47,7 @@ PODS:
     - SDWebImageAVIFCoder (~> 0.11.0)
     - SDWebImageSVGCoder (~> 1.7.0)
     - SDWebImageWebPCoder (~> 0.14.6)
-  - ExpoKeepAwake (55.0.6):
+  - ExpoKeepAwake (55.0.7):
     - ExpoModulesCore
   - ExpoLinearGradient (55.0.13):
     - ExpoModulesCore
@@ -55,7 +55,7 @@ PODS:
     - ExpoModulesCore
   - ExpoLogBox (55.0.11):
     - React-Core
-  - ExpoModulesCore (55.0.23):
+  - ExpoModulesCore (55.0.24):
     - ExpoModulesJSI
     - hermes-engine
     - RCTRequired
@@ -80,7 +80,7 @@ PODS:
     - ReactNativeDependencies
     - RNWorklets
     - Yoga
-  - ExpoModulesJSI (55.0.23):
+  - ExpoModulesJSI (55.0.24):
     - hermes-engine
     - React-Core
     - React-runtimescheduler
@@ -2620,7 +2620,7 @@ EXTERNAL SOURCES:
 
 SPEC CHECKSUMS:
   EXConstants: 5caf448ff399f60be9d1053e77aed32e39411900
-  Expo: 78ab86e6cf5d123b23e8e697b5c7112eebd276a8
+  Expo: 8d901a968aee7a848334798753b63c4a8bf08bd4
   ExpoAsset: f56ed740b6a127da2bfd90832cf688ae309d4410
   ExpoBlur: 7a86e84e7728108fa6908d7103fa527705a3dbbf
   ExpoDomWebView: 2b2fbd9a07de8790569257cbf9dfdaa31cf95c70
@@ -2629,12 +2629,12 @@ SPEC CHECKSUMS:
   ExpoGlassEffect: 72bcb9dc634262c59897ff7c53c16e2ff03990d0
   ExpoHaptics: 679f09dc37d5981e619bc197732007a3334e80b8
   ExpoImage: bd9e9c5bc4eff7a6883339be305f8b0bb5a0cf1c
-  ExpoKeepAwake: a1baf9810a2dee1905aa9bdd336852598f7220e9
+  ExpoKeepAwake: 861c66deb0f9f28f87882610195f26c4b88fba6f
   ExpoLinearGradient: c654e92d726a6d64c588a0988bb22bea331d5e79
   ExpoLinking: f9e01f5182f2653ea9d90f18fb47f1913e2f99ef
   ExpoLogBox: 617da77cbc083627692b2ea050a3666808aef2cd
-  ExpoModulesCore: 121f306333afed9321507d99a9804fe5e795c03a
-  ExpoModulesJSI: 24121c9a2f32d5f6b6ca2f7ff54925be716d5841
+  ExpoModulesCore: 088468ce2605ce08b704105945c2232e73a7b9ee
+  ExpoModulesJSI: 9b60671a31c30bc8e24b25632e7cb475a84b9016
   ExpoRouter: e2c56f80102b153c5f8c887b38094ef936c266a2
   ExpoSplashScreen: 43517d54a0f90d381c80deda859aa6087e80884b
   ExpoSQLite: f63db535d24c59722971241ea9ade2a878dfabea
